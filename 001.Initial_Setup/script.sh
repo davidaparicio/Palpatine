@@ -5,12 +5,9 @@ sudo apt-get update && sudo apt-get upgrade && sudo apt-get dist-upgrade
 
 # Ask to change root password
 echo "Please change root password."
-echo "Enter following line : "
-echo "   # passwd " 
-echo "   # exit " 
 read -p "Ready ? [Y/n]" yn  # TODO Verif_step
 
-sudo su
+su -c 'passwd'
  
 # Change sudoer to ask root passwd instead of user one
 sudo sed -i.bak -e "\$aDefaults rootpw" /etc/sudoers
