@@ -91,36 +91,44 @@ install_base_pkg() {
     terminator
 }
 
-echo $VERBOSE
-echo $VERBOSE_STEP
-install_base_pkg
-
-
 # Add git config
-git config --global user.name "Your Name"       #TODO Gene
-git config --global user.email "your@email.com" #TODO Gen
-git config --global push.default matching 
+setup_git_config() {
+    verbose $FUNCNAME
+    # Usage : setup_git_config <USER> 
+    su $1 -c "git config --global user.name '${USER_FNAME} ${USER_LNAME}'"
+    su $1 -c "git config --global user.email '${USER_MAIL}'"
+    su $1 -c "git config --global push.default matching"
+}
 
 # Generate Keygen 
-ssh-keygen -t rsa -b 4096 -C "your_email@example.com" # TODO: Make mail variable
+generate_ssh_key () {
+    verbose $FUNCNAME
+    # Usage : generate_ssh_key <USER>
+    su $1 -c "ssh-keygen -t rsa -b 4096 -C '$USER_MAIL'"
+    # Add  key to ssh-agent
+    su $1 -c "eval '$(ssh-agent -s)'"
+    su $1 -c "sh-add ~/.ssh/id_rsa"
+    # Copy public key to put it into account (gitlab, github, bitbucket ...)
+    su $1 -c "xclip -sel clip < ~/.ssh/id_rsa.pub"
 
-# Add  key to ssh-agent
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_rsa
+    echo "The content of your public ssh key is stored into your clipboard"
+    echo "Please put them into your account (github, gitlab, bitbucket ...)"
+    ask_continue $FUNCNAME
+}
 
-# Copy public key to put it into account (gitlab, github, bitbucket ...)
-xclip -sel clip < ~/.ssh/id_rsa.pub
+# Get back your dotfile
+clone_dotfiles() {
+    # Usage : clone_dotfile <USER>
+    verbose $FUNCNAME
+    su $1 -c "vcsh clone git@bitbucket.org:vcsh/mr.git"
+    su $1 -c "mkdir ~/.log"
+    su $1 -c "mr up"
+}
 
-echo "The content of your public ssh key is stored into your clipboard"
-echo "Please put them into your account (github, gitlab, bitbucket ...)"
-read -p "Done ? [Y/n]" yn #TODO : Verfif_step
+# Change shell
+chg_shell () {
+     verbose $FUNCNAME
+     su $1 -c "chsh -s /bin/zsh"
+}
 
-# Then get back your dotfile
-
-vcsh clone git@bitbucket.org:vcsh/mr.git 
-vcsh mr remote rename origin bitbucket.vcsh
-
-mkdir ~/.log #TODO GENE
-mr up
-
-chsh -s /bin/zsh
+generate_ssh_key root
