@@ -1,23 +1,100 @@
 #!/bin/bash
 
+# Import variable
+source config.sh
+
+# Import functions
+source ../function/ask_continue.sh
+
+VERBOSE=false
+VERBOSE_STEP=false
+
+# Argument parser
+while getopts ":vs" opt; do
+  case $opt in 
+    v)
+      if [[ $VERBOSE_STEP == false ]]  
+      then
+        VERBOSE=true 
+      fi
+      ;;
+    s)
+      if [[ $VERBOSE == true ]]
+      then
+       VERBOSE=false
+      fi 
+      VERBOSE_STEP=true
+      ;;
+  esac 
+done
+
+# Verbose traclog
+verbose_info() {
+    echo "[LOG] Running $1"
+}
+
+verbose_step() {
+    verbose_info $1
+    ask_continue $1
+}
+
+verbose () {
+  echo $1 
+  if [[ $VERBOSE == true ]]
+  then
+    verbose_info $1
+  elif [[ $VERBOSE_STEP == true ]]
+  then
+    verbose_step $1
+  fi
+}
 #Update Distrib
-sudo apt-get update && sudo apt-get upgrade && sudo apt-get dist-upgrade
+full_update() {
+  verbose $FUNCNAME
+  sudo apt-get update && sudo apt-get upgrade && sudo apt-get dist-upgrade
+}
 
 # Ask to change root password
-echo "Please change root password."
-read -p "Ready ? [Y/n]" yn  # TODO Verif_step
-
-su -c 'passwd'
+set_root_pwd() {
+  verbose $FUNCNAME
+  echo "Please change root password."
+  ask_continue $1
+  su -c 'passwd'
+}
  
 # Change sudoer to ask root passwd instead of user one
-sudo sed -i.bak -e "\$aDefaults rootpw" /etc/sudoers
+set_sudoers_rootpw() {
+  verbose $FUNCNAME
+  sudo sed -i.bak -e "\$aDefaults rootpw" /etc/sudoers
+}
 
 # Add ppa for awesome 3.5 on ubuntu 14.04
-sudo add-apt-repository ppa:klaus-vormweg/awesome
-sudo apt-get update
+add_repo_awesome3-5() {
+  verbose $FUNCNAME
+  sudo add-apt-repository ppa:klaus-vormweg/awesome
+  sudo apt-get update
+}
 
 #Setup usefull littlelittle soft
-sudo apt-get install vim git mr vcsh zsh keychain xclip awesome awesome-extra terminator
+install_base_pkg() {
+  verbose $FUNCNAME
+  sudo apt-get install \
+    vim \
+    git \
+    mr \
+    vcsh \
+    zsh \
+    keychain \
+    xclip \
+    awesome \
+    awesome-extra \
+    terminator
+}
+
+echo $VERBOSE
+echo $VERBOSE_STEP
+install_base_pkg
+
 
 # Add git config
 git config --global user.name "Your Name"       #TODO Gene

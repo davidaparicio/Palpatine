@@ -3,7 +3,7 @@
 ask_continue() {
 	# In case of aborting save callback function to know from which point to 
   # to continue in case of aborting.
-	CALLBACK=$2
+	CALLBACK=$1
 	read -p 'Ready to continue ? [Y/n]' yn;
   echo $yn
 	if [[ ! $yn == [NnYy] ]]
@@ -14,4 +14,6 @@ ask_continue() {
 	then 
 		echo "$(date) : User do not want to continue from ${CALLBACK}" >> setup.log
 	fi
+  exit
+
 }
