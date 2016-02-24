@@ -131,4 +131,7 @@ chg_shell () {
      su $1 -c "chsh -s /bin/zsh"
 }
 
-generate_ssh_key root
+for idx in {1..${#USER_FNAME[@]}}
+do
+	echo ${idx}
+done
