@@ -88,10 +88,12 @@ set_sudoers_rootpw() {
     #   Change sudoer to ask root passwd instead of user one and make a backup
     #   of old sudoers file.
     verbose ${FUNCNAME}
-    echo "Set sudo passwd to root"
+    echo "Set sudo passwd to ask root password."
     ask_continue ${FUNCNAME}
     if [[ $yn == [Yy] ]]
     then
+      echo "First change root password to avoid problems"
+      su root -c "passwd"
       sudo sed -i.bak -e "\$aDefaults rootpw" /etc/sudoers
     fi
 }
