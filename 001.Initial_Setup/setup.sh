@@ -123,6 +123,8 @@ install_base_pkg() {
     # Output : None
     # Brief  : Instal minimal usefull soft
     verbose ${FUNCNAME}
+    sudo apt-get install \
+        apt-transport-https
     if $AWESOME_WM
     then
         sudo apt-get install \
