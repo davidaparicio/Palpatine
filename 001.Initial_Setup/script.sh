@@ -53,14 +53,14 @@ verbose () {
     # Desc   : Verbose parsing to know witch log to print to stdout
     if [ "$#" -ne 1  ]
     then
-        echo "[WARNING] - Calling ${FUNCNAME} without the right number of argument"
+        echo "[WARNING]-Calling ${FUNCNAME} without the right number of argument"
     else
         if [[ ${VERBOSE} == true ]]
         then
-            echo "[LOG] Running $1"
+            echo "[LOG]-Running $1"
         elif [[ ${VERBOSE_STEP} == true ]]
         then
-            echo "[LOG] Running $1"
+            echo "[LOG]-Running $1"
             ask_continue $1
         fi
     fi
@@ -169,7 +169,7 @@ set_user_pwd() {
     # Brief  : Ask new password for <USER>
     if [ "$#" -ne 1  ]
     then
-        echo "[WARNING] - Calling ${FUNCNAME} without the right number of argument"
+        echo "[WARNING]-Calling ${FUNCNAME} without the right number of argument"
     else
         verbose ${FUNCNAME}
         echo "Please change $1 password."
@@ -193,7 +193,7 @@ setup_git_config() {
     # Brief  : Set  git config globally for <USER>
     if [ "$#" -ne 4  ]
     then
-        echo "[WARNING] - Calling ${FUNCNAME} without the right number of argument"
+        echo "[WARNING]-Calling ${FUNCNAME} without the right number of argument"
     else
         verbose ${FUNCNAME}
         echo "Set user $1 git config."
@@ -217,7 +217,7 @@ generate_ssh_key () {
     # Brief  : Setup ssh key for <USER>
     if [ "$#" -ne 2  ]
     then
-        echo "[WARNING] - Calling ${FUNCNAME} without the right number of argument"
+        echo "[WARNING]-Calling ${FUNCNAME} without the right number of argument"
     else
         verbose ${FUNCNAME}
         echo "Generate ssh key for user $1"
@@ -246,7 +246,7 @@ clone_dotfiles() {
     # Brief  : Get dotfiles from server <USER>
     if [ "$#" -ne 2 ]
     then
-        echo "[WARNING] - Calling ${FUNCNAME} without the right number of argument"
+        echo "[WARNING]-Calling ${FUNCNAME} without the right number of argument"
     else
         verbose ${FUNCNAME}
         echo "Get dotfiles from $2."
@@ -270,7 +270,7 @@ chg_shell() {
     # Brief  : Change shell for <USER>
     if [ "$#" -ne 1 ]
     then
-        echo "[WARNING] - Calling ${FUNCNAME} without the right number of argument"
+        echo "[WARNING]-Calling ${FUNCNAME} without the right number of argument"
     else
         verbose ${FUNCNAME}
         echo "Change shell for user $1"
