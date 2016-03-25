@@ -149,7 +149,7 @@ install_base_pkg() {
           keychain \
           xclip \
           terminator \
-	  tree
+	      tree
     fi
 }
 # End of install_base_pkg
