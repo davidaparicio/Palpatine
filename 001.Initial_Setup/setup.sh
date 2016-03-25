@@ -88,10 +88,12 @@ set_sudoers_rootpw() {
     #   Change sudoer to ask root passwd instead of user one and make a backup
     #   of old sudoers file.
     verbose ${FUNCNAME}
-    echo "Set sudo passwd to root"
+    echo "Set sudo passwd to ask root password."
     ask_continue ${FUNCNAME}
     if [[ $yn == [Yy] ]]
     then
+      echo "First change root password to avoid problems"
+      su root -c "passwd"
       sudo sed -i.bak -e "\$aDefaults rootpw" /etc/sudoers
     fi
 }
@@ -121,6 +123,8 @@ install_base_pkg() {
     # Output : None
     # Brief  : Instal minimal usefull soft
     verbose ${FUNCNAME}
+    sudo apt-get install \
+        apt-transport-https
     if $AWESOME_WM
     then
         sudo apt-get install \
@@ -133,7 +137,8 @@ install_base_pkg() {
           xclip \
           awesome \
           awesome-extra \
-          terminator
+          terminator \
+	  tree
     else
         sudo apt-get install \
           vim \
@@ -143,7 +148,8 @@ install_base_pkg() {
           zsh \
           keychain \
           xclip \
-          terminator
+          terminator \
+	      tree
     fi
 }
 # End of install_base_pkg
