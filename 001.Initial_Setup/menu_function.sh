@@ -47,14 +47,14 @@ do_menu () {
 
   calc_wt_size
   
-  local MENU_WM="whiptail --title 'Window Manager' --checklist  'Which window manager to install :' \
+  local MENU_APP="whiptail --title 'Window Manager' --checklist  'Which window manager to install :' \
   $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
   for (( idx=0 ; idx <= ${NB_APP}-1 ; idx++ ))
   do
-    MENU_WM="${MENU_WM} '${APP_ARR_NAME[${idx}]}' '${APP_ARR_DESC[${idx}]}' '${APP_ARR_STAT[${idx}]}'"
+    MENU_APP="${MENU_APP} '${APP_ARR_NAME[${idx}]}' '${APP_ARR_DESC[${idx}]}' '${APP_ARR_STAT[${idx}]}'"
   done
 
-  bash -c "${MENU_WM}" 2> results_menu.txt
+  bash -c "${MENU_APP}" 2> results_menu.txt
 
   CHOICE=$( cat results_menu.txt )
   
@@ -73,4 +73,7 @@ do_menu () {
   rm results_menu.txt
 }
 
+do_menu "WM"
+
+do_menu "WM"
 do_menu "WM"

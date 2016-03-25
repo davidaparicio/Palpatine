@@ -15,6 +15,7 @@ APP_WM_STAT[0]="OFF"
 Xubuntu_Desktop_routine () {
   # TODO : routine is called just before running apt-get or other manager.
   # It should add repo if necessary and add the right package to the list of all package to setup
+  echo
 }
 
 APP_WM_NAME[1]="Ubuntu-Desktop"
