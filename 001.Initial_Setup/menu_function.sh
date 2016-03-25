@@ -48,7 +48,7 @@ do_menu () {
   calc_wt_size
   
   local MENU_WM="whiptail --title 'Window Manager' --checklist  'Which window manager to install :' \
-                  $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
+  $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
   for (( idx=0 ; idx <= ${NB_APP}-1 ; idx++ ))
   do
     MENU_WM="${MENU_WM} '${APP_ARR_NAME[${idx}]}' '${APP_ARR_DESC[${idx}]}' '${APP_ARR_STAT[${idx}]}'"
@@ -60,7 +60,7 @@ do_menu () {
   
   for (( idx=0 ; idx <= ${NB_APP}-1 ; idx++ ))
   do
-    if echo ${CHOICE} | grep "\"${APP_ARR_NAME[${idx}]}\""
+    if echo ${CHOICE} | grep -q "\"${APP_ARR_NAME[${idx}]}\""
     then  
       CMD="sed -i 's/STAT\[${idx}\]=\"\(OFF\|ON\)\"/STAT\[${idx}\]=\"ON\"/g' menu_${LOWER_NAME}.sh"
       eval ${CMD}
@@ -69,4 +69,8 @@ do_menu () {
       eval ${CMD}
     fi
   done
+
+  rm results_menu.txt
 }
+
+do_menu "WM"
