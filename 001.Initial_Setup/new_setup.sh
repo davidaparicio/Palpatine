@@ -1,7 +1,5 @@
 #!/bin/bash
 
-source setup_pkg_menu.sh
-
 # FROM RASPI-CONFIG
 INTERACTIVE=True
 ASK_TO_REBOOT=0
@@ -284,36 +282,34 @@ setup_base_pkg () {
 
 setup_ask_pkg () {
 	# Usage  : setup_all_pkg
-    # Input  : None
-    # Output : None
-    # Brief  : 
-    # 	Menu to ssk user which package he wants to install 
-    calc_wt_size
-  	while true
-  	do
-		FUN=$(whiptail --title "Package to setup" --menu "Whatever the choice to make, \
-			you will be able to come back to this menu before running the setup. \n\
-			Do you whant to :" \
-			$WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --ok-button Select \
-			"1 Go through" "Let the script go through all categories of programm to setup." \
-			"2 Choose" "Choose the categorie of programs you want to setup." \
-			"3 Direct setup" "Setup my minimalistic apps." \
-			3>&1 1>&2 2>&3)
-		RET=$?
-	    if [ $RET -eq 1 ]; then
-	    	exit 1
-	      	table_of_content # TODO : Code this function
-	    elif [ $RET -eq 0 ]; then
-	      case "$FUN" in
-	        1\ *) setup_ask_go_through ;; # TODO : Code this function
-	        2\ *) setup_ask_categories ;; # TODO : Code this function
-	        3\ *) setup_direct_finish ;; # TODO : Code this function
-	        *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
-	      esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
-	    else
-	      exit 1
-	    fi
-	done
+  # Input  : None
+  # Output : None
+  # Brief  : 
+  # 	Menu to ssk user which package he wants to install 
+  calc_wt_size
+  source menu_function.sh
+	FUN=$(whiptail --title "Package to setup" --menu "Whatever the choice to make, \
+		you will be able to come back to this menu before running the setup. \n\
+		Do you whant to :" \
+		$WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --ok-button Select \
+		"1 Go through" "Let the script go through all categories of programm to setup." \
+		"2 Choose" "Choose the categorie of programs you want to setup." \
+		"3 Direct setup" "Setup my minimalistic apps." \
+		3>&1 1>&2 2>&3)
+	RET=$?
+  if [ $RET -eq 1 ]; then
+  	exit 1
+    	table_of_content # TODO : Code this function
+  elif [ $RET -eq 0 ]; then
+    case "$FUN" in
+      1\ *) setup_ask_go_through ;; # TODO : Code this function
+      2\ *) setup_ask_categories ;; # TODO : Code this function
+      3\ *) setup_direct_finish ;; # TODO : Code this function
+      *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
+    esac || whiptail --msgbox "There was an error running option $FUN" 20 60 1
+  else
+    exit 1
+  fi
 }
 
 setup_all_pkg() {
@@ -323,14 +319,14 @@ setup_all_pkg() {
     # Brief  : 
     # 	Call function multiple function that update
 
-	fullupdate 
-	setup_base_pkg
+#	fullupdate 
+#	setup_base_pkg
 	setup_ask_pkg
 }
 
-chg_usr_pwd "root"
-ask_arch
-chg_locale
-chg_timezone
-config_keyboard
+#chg_usr_pwd "root"
+#ask_arch
+#chg_locale
+#chg_timezone
+#config_keyboard
 setup_all_pkg

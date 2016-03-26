@@ -9,7 +9,7 @@ APP_TOOLS_EX="Some usefull tools, utility and accessories."
 APP_TOOLS_NAME[0]="htop"
 APP_TOOLS_PKG[0]="htop" 
 APP_TOOLS_DESC[0]="An interactive process viewer for Unix systems"
-APP_TOOLS_STAT[0]="ON"
+APP_TOOLS_STAT[0]="OFF"
 htop_routine () {
     ALL_PKG_CHOOSEN+=" APP_TOOLS_PKG[0]"
     

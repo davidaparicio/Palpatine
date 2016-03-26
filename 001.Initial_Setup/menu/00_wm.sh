@@ -9,7 +9,7 @@ APP_WM_EX="A set of window manager"
 APP_WM_NAME[0]="Xubuntu_Desktop"
 APP_WM_PKG[0]="xubuntu-desktop" 
 APP_WM_DESC[0]="Full well known desktop manager based on xfce"
-APP_WM_STAT[0]="OFF"
+APP_WM_STAT[0]="ON"
 Xubuntu_Desktop_routine () {
     ALL_PKG_CHOOSEN+=" APP_WM_PKG[0]"
 }
