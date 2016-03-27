@@ -476,8 +476,9 @@ Password        : The one you set
       useradd -c "'${FIRST_NAME} ${LAST_NAME}'" -m -p "'${PASSWORD1}'" ${USERNAME}
     fi
   else
-    return 2
+    return 1
   fi
+  return 2
 }
 
 delete_user () {
@@ -528,9 +529,6 @@ config_user () {
 
   while true
   do
-    echo "${MENU_USER}"
-    read
-
     bash -c "${MENU_USER} " 2> results_menu.txt
     RET=$?
     if [[ ${RET} == 1 ]]
@@ -550,9 +548,6 @@ config_user () {
     then
       add_user
       RET=$?
-      echo "Menu"
-      echo ${RET}
-      read
       if [[ ${RET} == 2 ]]
       then
         update_user
