@@ -340,15 +340,9 @@ update_user () {
       FULL_NAME[${idx}]=$( getent passwd ${USER} | cut -d: -f5 | cut -d, -f1 )
       USERNAME[${idx}]=$( getent passwd ${USER} | cut -d: -f1 )
       idx=$(( $idx + 1 ))
-      echo ${USERNAME[${idx}]} ${FULL_NAME[${idx}]}
-      read
     fi
   done
   local NB_USER=${#USERNAME[@]}
-
-  echo ${USERNAME[@]}
-  echo $NB_USER
-  read
 
   local MENU_USER="whiptail --title 'Update User' --menu  'Select which user informations you want to update :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
   for (( idx=0 ; idx <= ${NB_USER}-1 ; idx++ ))
@@ -356,8 +350,6 @@ update_user () {
     MENU_USER="${MENU_USER} '${USERNAME[${idx}]}' '${FULL_NAME[${idx}]}'"
   done
 
-  echo $MENU_USER
-  read
   bash -c "${MENU_USER} " 2> results_menu.txt
   RET=$?
   if [[ ${RET} == 1 ]]
@@ -501,17 +493,23 @@ delete_user () {
       FULL_NAME[${idx}]=$( getent passwd ${USER} | cut -d: -f5 | cut -d, -f1 )
       USERNAME[${idx}]=$( getent passwd ${USER} | cut -d: -f1 )
       idx=$(( $idx + 1 ))
-      echo ${USERNAME[${idx}]} ${FULL_NAME[${idx}]}
-      read
     fi
   done
   local NB_USER=${#USERNAME[@]}
+  echo ${USERNAME[@]}
+  echo $NB_USER
+  read
+
 
   local MENU_USER="whiptail --title 'Delete User' --menu  'Select whihc user you want to delete :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
   for (( idx=0 ; idx <= ${NB_USER}-1 ; idx++ ))
   do
     MENU_USER="${MENU_USER} '${USERNAME[${idx}]}' '${FULL_NAME[${idx}]}'"
   done
+
+  echo $MENU_USER
+  read
+
 
   bash -c "${MENU_USER} " 2> results_menu.txt
   RET=$?
