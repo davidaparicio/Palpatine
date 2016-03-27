@@ -327,11 +327,15 @@ setup_all_pkg() {
 	setup_ask_pkg
 }
 
+update_user () {
+  # TODO 
+}
+
 add_user () {
   local USERNAME_OK=false
   while ! ${USERNAME_OK}
   do
-    local USERNAME="whiptail --title 'User information' --inputbox 'Username for the new user (only lowerscript char) ' 8 78 " 
+    local USERNAME="whiptail --title 'Add Users' --inputbox 'Username for the new user (only lowerscript char) ' 8 78 " 
     bash -c "${USERNAME}" 2>results_menu.txt
     RET=$?
     if [[ ${RET} == 1 ]]
@@ -342,25 +346,25 @@ add_user () {
     USERNAME=$( cat results_menu.txt )
     if [[ ${#USERNAME} == 0 ]]
     then
-      whiptail --title "User information" --msgbox "Username must be at least one char long " 8 78   3>&1 1>&2 2>&3
+      whiptail --title "Add Users" --msgbox "Username must be at least one char long " 8 78   3>&1 1>&2 2>&3
     else
       getent passwd ${USERNAME} >/dev/null 2>&1 && RET=true
       if [[ ${RET} == true ]]
       then
-        whiptail --title "User information" --msgbox "User already exist " 8 78   3>&1 1>&2 2>&3
+        whiptail --title "Add Users" --msgbox "User already exist " 8 78   3>&1 1>&2 2>&3
       else
         USERNAME_OK=true
       fi
     fi
   done
   
-  local FIRST_NAME=$(whiptail --title "User information" --inputbox "First name of the new user (you can leave it empty) " 8 78   3>&1 1>&2 2>&3)
-  local LAST_NAME=$(whiptail --title "User information" --inputbox "Last name of the new user (you can leave it empty) " 8 78   3>&1 1>&2 2>&3)
+  local FIRST_NAME=$(whiptail --title "Add Users" --inputbox "First name of the new user (you can leave it empty) " 8 78   3>&1 1>&2 2>&3)
+  local LAST_NAME=$(whiptail --title "Add Users" --inputbox "Last name of the new user (you can leave it empty) " 8 78   3>&1 1>&2 2>&3)
 
   local PASSWORD_OK=false
   while ! ${PASSWORD_OK}
   do
-    local PASSWORD=$(whiptail --title "User information" --passwordbox "Password for the new user  " 8 78   3>&1 1>&2 2>&3)
+    local PASSWORD1=$(whiptail --title "Add Users" --passwordbox "Password for the new user  " 8 78   3>&1 1>&2 2>&3)
     RET=$?
     if [[ ${RET} == 1 ]]
     then
@@ -373,19 +377,54 @@ add_user () {
     #Password matching expression. 
     #Match all alphanumeric character and predefined wild characters. 
     #Password must consists of at least 8 characters and not more than 15 characters. 
-    if [[ ! "${PASSWORD}" =~ ^([a-zA-Z0-9@*#]{8,15})$ ]]
+    if [[ ! "${PASSWORD1}" =~ ^([a-zA-Z0-9@*#]{8,15})$ ]]
     then
-      whiptail --title "User information" --msgbox "Password must be at least eight char long and contains alphanumeric char and predefined wild characters " 8 78   3>&1 1>&2 2>&3
+      whiptail --title "Add Users" --msgbox "Password must be at least eight char long and contains alphanumeric char and predefined wild characters " 8 78   3>&1 1>&2 2>&3
     else
-      PASSWORD_OK=true
+      local PASSWORD2=$(whiptail --title "Add Users" --passwordbox "Please enter the password again  " 8 78   3>&1 1>&2 2>&3)
+      RET=$?
+      echo ${RET}
+      read
+      if [[ ${RET} == 1 ]]
+      then
+        return 1
+      fi
+      echo ${PASSWORD1}  ${PASSWORD2}
+      read
+      if [[ ! ${PASSWORD1} == ${PASSWORD2} ]]
+      then
+        whiptail --title "Add Users" --msgbox "Passwords do not match" 8 78   3>&1 1>&2 2>&3
+      else
+        PASSWORD_OK=true
+      fi
     fi
   done
- 
-  confirm_user ${USERNAME} ${FIRST_NAME} ${LAST_NAME} ${PASSWORD} # TODO : WHIPTAIL CONFIRM NEW USER
-  
+
+  if ( whiptail --title "Add User" --yesno "Does this user will have sudo abilities ? " 8 78   3>&1 1>&2 2>&3 )
+  then 
+    SUDO=true
+  else
+    SUDO=false
+  fi
+
+  if ( whiptail --title "Add User" --yesno "Do you confirm following informations about new user : \n\
+Username       : ${USERNAME} \n\
+User Fullname  : ${FIRST_NAME} ${LAST_NAME}  \n\
+Password        : The one you set
+" 15 78   3>&1 1>&2 2>&3 )
+  then 
+    if ${SUDO}
+    then
+      useradd -c "'${FIRST_NAME} ${LAST_NAME}'" -G "sudo" -m -p "'${PASSWORD1}'"  ${USERNAME}
+    else
+      useradd -c "'${FIRST_NAME} ${LAST_NAME}'" -m -p "'${PASSWORD1}'" ${USERNAME}
+    fi
+  else
+    return 2
+  fi
 }
 
-config_user () {
+delete_user () {
   calc_wt_size
   FULL_NAME[0]=$( getent passwd root | cut -d: -f5 | cut -d, -f1 )
   USERNAME[0]=$( getent passwd root | cut -d: -f1 )
@@ -399,18 +438,37 @@ config_user () {
     fi
     idx=$(( $idx + 1 ))
   done
-
-  local MENU_USER="whiptail --title 'User modification' --menu  'Select user you want to modify or other action \
-about user such as adding a user, deleting one ...:' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
   local NB_USER=${#USERNAME[@]}
+
+  local MENU_USER="whiptail --title 'Delete User' --menu  'Select whihc user you want to delete :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
   for (( idx=0 ; idx <= ${NB_USER}-1 ; idx++ ))
   do
     MENU_USER="${MENU_USER} '${USERNAME[${idx}]}' '${FULL_NAME[${idx}]}'"
   done
-  MENU_USER="${MENU_USER} '===========' '=============='"
+
+  bash -c "${MENU_USER} " 2> results_menu.txt
+  RET=$?
+  if [[ ${RET} == 1 ]]
+  then 
+    return 1
+  fi
+
+  CHOICE=$( cat results_menu.txt )
+
+  if ( whiptail --title "Delete User" --yesno "Are you sure you want to delete user :  ${CHOICE}" 8 60 )
+  then
+    userdel ${CHOICE}
+  fi
+
+  return 2
+}
+
+config_user () {
+  calc_wt_size
+  local MENU_USER="whiptail --title 'User modification' --menu  'Select what you want to do :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
+  MENU_USER="${MENU_USER} 'Update User' 'Update user information such as setting a git/vcsh dotfiles, name, mail etc.'"
   MENU_USER="${MENU_USER} 'Add User' 'Add a new user'"
   MENU_USER="${MENU_USER} 'Delete User' 'Delete an existing user'"
-  MENU_USER="${MENU_USER} '===========' '=============='"
   MENU_USER="${MENU_USER} 'CONTINUE' 'Continue to the next step'"
  
   while true 
@@ -427,23 +485,20 @@ about user such as adding a user, deleting one ...:' $WT_HEIGHT $WT_WIDTH $WT_ME
     if [[ ${CHOICE} == "CONTINUE" ]]
     then
       return 2
+    elif [[ ${CHOICE} == "Update User" ]]
+    then 
+      update_user
     elif [[ ${CHOICE} == "Add User" ]]
     then 
       add_user
+      update_user
+    elif [[ ${CHOICE} == "Delete User" ]]
+    then 
+      delete_user
     fi
-
- 
-    for (( idx=0 ; idx <= ${NB_CAT} ; idx++ ))
-    do
-      CAT_NAME="APP_${ALL_CAT[${idx}]}_CAT"
-      if [[ ${!CAT_NAME} == ${CHOICE} ]]
-      then
-          do_menu ${ALL_CAT[${idx}]}
-      fi
-    done
-    return 0
   done
 }
+
 #chg_usr_pwd "root"
 #ask_arch
 #chg_locale
