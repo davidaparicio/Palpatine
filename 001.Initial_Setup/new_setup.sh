@@ -336,6 +336,8 @@ update_user () {
   do
     if ! echo ${i} | grep -q "lost+found"
     then
+      echo ${i}
+      read
       FULL_NAME[${idx}]=$( getent passwd ${USER} | cut -d: -f5 | cut -d, -f1 )
       USERNAME[${idx}]=$( getent passwd ${USER} | cut -d: -f1 )
     fi
