@@ -354,6 +354,8 @@ update_user () {
     MENU_USER="${MENU_USER} '${USERNAME[${idx}]}' '${FULL_NAME[${idx}]}'"
   done
 
+  echo $MENU_USER
+  read
   bash -c "${MENU_USER} " 2> results_menu.txt
   RET=$?
   if [[ ${RET} == 1 ]]
