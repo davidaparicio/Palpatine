@@ -396,8 +396,6 @@ add_user () {
     local USERNAME="whiptail --title 'Add Users' --inputbox 'Username for the new user (only lowerscript char) ' 8 78 "
     bash -c "${USERNAME}" 2>results_menu.txt
     RET=$?
-    echo ${RET}
-    read
     if [[ ${RET} == 1 ]]
     then
       return 1
