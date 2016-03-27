@@ -334,7 +334,7 @@ update_user () {
   idx=0
   for i in /home/*
   do
-    echo ${i#*/}
+    echo ${i##*/}
     if ! echo ${i} | grep -q "lost+found"
     then
       read
