@@ -339,8 +339,8 @@ update_user () {
       USER=${i##*/}
       FULL_NAME[${idx}]=$( getent passwd ${USER} | cut -d: -f5 | cut -d, -f1 )
       USERNAME[${idx}]=$( getent passwd ${USER} | cut -d: -f1 )
+      idx=$(( $idx + 1 ))
     fi
-    idx=$(( $idx + 1 ))
   done
   local NB_USER=${#USERNAME[@]}
 
