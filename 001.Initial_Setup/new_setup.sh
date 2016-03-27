@@ -518,6 +518,8 @@ delete_user () {
     return 1
   fi
 
+  CHOICE=$( cat results_menu.txt )
+
   if ( whiptail --title "Update User" --yesno "Do you really want to delete user :  ${CHOICE}" 8 60 )
   then
     sudo userdel ${CHOICE}
