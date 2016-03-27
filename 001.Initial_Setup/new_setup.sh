@@ -345,6 +345,9 @@ update_user () {
   done
   local NB_USER=${#USERNAME[@]}
 
+  echo $NB_USER
+  read
+
   local MENU_USER="whiptail --title 'Update User' --menu  'Select which user informations you want to update :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
   for (( idx=0 ; idx <= ${NB_USER}-1 ; idx++ ))
   do
