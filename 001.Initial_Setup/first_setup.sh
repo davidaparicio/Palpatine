@@ -180,11 +180,6 @@ setup_user_update_git_config() {
   return 2
 }
 
-setup_user_update_mail_git_dotfiles () {
-  # TODO
-  echo
-}
-
 setup_user_update_mail_vcsh_dotfiles () {
   local VCSH_MR_REPO_OK=false
   local VCSH_MR_REPO=""
@@ -241,10 +236,7 @@ setup_user_update_mail_ask () {
  do
    EMAIL1=$(whiptail --title "Update ${CHOICE}" --inputbox "Email adress of the user  " 8 78   3>&1 1>&2 2>&3)
    RET=$?
-   if [[ ${RET} -eq 1 ]]
-   then
-     return 1
-   fi
+   [[ ${RET} -eq 1 ]] && return 1
 
    if [[ ! ${EMAIL1} =~ ${EMAIL_REGEX} ]]
    then
@@ -253,10 +245,8 @@ setup_user_update_mail_ask () {
    else
      local EMAIL2=$(whiptail --title "Update ${CHOICE}" --inputbox "Please enter the email adress again  " 8 78   3>&1 1>&2 2>&3)
      RET=$?
-     if [[ ${RET} -eq 1 ]]
-     then
-       return 1
-     fi
+     [[ ${RET} -eq 1 ]] && return 1
+
      if [[ ! ${EMAIL1} == ${EMAIL2} ]]
      then
        whiptail --title "Update  ${CHOICE}" --msgbox "Emails do not match" 8 78   3>&1 1>&2 2>&3
@@ -315,7 +305,6 @@ setup_user_update_set_email () {
   local MENU_USER="whiptail --title 'Update ${USER_CHOOSEN}' --menu  'Select action :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
   MENU_USER="${MENU_USER} 'SSH Key' 'Generate or update ssh key of the user ${USER_CHOOSEN}'"
   MENU_USER="${MENU_USER} 'Git information' 'Update git information of the user ${USER_CHOOSEN}'"
-  MENU_USER="${MENU_USER} 'Git dotfiles' 'Get dotfiles from a git repo'"
   MENU_USER="${MENU_USER} 'Vcsh and mr dotfiles' 'Get myRepos config via vcsh from a git repo'"
   MENU_USER="${MENU_USER} 'Command dotfiles' 'Get dotfiles from a one line command '"
   MENU_USER="${MENU_USER} 'CONTINUE' 'Continue to next step'"
@@ -323,10 +312,7 @@ setup_user_update_set_email () {
   do
     bash -c "${MENU_USER} " 2> results_menu.txt
     RET=$?
-    if [[ ${RET} -eq 1 ]]
-    then
-      return 1
-    fi
+    [[ ${RET} -eq 1 ]] && return 1
 
     CHOICE=$( cat results_menu.txt )
 
@@ -353,9 +339,6 @@ setup_user_update_set_email () {
           idx=$(( ${idx} + 1 ))
         done
       ;;
-      "Git dotfiles" )
-        setup_user_update_mail_git_dotfiles
-      ;;
       "Vcsh and mr dotfiles" )
         setup_user_update_mail_vcsh_dotfiles
       ;;
@@ -369,31 +352,19 @@ setup_user_update_set_email () {
 setup_user_update_go_through () {
   setup_user_update_gecos
   RET=$?
-  if [[ ${RET} -eq 1 ]]
-  then
-    return 1
-  fi
+  [[ ${RET} -eq 1 ]] && return 1
 
   setup_user_update_chg_passwd
   RET=$?
-  if [[ ${RET} -eq 1 ]]
-  then
-    return 1
-  fi
+  [[ ${RET} -eq 1 ]] && return 1
 
   setup_user_update_chg_shell
   RET=$?
-  if [[ ${RET} -eq 1 ]]
-  then
-    return 1
-  fi
+  [[ ${RET} -eq 1 ]] && return 1
 
   setup_user_update_set_email
   RET=$?
-  if [[ ${RET} -eq 1 ]]
-  then
-    return 1
-  fi
+  [[ ${RET} -eq 1 ]] && return 1
   return 2
 }
 
@@ -408,10 +379,7 @@ setup_user_update_loop () {
   do
     bash -c "${MENU_USER} " 2> results_menu.txt
     RET=$?
-    if [[ ${RET} -eq 1 ]]
-    then
-      return 1
-    fi
+    [[ ${RET} -eq 1 ]] && return 1
 
     CHOICE=$( cat results_menu.txt )
 
@@ -459,10 +427,7 @@ setup_user_update_select () {
 
   bash -c "${MENU_USER} " 2> results_menu.txt
   RET=$?
-  if [[ ${RET} -eq 1 ]]
-  then
-    return 1
-  fi
+  [[ ${RET} -eq 1 ]] && return 1
 
   CHOICE=$( cat results_menu.txt )
 }
@@ -488,10 +453,7 @@ setup_user_update () {
   do
     bash -c "${MENU_USER} " 2> results_menu.txt
     RET=$?
-    if [[ ${RET} -eq 1 ]]
-    then
-      return 1
-    fi
+    [[ ${RET} -eq 1 ]] && return 1
 
     CHOICE=$( cat results_menu.txt )
 
@@ -502,13 +464,8 @@ setup_user_update () {
     "Go through" )
       setup_user_update_go_through
       RET=$?
-      if [[ ${RET} -eq 1 ]]
-      then
-        setup_user_update_loop
-      elif [[ ${RET} -eq 2 ]]
-      then
-        return 2
-      fi
+      [[ ${RET} -eq 1 ]] && setup_user_update_loop
+      [[ ${RET} -eq 2 ]] && return 2
     ;;
     "Choose action" )
       setup_user_update_loop
@@ -530,10 +487,7 @@ setup_user_add () {
     local USERNAME="whiptail --title 'Add Users' --inputbox 'Username for the new user (only lowerscript char) ' 8 78 "
     bash -c "${USERNAME}" 2>results_menu.txt
     RET=$?
-    if [[ ${RET} -eq 1 ]]
-    then
-      return 1
-    fi
+    [[ ${RET} -eq 1 ]] && return 1
 
     USERNAME=$( cat results_menu.txt )
     if [[ ${#USERNAME} == 0 ]]
@@ -559,10 +513,7 @@ setup_user_add () {
   do
     local PASSWORD1=$(whiptail --title "Add Users" --passwordbox "Password for the new user  " 8 78   3>&1 1>&2 2>&3)
     RET=$?
-    if [[ ${RET} -eq 1 ]]
-    then
-      return 1
-    fi
+    [[ ${RET} -eq 1 ]] && return 1
 
     # REGEX PASSWORD
     #^([a-zA-Z0-9@*#_]{8,15})$
@@ -576,10 +527,7 @@ setup_user_add () {
     else
       local PASSWORD2=$(whiptail --title "Add Users" --passwordbox "Please enter the password again  " 8 78   3>&1 1>&2 2>&3)
       RET=$?
-      if [[ ${RET} -eq 1 ]]
-      then
-        return 1
-      fi
+      [[ ${RET} -eq 1 ]] && return 1
       if [[ ! ${PASSWORD1} == ${PASSWORD2} ]]
       then
         whiptail --title "Add Users" --msgbox "Passwords do not match" 8 78   3>&1 1>&2 2>&3
@@ -627,10 +575,6 @@ setup_user_delete () {
     fi
   done
   local NB_USER=${#USERNAME[@]}
-  echo ${USERNAME[@]}
-  echo $NB_USER
-  read
-
 
   local MENU_USER="whiptail --title 'Delete User' --menu  'Select whihc user you want to delete :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
   for (( idx=0 ; idx <= ${NB_USER}-1 ; idx++ ))
@@ -638,16 +582,9 @@ setup_user_delete () {
     MENU_USER="${MENU_USER} '${USERNAME[${idx}]}' '${FULL_NAME[${idx}]}'"
   done
 
-  echo $MENU_USER
-  read
-
-
   bash -c "${MENU_USER} " 2> results_menu.txt
   RET=$?
-  if [[ ${RET} -eq 1 ]]
-  then
-    return 1
-  fi
+  [[ ${RET} -eq 1 ]] && return 1
 
   CHOICE=$( cat results_menu.txt )
 
@@ -818,10 +755,7 @@ setup_user () {
   do
     bash -c "${MENU_USER} " 2> results_menu.txt
     RET=$?
-    if [[ ${RET} -eq 1 ]]
-    then
-      return 1
-    fi
+    [[ ${RET} -eq 1 ]] && return 1
 
     CHOICE=$( cat results_menu.txt )
 
@@ -835,10 +769,7 @@ setup_user () {
       "Add User" )
         setup_user_add
         RET=$?
-        if [[ ${RET} -eq 0 ]]
-        then
-          setup_user_update
-        fi
+        [[ ${RET} -eq 0 ]] && setup_user_update
       ;;
       "Delete User" )
         setup_user_delete
@@ -855,81 +786,63 @@ first_setup_go_through () {
   then
     setup_chg_usr_pwd 'root'
     RET=$?
-    if [[ ${RET} -eq 1 ]]
-    then
-      return 1
-    fi
+    [[ ${RET} -eq 1 ]] && return 1
   fi
 
   if ( whiptail --title 'Confirm distro' --yesno 'Do you want to confirm information about linux disctribution ? ' 10 60 )
   then
     setup_ask_arch
     RET=$?
-    if [[ ${RET} -eq 1 ]]
-    then
-      return 1
-    fi
+    [[ ${RET} -eq 1 ]] && return 1
   fi
 
   if ( whiptail --title 'Change Locale' --yesno 'Do you want to change the Locale ? ' 10 60 )
   then
     setup_chg_locale
     RET=$?
-    if [[ ${RET} -eq 1 ]]
-    then
-      return 1
-    fi
+    [[ ${RET} -eq 1 ]] && return 1
   fi
 
   if ( whiptail --title 'Change timezone' --yesno 'Do you want to change the timezone ? ' 10 60 )
   then
     setup_chg_timezone
     RET=$?
-    if [[ ${RET} -eq 1 ]]
-    then
-      return 1
-    fi
+    [[ ${RET} -eq 1 ]] && return 1
   fi
 
   if ( whiptail --title 'Change keyboard' --yesno 'Do you want to change the keyboard layout ? ' 10 60 )
   then
     setup_config_keyboard
     RET=$?
-    if [[ ${RET} -eq 1 ]]
-    then
-      return 1
-    fi
+    [[ ${RET} -eq 1 ]] && return 1
   fi
 
   if ( whiptail --title 'Update sudoer' --yesno 'Do you want to update sudoer files ? ' 10 60 )
   then
     setup_update_sudoer
     RET=$?
-    if [[ ${RET} -eq 1 ]]
-    then
-      return 1
-    fi
+    [[ ${RET} -eq 1 ]] && return 1
   fi
 
   if ( whiptail --title 'Install packages' --yesno 'Do you want to choose a list package to install ? ' 10 60 )
   then
     setup_all_pkg
     RET=$?
-    if [[ ${RET} -eq 1 ]]
-    then
-      return 1
-    fi
+    [[ ${RET} -eq 1 ]] && return 1
   fi
 
   if ( whiptail --title 'Config users' --yesno 'Do you want to manage users ? ' 10 60 )
   then
     setup_user
     RET=$?
-    if [[ ${RET} -eq 1 ]]
-    then
-      return 1
-    fi
+    [[ ${RET} -eq 1 ]] && return 1
   fi
+
+  if ! ( whiptail --title 'First setup finish' --yesno 'Does everything went ok ? ' 10 60 )
+  then
+      return 1
+  fi
+
   return 0
 }
 
@@ -947,10 +860,7 @@ first_setup_loop () {
   do
     bash -c "${SETUP_LOOP} " 2> results_menu.txt
     RET=$?
-    if [[ ${RET} -eq 1 ]]
-    then
-      return 1
-    fi
+    [[ ${RET} -eq 1 ]] && return 1
 
     CHOICE=$( cat results_menu.txt )
 
@@ -996,10 +906,7 @@ first_setup () {
   do
     bash -c "${FIRST_SETUP} " 2> results_menu.txt
     RET=$?
-    if [[ ${RET} -eq 1 ]]
-    then
-      return 1
-    fi
+    [[ ${RET} -eq 1 ]] && return 1
 
     CHOICE=$( cat results_menu.txt )
 
@@ -1010,13 +917,12 @@ first_setup () {
       "Go through" )
         first_setup_go_through
         RET=$?
-        if [[ ${RET} -eq 1 ]]
-        then
-          first_setup_loop
-        fi
+        [[ ${RET} -eq 1 ]] && first_setup_loop
+        [[ ${RET} -eq 0 ]] && return
       ;;
       "Choose actions" )
         first_setup_loop
+        [[ ${RET} -eq 0 ]] && return
       ;;
       * )
         echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}. "

@@ -41,10 +41,7 @@ main_menu () {
   do
     bash -c "${MAIN_MENU} " 2> results_menu.txt
     RET=$?
-    if [[ ${RET} -eq 1 ]]
-    then
-      return 1
-    fi
+    [[ ${RET} -eq 1 ]] && return 1
 
     CHOICE=$( cat results_menu.txt )
 
