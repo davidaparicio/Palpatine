@@ -1,7 +1,5 @@
 #!/bin/bash
 
-source global.sh
-
 do_menu () {
   # USAGE = do_menu <CAT>
   # INPUT :
@@ -298,4 +296,4 @@ setup_direct_finish () {
 #  - xclip
 #  - awesome
 #  - awesome-extra
-#  - terminator 
+#  - terminator
