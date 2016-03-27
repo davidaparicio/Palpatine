@@ -522,8 +522,9 @@ delete_user () {
 
   if ( whiptail --title "Update User" --yesno "Do you really want to delete user :  ${CHOICE}" 8 60 )
   then
-    sudo userdel ${CHOICE}
-    sudo mv /home/${CHOICE} /root/user.backup/${CHOICE}
+    userdel ${CHOICE}
+    mkdir -p /root/user.backup
+    mv /home/${CHOICE} /root/user.backup/${CHOICE}
     return 2
   else
     return 1
