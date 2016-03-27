@@ -329,8 +329,8 @@ setup_all_pkg() {
 
 update_user () {
   calc_wt_size
-  FULL_NAME[0]=$( getent passwd root | cut -d: -f5 | cut -d, -f1 )
-  USERNAME[0]=$( getent passwd root | cut -d: -f1 )
+  local FULL_NAME[0]=$( getent passwd root | cut -d: -f5 | cut -d, -f1 )
+  local USERNAME[0]=$( getent passwd root | cut -d: -f1 )
   idx=1
   for i in /home/*
   do
@@ -340,7 +340,7 @@ update_user () {
       FULL_NAME[${idx}]=$( getent passwd ${USER} | cut -d: -f5 | cut -d, -f1 )
       USERNAME[${idx}]=$( getent passwd ${USER} | cut -d: -f1 )
       idx=$(( $idx + 1 ))
-      echo $USERNAME[${idx}] $FULL_NAME[${idx}]
+      echo ${USERNAME[${idx}]} ${FULL_NAME[${idx}]}
       read
     fi
   done
@@ -490,8 +490,8 @@ Password        : The one you set
 
 delete_user () {
   calc_wt_size
-  FULL_NAME[0]=$( getent passwd root | cut -d: -f5 | cut -d, -f1 )
-  USERNAME[0]=$( getent passwd root | cut -d: -f1 )
+  local FULL_NAME[0]=$( getent passwd root | cut -d: -f5 | cut -d, -f1 )
+  local USERNAME[0]=$( getent passwd root | cut -d: -f1 )
   idx=0
   for i in /home/*
   do
