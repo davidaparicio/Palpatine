@@ -478,9 +478,9 @@ Password        : The one you set
   then
     if ${SUDO}
     then
-      useradd -c "'${FIRST_NAME} ${LAST_NAME}'" -G "sudo" -m -p "'${PASSWORD1}'"  ${USERNAME}
+      useradd -c "${FIRST_NAME} ${LAST_NAME}" -G "sudo" -m -p "'${PASSWORD1}'"  ${USERNAME}
     else
-      useradd -c "'${FIRST_NAME} ${LAST_NAME}'" -m -p "'${PASSWORD1}'" ${USERNAME}
+      useradd -c "${FIRST_NAME} ${LAST_NAME}" -m -p "'${PASSWORD1}'" ${USERNAME}
     fi
   else
     return 1
