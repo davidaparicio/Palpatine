@@ -520,7 +520,8 @@ delete_user () {
 
   if ( whiptail --title "Update User" --yesno "Do you want to change GECOS informations of user :  ${CHOICE}" 8 60 )
   then
-    userdel ${CHOICE}
+    sudo userdel ${CHOICE}
+    sudo mv /home/${CHOICE} /root/user.backup/${CHOICE}
     return 2
   else
     return 1
