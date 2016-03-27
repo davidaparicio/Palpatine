@@ -351,7 +351,7 @@ update_user () {
   read
 
   local MENU_USER="whiptail --title 'Update User' --menu  'Select which user informations you want to update :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
-  for (( idx=0 ; idx <= ${NB_USER}+1 ; idx++ ))
+  for (( idx=0 ; idx <= ${NB_USER}-1 ; idx++ ))
   do
     MENU_USER="${MENU_USER} '${USERNAME[${idx}]}' '${FULL_NAME[${idx}]}'"
   done
@@ -492,15 +492,15 @@ delete_user () {
   calc_wt_size
   local FULL_NAME[0]=$( getent passwd root | cut -d: -f5 | cut -d, -f1 )
   local USERNAME[0]=$( getent passwd root | cut -d: -f1 )
-  idx=0
+  idx=1
   for i in /home/*
   do
     if ! echo ${i} | grep -q "lost+found"
     then
       FULL_NAME[${idx}]=$( getent passwd ${USER} | cut -d: -f5 | cut -d, -f1 )
       USERNAME[${idx}]=$( getent passwd ${USER} | cut -d: -f1 )
+      idx=$(( $idx + 1 ))
     fi
-    idx=$(( $idx + 1 ))
   done
   local NB_USER=${#USERNAME[@]}
 
