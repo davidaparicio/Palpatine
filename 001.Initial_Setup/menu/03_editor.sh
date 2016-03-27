@@ -9,9 +9,4 @@ APP_EDITOR_EX="A set of text editor"
 APP_EDITOR_NAME[0]="vi"
 APP_EDITOR_PKG[0]="vi" 
 APP_EDITOR_DESC[0]="vi is a screen-oriented text editor originally"
-APP_EDITOR_STAT[0]="ON"
-vi_routine () {
-    ALL_PKG_CHOOSEN+=" APP_EDITOR_PKG[0]"
-    
-}
-
+APP_EDITOR_STAT[0]="OFF"

@@ -121,7 +121,7 @@ all_categorie_menu () {
 
   if [[ ${CHOICE} == "CONTINUE" ]]
   then
-    return 2
+    do_finish
   fi
   
   for (( idx=0 ; idx <= ${NB_CAT} ; idx++ ))
@@ -139,47 +139,95 @@ do_finish () {
   # USAGE = do_menu <CAT>
   # INPUT : 
   #   CAT : Category of application. Must be the same as the file menu_${CAT}.sh and APP_${CAT}.sh
-  CAT_DONE=false
-
-  local NAME=$1
-  local LOWER_NAME=`echo "${NAME}" | tr '[:upper:]' '[:lower:]'`
-  local UPPER_NAME=`echo "${NAME}" | tr '[:lower:]' '[:upper:]'`
-  
-  source menu/*${LOWER_NAME}.sh
-  
-  local ARR_PKG="APP_${NAME}_PKG[@]"
-  local CAT_NAME="APP_${NAME}_CAT"
-  
-  local APP_ARR_PKG=("${!ARR_PKG}")
-  local APP_ARR_STAT=("${!ARR_STAT}")
-  CAT_NAME=("${!CAT_NAME}")
-
-  local NB_APP=${#APP_ARR_NAME[@]}
+  ALL_APP_CAT=""
+  echo '#!/bin/bash  ' > menu_categories.sh
+  for i in menu/*.sh
+  do
+    BEGIN=$( grep -in "# BEGIN " ${i} | cut -d ':' -f1 )
+    END=$( grep -in "# END " ${i} | cut -d ':' -f1 )
+    sed -n "${BEGIN},${END}p" ${i} >> menu_categories.sh
+  done
+  source menu_categories.sh
 
   calc_wt_size
+
+  local HEIGHT=3
+  local ALL_CAT
+  local NB_CAT
+  local CAT_NAME
+
+  local ALL_PKG_CHOOSEN=""
+  local ALL_REPO_ADD=""
+
+
+  IFS=':' read -r -a ALL_CAT <<< "${ALL_APP_CAT}"
+  NB_CAT=$(( ${#ALL_CAT[@]} - 1 ))
   
-  local MENU_APP="whiptail --title 'Last Check Before Install' --yesno  'This is the list of program this script will install : \n' \
-  $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
-  for (( idx=0 ; idx <= ${NB_APP}-1 ; idx++ ))
+  MENU_ASK_FINISH="whiptail --title 'Last Check Before Install' --yesno  'This is the list of program this script will install : "
+  for (( idxCat=1 ; idxCat <= ${NB_CAT} ; idxCat++ ))
   do
-    if [[ ${APP_WM_STAT[${idx}]} == "ON" ]]
-    then
-      if ! ${CAT_DONE}
+    local CAT_DONE=false
+    local NAME=${ALL_CAT[${idxCat}]}
+    local LOWER_NAME=`echo "${NAME}" | tr '[:upper:]' '[:lower:]'`
+    local UPPER_NAME=`echo "${NAME}" | tr '[:lower:]' '[:upper:]'`
+  
+    source menu/*${LOWER_NAME}.sh
+  
+    local ARR_NAME="APP_${NAME}_NAME[@]"
+    local ARR_PKG="APP_${NAME}_PKG[@]"
+    local ARR_DESC="APP_${NAME}_DESC[@]"
+    local ARR_STAT="APP_${NAME}_STAT[@]"
+    local CAT_NAME="APP_${NAME}_CAT"
+  
+    local APP_ARR_NAME=("${!ARR_NAME}")
+    local APP_ARR_PKG=("${!ARR_PKG}")
+    local APP_ARR_DESC=("${!ARR_DESC}")
+    local APP_ARR_STAT=("${!ARR_STAT}")
+    CAT_NAME=("${!CAT_NAME}")
+
+    local NB_APP=${#APP_ARR_NAME[@]}
+
+    calc_wt_size
+  
+    for (( idx=0 ; idx <= ${NB_APP} ; idx++ ))
+    do
+      if [[ ${APP_ARR_STAT[${idx}]} == "ON" ]]
       then
-        MENU_APP="${MENU_APP} ${APP_WM_CAT}\n \n"
-        CAT_DONE=true
+        if ! ${CAT_DONE}
+        then
+            MENU_ASK_FINISH="${MENU_ASK_FINISH}  \n ==== Category : ${CAT_NAME} ===="
+            CAT_DONE=true
+            HEIGHT=$(( HEIGHT + 1 ))
+        fi
+        MENU_ASK_FINISH="${MENU_ASK_FINISH} \n= ${APP_ARR_NAME[${idx}]} : ${APP_ARR_DESC[${idx}]}" 
+        HEIGHT=$(( HEIGHT + 1 ))
+        
+        if type -t ${APP_ARR_NAME[${idx}]}_routine &>/dev/null
+        then
+          ${APP_ARR_NAME[${idx}]}_routine
+        fi
+        ALL_PKG_CHOOSEN+=" ${APP_ARR_PKG[${idx}]}"
+
       fi
-      MENU_APP="${MENU_APP} ---- ${APP_WM_STAT[${idx}]} \n \n"
-      # TODO !!!!
-      # TODO !!!!
-      # TODO !!!!
-      # TODO !!!!
-      # TODO !!!!
-      # TODO !!!!
-      # TODO !!!!
-      # TODO !!!!
-    fi
+    done
+    CAT_DONE=false
+    MENU_ASK_FINISH="${MENU_ASK_FINISH} \n " 
+    HEIGHT=$(( HEIGHT + 2 ))
   done
+  MENU_ASK_FINISH="${MENU_ASK_FINISH}' $HEIGHT $WT_WIDTH " 
+  bash -c "${MENU_ASK_FINISH}"
+  RET=$?
+  if [[ ${RET} == 0 ]]
+  then
+    for i in ${ALL_REPO_ADD}
+    do
+      add-apt-repository -y $i
+    done
+    apt-get update && apt-get upgrade -y && apt-get install -y ${ALL_PKG_CHOOSEN}
+  elif [[ ${RET} == 1 ]]
+  then
+    return 1
+  fi 
 }
 
 all_categorie_menu_loop () {
@@ -250,9 +298,17 @@ setup_ask_go_through () {
     return ${RET}
   fi
   rm setup_go_through.sh
-  return -1 
+  do_finish
 }
 
 setup_direct_finish () {
   do_finish
+  RET=$?
+  if [[ ${RET} == 2 ]]
+  then
+    return 2 
+  elif [[ ${RET} == 1 ]]; then
+    all_categorie_menu_loop
+    return 2
+  fi
 }

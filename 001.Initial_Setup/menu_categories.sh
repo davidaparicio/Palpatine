@@ -1,4 +1,4 @@
-#!/bin/bash  \n\n
+#!/bin/bash  
 # BEGIN WM INFO
 ALL_APP_CAT+=":WM"
 APP_WM_CAT="Window Manager"
