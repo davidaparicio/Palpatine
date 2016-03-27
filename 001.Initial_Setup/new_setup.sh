@@ -368,11 +368,18 @@ update_user () {
     passwd ${CHOICE}
   fi
 
-  if type -t git &>/dev/null && ( whiptail --title "Update User" --yesno "Do you want set user  :  ${CHOICE}" 8 60 )
+  if type -t git &>/dev/null && ( whiptail --title "Update User" --yesno "Do you want set git informations for user  :  ${CHOICE}" 8 60 )
   then
     echo "Git user"
     read
   fi
+
+  if type -t baba &>/dev/null && ( whiptail --title "Update User" --yesno "Do you want set git informations for user  :  ${CHOICE}" 8 60 )
+  then
+    echo "baba user"
+    read
+  fi
+
 
   local MENU_USER="whiptail --title 'Update user' --menu  'Select what you want to do :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
   MENU_USER="${MENU_USER} 'Update GECOS' 'Update GEOCS information such as Fullname, Room...'"
@@ -389,6 +396,8 @@ add_user () {
     local USERNAME="whiptail --title 'Add Users' --inputbox 'Username for the new user (only lowerscript char) ' 8 78 "
     bash -c "${USERNAME}" 2>results_menu.txt
     RET=$?
+    echo ${RET}
+    read
     if [[ ${RET} == 1 ]]
     then
       return 1
@@ -540,7 +549,14 @@ config_user () {
     elif [[ ${CHOICE} == "Add User" ]]
     then
       add_user
-      update_user
+      RET=$?
+      echo "Menu"
+      echo ${RET}
+      read
+      if [[ ${RET} == 2 ]]
+      then
+        update_user
+      fi
     elif [[ ${CHOICE} == "Delete User" ]]
     then
       delete_user
