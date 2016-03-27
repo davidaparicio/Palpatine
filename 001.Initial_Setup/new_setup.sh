@@ -336,7 +336,7 @@ update_user () {
   do
     if ! echo ${i} | grep -q "lost+found"
     then
-      echo ${i}
+      echo ${i##*/}
       read
       FULL_NAME[${idx}]=$( getent passwd ${USER} | cut -d: -f5 | cut -d, -f1 )
       USERNAME[${idx}]=$( getent passwd ${USER} | cut -d: -f1 )
@@ -349,7 +349,7 @@ update_user () {
   read
 
   local MENU_USER="whiptail --title 'Update User' --menu  'Select which user informations you want to update :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
-  for (( idx=0 ; idx <= ${NB_USER}-1 ; idx++ ))
+  for (( idx=0 ; idx <= ${NB_USER}+1 ; idx++ ))
   do
     MENU_USER="${MENU_USER} '${USERNAME[${idx}]}' '${FULL_NAME[${idx}]}'"
   done
