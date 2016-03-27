@@ -334,10 +334,9 @@ update_user () {
   idx=0
   for i in /home/*
   do
-    echo ${i##*/}
     if ! echo ${i} | grep -q "lost+found"
     then
-      read
+      USER=${i##*/}
       FULL_NAME[${idx}]=$( getent passwd ${USER} | cut -d: -f5 | cut -d, -f1 )
       USERNAME[${idx}]=$( getent passwd ${USER} | cut -d: -f1 )
     fi
@@ -345,6 +344,7 @@ update_user () {
   done
   local NB_USER=${#USERNAME[@]}
 
+  echo ${USERNAME[@]}
   echo $NB_USER
   read
 
