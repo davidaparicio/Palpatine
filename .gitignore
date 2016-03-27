@@ -1,3 +1,4 @@
 # Ignore personnal config file
 */config.sh
 *.log
+*.txt

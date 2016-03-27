@@ -289,3 +289,13 @@ setup_direct_finish () {
     return 2
   fi
 }
+# TODO : Make sure this app are included by defaults
+#  - vim
+#  - git
+#  - mr
+#  - vcsh
+#  - zsh
+#  - xclip
+#  - awesome
+#  - awesome-extra
+#  - terminator 
