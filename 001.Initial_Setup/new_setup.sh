@@ -54,8 +54,8 @@ get_init_sys() {
 
 # FROM RASPI-CONFIG
 calc_wt_size() {
-  # NOTE: it's tempting to redirect stderr to /dev/null, so supress error 
-  # output from tput. However in this case, tput detects neither stdout or 
+  # NOTE: it's tempting to redirect stderr to /dev/null, so supress error
+  # output from tput. However in this case, tput detects neither stdout or
   # stderr is a tty and so only gives default 80, 24 values
   WT_HEIGHT=17
   WT_WIDTH=$(tput cols)
@@ -90,7 +90,7 @@ expand_rootfs() {
     return 0
   fi
 
-  # NOTE: the NOOBS partition layout confuses parted. For now, let's only 
+  # NOTE: the NOOBS partition layout confuses parted. For now, let's only
   # agree to work with a sufficiently simple partition layout
   if [ "$PART_NUM" -ne 2 ]; then
     whiptail --msgbox "Your partition layout is not currently supported by this tool. You are probably using NOOBS, in which case your root filesystem is already expanded anyway." 20 60 2
@@ -181,8 +181,8 @@ chg_timezone() {
 # PART FROM RASPI-CONFIG
 chg_usr_pwd () {
 	# Usage : chg_usr_pwd <USER>
-    # Input  : 
-    #   $1-<USER>       : User account name 
+    # Input  :
+    #   $1-<USER>       : User account name
     # Output : None
     # Brief  : Change password for <USER>
 	if [ "$#" -ne 1 ]
@@ -192,8 +192,8 @@ chg_usr_pwd () {
     	local USR=$1
 		whiptail --msgbox "You will now be asked to enter a new password for the user : ${USR} " 20 60 1
   		passwd ${USR} &&
-  			whiptail --msgbox "Password changed successfully" 20 60 1 : 
-  			whiptail --msgbox "Failed to change password" 20 60 1 
+  			whiptail --msgbox "Password changed successfully" 20 60 1 :
+  			whiptail --msgbox "Failed to change password" 20 60 1
   	fi
 }
 
@@ -201,14 +201,14 @@ update_sudoer () {
 	# Usage  : update_sudoer
     # Input  : None
     # Output : None
-    # Brief  : 
+    # Brief  :
     #   Ask if change sudoer to ask root passwd instead of first user and make a backup
     #   of old sudoers file.
     if ( whiptail --title "Update sudoer file" --yesno "\
     Do you want to add the following line to sudoer ? \n \n\
     		\"Defaults rootpw\" \n \n\
 	This will make OS to ask root password when using sudo instead of user password." 20 60  )
-    then 
+    then
     	sudo sed -i.bak -e "\$aDefaults rootpw" /etc/sudoers
     	return 0
     else
@@ -220,11 +220,11 @@ ask_arch () {
 	# Usage  : ask_arch
     # Input  : None
     # Output : None
-    # Brief  : 
+    # Brief  :
     #   Ask if arch is the right one, and if arch is RPi, ask if user want to expand rootfs
     ARCH=$( arch )
     if echo ${ARCH} | grep "arm"
-    then 
+    then
     	if ( whiptail --title "Setup RPi" --yesno "\
 			It seems you are on an arm machine. \n \
 			Is it a raspberry ? " 20 60 )
@@ -232,9 +232,9 @@ ask_arch () {
     		ARCH="RPI"
     		if ( whiptail --title "Setup RPi" --yesno "\
 				Do you want to expand rootfs ? \n"  20 60 )
-    		then 
+    		then
 	    		expand_rootfs
-    		fi		
+    		fi
     	else
     		ARCH="ARM"
     	fi
@@ -245,7 +245,7 @@ ask_arch () {
 			Is it alright ? "  20 60 )
     	then
     		ARCH="x86-64"
-    	else 
+    	else
     		ARCH="Unknown_x86_64"
     	fi
    	# TODO : Add other arch
@@ -257,8 +257,8 @@ fullupdate () {
 	# Usage  : setup_base
     # Input  : None
     # Output : None
-    # Brief  : 
-    #   Do a fullupdate of the system. 
+    # Brief  :
+    #   Do a fullupdate of the system.
     whiptail --title "Update Repo and Upgrade" --msgbox "\
     This script will now update and upgrade the system" 20 60
     # TODO : Manage multiple system
@@ -269,8 +269,8 @@ setup_base_pkg () {
 	# Usage  : setup_all_pkg
     # Input  : None
     # Output : None
-    # Brief  : 
-    # 	Install multiple utility for later 
+    # Brief  :
+    # 	Install multiple utility for later
     whiptail --title "Setup Base Package" --msgbox "\
     This script will now install the following packages : \n\
     	- apt-transport-https \n\
@@ -284,8 +284,8 @@ setup_ask_pkg () {
 	# Usage  : setup_all_pkg
   # Input  : None
   # Output : None
-  # Brief  : 
-  # 	Menu to ssk user which package he wants to install 
+  # Brief  :
+  # 	Menu to ssk user which package he wants to install
   calc_wt_size
   source menu_function.sh
 	FUN=$(whiptail --title "Package to setup" --menu "Whatever the choice to make, \
@@ -302,12 +302,12 @@ setup_ask_pkg () {
     	table_of_content # TODO : Code this function
   elif [ $RET -eq 0 ]; then
     case "$FUN" in
-      1\ *) setup_ask_go_through ;; 
-      2\ *) setup_ask_categories ;; 
-      3\ *) setup_direct_finish ;; 
+      1\ *) setup_ask_go_through ;;
+      2\ *) setup_ask_categories ;;
+      3\ *) setup_direct_finish ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
-    esac || RET=$? 
-      if [ $RET -eq 2 ]; then 
+    esac || RET=$?
+      if [ $RET -eq 2 ]; then
         return 2
       fi
   else
@@ -319,23 +319,74 @@ setup_all_pkg() {
 	# Usage  : setup_all_pkg
     # Input  : None
     # Output : None
-    # Brief  : 
+    # Brief  :
     # 	Call function multiple function that update
 
-	fullupdate 
+	fullupdate
 	setup_base_pkg
 	setup_ask_pkg
 }
 
 update_user () {
-  # TODO 
+  calc_wt_size
+  FULL_NAME[0]=$( getent passwd root | cut -d: -f5 | cut -d, -f1 )
+  USERNAME[0]=$( getent passwd root | cut -d: -f1 )
+  idx=0
+  for i in /home/*
+  do
+    if ! echo ${i} | grep -q "lost+found"
+    then
+      FULL_NAME[${idx}]=$( getent passwd ${USER} | cut -d: -f5 | cut -d, -f1 )
+      USERNAME[${idx}]=$( getent passwd ${USER} | cut -d: -f1 )
+    fi
+    idx=$(( $idx + 1 ))
+  done
+  local NB_USER=${#USERNAME[@]}
+
+  local MENU_USER="whiptail --title 'Update User' --menu  'Select which user informations you want to update :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
+  for (( idx=0 ; idx <= ${NB_USER}-1 ; idx++ ))
+  do
+    MENU_USER="${MENU_USER} '${USERNAME[${idx}]}' '${FULL_NAME[${idx}]}'"
+  done
+
+  bash -c "${MENU_USER} " 2> results_menu.txt
+  RET=$?
+  if [[ ${RET} == 1 ]]
+  then
+    return 1
+  fi
+
+  CHOICE=$( cat results_menu.txt )
+
+  if ( whiptail --title "Update User" --yesno "Do you want to change GECOS informations of user :  ${CHOICE}" 8 60 )
+  then
+    chfn ${CHOICE}
+  fi
+
+  if ( whiptail --title "Update User" --yesno "Do you want to change password user :  ${CHOICE}" 8 60 )
+  then
+    passwd ${CHOICE}
+  fi
+
+  if type -t git &>/dev/null && ( whiptail --title "Update User" --yesno "Do you want set user  :  ${CHOICE}" 8 60 )
+  then
+    echo "Git user"
+    read
+  fi
+
+  local MENU_USER="whiptail --title 'Update user' --menu  'Select what you want to do :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
+  MENU_USER="${MENU_USER} 'Update GECOS' 'Update GEOCS information such as Fullname, Room...'"
+  MENU_USER="${MENU_USER} 'Change password' 'Change the password of the user'"
+  MENU_USER="${MENU_USER} 'Set git info' 'Set some git information, such as mail, username, etc.'"
+  MENU_USER="${MENU_USER} 'Set git dotfiles' 'Set dotfiles from a git repo'"
+  MENU_USER="${MENU_USER} 'Set vcs/mr dotfiles' 'Set myRepos vcsh dotfile from a vcsh/ repo'"
 }
 
 add_user () {
   local USERNAME_OK=false
   while ! ${USERNAME_OK}
   do
-    local USERNAME="whiptail --title 'Add Users' --inputbox 'Username for the new user (only lowerscript char) ' 8 78 " 
+    local USERNAME="whiptail --title 'Add Users' --inputbox 'Username for the new user (only lowerscript char) ' 8 78 "
     bash -c "${USERNAME}" 2>results_menu.txt
     RET=$?
     if [[ ${RET} == 1 ]]
@@ -357,7 +408,7 @@ add_user () {
       fi
     fi
   done
-  
+
   local FIRST_NAME=$(whiptail --title "Add Users" --inputbox "First name of the new user (you can leave it empty) " 8 78   3>&1 1>&2 2>&3)
   local LAST_NAME=$(whiptail --title "Add Users" --inputbox "Last name of the new user (you can leave it empty) " 8 78   3>&1 1>&2 2>&3)
 
@@ -371,26 +422,22 @@ add_user () {
       return 1
     fi
 
-    # REGEX PASSWORD 
+    # REGEX PASSWORD
     #^([a-zA-Z0-9@*#_]{8,15})$
-    #Description   
-    #Password matching expression. 
-    #Match all alphanumeric character and predefined wild characters. 
-    #Password must consists of at least 8 characters and not more than 15 characters. 
+    #Description
+    #Password matching expression.
+    #Match all alphanumeric character and predefined wild characters.
+    #Password must consists of at least 8 characters and not more than 15 characters.
     if [[ ! "${PASSWORD1}" =~ ^([a-zA-Z0-9@*#]{8,15})$ ]]
     then
       whiptail --title "Add Users" --msgbox "Password must be at least eight char long and contains alphanumeric char and predefined wild characters " 8 78   3>&1 1>&2 2>&3
     else
       local PASSWORD2=$(whiptail --title "Add Users" --passwordbox "Please enter the password again  " 8 78   3>&1 1>&2 2>&3)
       RET=$?
-      echo ${RET}
-      read
       if [[ ${RET} == 1 ]]
       then
         return 1
       fi
-      echo ${PASSWORD1}  ${PASSWORD2}
-      read
       if [[ ! ${PASSWORD1} == ${PASSWORD2} ]]
       then
         whiptail --title "Add Users" --msgbox "Passwords do not match" 8 78   3>&1 1>&2 2>&3
@@ -401,7 +448,7 @@ add_user () {
   done
 
   if ( whiptail --title "Add User" --yesno "Does this user will have sudo abilities ? " 8 78   3>&1 1>&2 2>&3 )
-  then 
+  then
     SUDO=true
   else
     SUDO=false
@@ -412,7 +459,7 @@ Username       : ${USERNAME} \n\
 User Fullname  : ${FIRST_NAME} ${LAST_NAME}  \n\
 Password        : The one you set
 " 15 78   3>&1 1>&2 2>&3 )
-  then 
+  then
     if ${SUDO}
     then
       useradd -c "'${FIRST_NAME} ${LAST_NAME}'" -G "sudo" -m -p "'${PASSWORD1}'"  ${USERNAME}
@@ -431,7 +478,7 @@ delete_user () {
   idx=0
   for i in /home/*
   do
-    if ! echo ${i} | grep -q "lost+found" 
+    if ! echo ${i} | grep -q "lost+found"
     then
       FULL_NAME[${idx}]=$( getent passwd ${USER} | cut -d: -f5 | cut -d, -f1 )
       USERNAME[${idx}]=$( getent passwd ${USER} | cut -d: -f1 )
@@ -449,18 +496,17 @@ delete_user () {
   bash -c "${MENU_USER} " 2> results_menu.txt
   RET=$?
   if [[ ${RET} == 1 ]]
-  then 
+  then
     return 1
   fi
 
-  CHOICE=$( cat results_menu.txt )
-
-  if ( whiptail --title "Delete User" --yesno "Are you sure you want to delete user :  ${CHOICE}" 8 60 )
+  if ( whiptail --title "Update User" --yesno "Do you want to change GECOS informations of user :  ${CHOICE}" 8 60 )
   then
     userdel ${CHOICE}
+    return 2
+  else
+    return 1
   fi
-
-  return 2
 }
 
 config_user () {
@@ -470,13 +516,16 @@ config_user () {
   MENU_USER="${MENU_USER} 'Add User' 'Add a new user'"
   MENU_USER="${MENU_USER} 'Delete User' 'Delete an existing user'"
   MENU_USER="${MENU_USER} 'CONTINUE' 'Continue to the next step'"
- 
-  while true 
+
+  while true
   do
+    echo "${MENU_USER}"
+    read
+
     bash -c "${MENU_USER} " 2> results_menu.txt
     RET=$?
     if [[ ${RET} == 1 ]]
-    then 
+    then
       return 1
     fi
 
@@ -486,14 +535,14 @@ config_user () {
     then
       return 2
     elif [[ ${CHOICE} == "Update User" ]]
-    then 
+    then
       update_user
     elif [[ ${CHOICE} == "Add User" ]]
-    then 
+    then
       add_user
       update_user
     elif [[ ${CHOICE} == "Delete User" ]]
-    then 
+    then
       delete_user
     fi
   done

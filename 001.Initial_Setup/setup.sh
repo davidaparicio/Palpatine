@@ -84,7 +84,7 @@ set_sudoers_rootpw() {
     # Usage  : set_sudoers_rootpw
     # Input  : None
     # Output : None
-    # Brief  : 
+    # Brief  :
     #   Change sudoer to ask root passwd instead of user one and make a backup
     #   of old sudoers file.
     verbose ${FUNCNAME}
@@ -111,7 +111,7 @@ add_repo_awesome3.5() {
     then
         sudo add-apt-repository ppa:klaus-vormweg/awesome
         sudo apt-get update
-    else 
+    else
         AWESOME_WM=false
     fi
 }
@@ -169,8 +169,8 @@ setup_distrib()
 ###############################################################################
 set_user_pwd() {
     # Usage  : set_user_pwd <USER>
-    # Input  : 
-    #   $1-<USER> : User account name 
+    # Input  :
+    #   $1-<USER> : User account name
     # Output : None
     # Brief  : Ask new password for <USER>
     if [ "$#" -ne 1  ]
@@ -190,8 +190,8 @@ set_user_pwd() {
 
 setup_git_config() {
     # Usage  : setup_git_config <USER> <USER_FNAME> <USER_LNAME> <USER_MAIL>
-    # Input  : 
-    #   $1-<USER>       : User account name 
+    # Input  :
+    #   $1-<USER>       : User account name
     #   $2-<USER_FNAME> : User first name
     #   $3-<USER_LNAME> : User last name
     #   $4-<USER_MAIL>  : User email
@@ -205,7 +205,7 @@ setup_git_config() {
         echo "Set user $1 git config."
         ask_continue  ${FUNCNAME}
         if [[ $yn == [Yy] ]]
-        then 
+        then
             su $1 -c "git config --global user.name '$2 $3'"
             su $1 -c "git config --global user.email '$4'"
             su $1 -c "git config --global push.default matching"
@@ -216,8 +216,8 @@ setup_git_config() {
 
 generate_ssh_key () {
     # Usage  : generate_ssh_key <USER> <USER_MAIL>
-    # Input  : 
-    #   $1-<USER>       : User account name 
+    # Input  :
+    #   $1-<USER>       : User account name
     #   $2-<USER_MAIL>  : User email
     # Output : None
     # Brief  : Setup ssh key for <USER>
@@ -229,7 +229,7 @@ generate_ssh_key () {
         echo "Generate ssh key for user $1"
         ask_continue ${FUNCNAME}
         if [[ $yn == [Yy] ]]
-        then 
+        then
             su $1 -c "ssh-keygen -t rsa -b 4096 -C '$2'"
             # Add  key to ssh-agent
             su $1 -c "eval '$(ssh-agent -s)'"
@@ -245,8 +245,8 @@ generate_ssh_key () {
 
 clone_dotfiles() {
     # Usage : clone_dotfile <USER> <DOTFILE_LOC>
-    # Input  : 
-    #   $1-<USER>         : User account name 
+    # Input  :
+    #   $1-<USER>         : User account name
     #   $2-<DOTFILE_LOC>  : Location of dotfiles of the form git@ or https://
     # Output : None
     # Brief  : Get dotfiles from server <USER>
@@ -258,7 +258,7 @@ clone_dotfiles() {
         echo "Get dotfiles from $2."
         ask_continue ${FUNCNAME}
         if [[ $yn == [Yy] ]]
-        then 
+        then
           su $1 -c "vcsh clone $2"
           su $1 -c "mkdir ~/.log"
           su $1 -c "mr up"
@@ -270,8 +270,8 @@ clone_dotfiles() {
 # Change shell
 chg_shell() {
     # Usage : chg_shell <USER>
-    # Input  : 
-    #   $1-<USER>       : User account name 
+    # Input  :
+    #   $1-<USER>       : User account name
     # Output : None
     # Brief  : Change shell for <USER>
     if [ "$#" -ne 1 ]
@@ -282,7 +282,7 @@ chg_shell() {
         echo "Change shell for user $1"
         ask_continue ${FUNCNAME}
         if [[ $yn == [Yy] ]]
-        then 
+        then
             su $1 -c "chsh -s /bin/zsh"
         fi
     fi
@@ -291,8 +291,8 @@ chg_shell() {
 
 setup_user() {
     # Usage  : setup_user <USER> <USER_FNAME> <USER_LNAME> <USER_MAIL> <DOTFILE_LOC>
-    # Input  : 
-    #   $1-<USER>       : User account name 
+    # Input  :
+    #   $1-<USER>       : User account name
     #   $2-<USER_FNAME> : User first name
     #   $3-<USER_LNAME> : User last name
     #   $4-<USER_MAIL>  : User email
@@ -309,7 +309,7 @@ setup_user() {
     yn=${yn:-$DEFAULT_YN}
 
     if [[ $yn == [Yy] ]]
-    then 
+    then
         if id -u "$1" >/dev/null 2>&1
         then
             echo "User $1 exists, will not be created"
@@ -326,7 +326,7 @@ setup_user() {
         if [[ $yn == [Yy] ]]
         then
             set_user_pwd $1
-            setup_git_config $1 $2 $3 $4 
+            setup_git_config $1 $2 $3 $4
             generate_ssh_key $1 $4
             clone_dotfiles $1 $5
             chg_shell $1
@@ -343,16 +343,16 @@ setup_user() {
 while getopts ":vsh" opt; do
   case ${opt} in
     v)
-      if [[ ${VERBOSE_STEP} == false ]]  
+      if [[ ${VERBOSE_STEP} == false ]]
       then
-        VERBOSE=true 
+        VERBOSE=true
       fi
       ;;
     s)
       if [[ ${VERBOSE} == true ]]
       then
        VERBOSE=false
-      fi 
+      fi
       VERBOSE_STEP=true
       ;;
     h)

@@ -1,0 +1,1 @@
+bash: whiptail: command not found
