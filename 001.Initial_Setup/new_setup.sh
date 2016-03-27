@@ -497,9 +497,12 @@ delete_user () {
   do
     if ! echo ${i} | grep -q "lost+found"
     then
+      USER=${i##*/}
       FULL_NAME[${idx}]=$( getent passwd ${USER} | cut -d: -f5 | cut -d, -f1 )
       USERNAME[${idx}]=$( getent passwd ${USER} | cut -d: -f1 )
       idx=$(( $idx + 1 ))
+      echo ${USERNAME[${idx}]} ${FULL_NAME[${idx}]}
+      read
     fi
   done
   local NB_USER=${#USERNAME[@]}
