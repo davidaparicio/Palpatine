@@ -652,7 +652,16 @@ update_user () {
     done
   fi
 
-  # TODO : Get dofiles from git and vcsh 
+  if type -t git &>/dev/null && ( whiptail --title "Update User" --yesno "Do you want set dotfiles from a git repo for user  :  ${CHOICE}" 8 60 )
+  then
+    # TODO : Get dofiles from git
+  fi
+
+  if type -t vcsh &>/dev/null && type -t mr &>/dev/null && ( whiptail --title "Update User" --yesno "Do you want set myRepos dotfiles from a vcsh repo for user  :  ${CHOICE}" 8 60 )
+  then
+    # TODO : Get dofiles from vcsh
+  fi
+
   local MENU_USER="whiptail --title 'Update user' --menu  'Select what you want to do :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
   MENU_USER="${MENU_USER} 'Update GECOS' 'Update GEOCS information such as Fullname, Room...'"
   MENU_USER="${MENU_USER} 'Change password' 'Change the password of the user'"
