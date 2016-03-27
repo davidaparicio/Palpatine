@@ -327,6 +327,152 @@ setup_all_pkg() {
 	setup_ask_pkg
 }
 
+set_user_pwd() {
+    # Usage  : set_user_pwd <USER>
+    # Input  :
+    #   $1-<USER> : User account name
+    # Output : None
+    # Brief  : Ask new password for <USER>
+    if [ "$#" -ne 1  ]
+    then
+        echo "[WARNING]-Calling ${FUNCNAME} without the right number of argument"
+    else
+        verbose ${FUNCNAME}
+        echo "Please change $1 password."
+        ask_continue ${FUNCNAME}
+        if [[ $yn == [Yy] ]]
+        then
+            su $1 -c 'passwd'
+        fi
+    fi
+}
+# End of set_user_pwd()
+
+setup_git_config() {
+    # Usage  : setup_git_config <USER> <USER_FNAME> <USER_LNAME> <USER_MAIL>
+    # Input  :
+    #   $1-<USER>       : User account name
+    #   $2-<USER_FNAME> : User first name
+    #   $3-<USER_LNAME> : User last name
+    #   $4-<USER_MAIL>  : User email
+    # Output : None
+    # Brief  : Set  git config globally for <USER>
+    if [ "$#" -ne 4  ]
+    then
+        echo "[WARNING]-Calling ${FUNCNAME} without the right number of argument"
+    else
+        verbose ${FUNCNAME}
+        echo "Set user $1 git config."
+        ask_continue  ${FUNCNAME}
+        if [[ $yn == [Yy] ]]
+        then
+            su $1 -c "git config --global user.name '$2 $3'"
+            su $1 -c "git config --global user.email '$4'"
+            su $1 -c "git config --global push.default matching"
+        fi
+    fi
+}
+# End of setup_git_config
+
+generate_ssh_key () {
+    # Usage  : generate_ssh_key <USER> <USER_MAIL>
+    # Input  :
+    #   $1-<USER>       : User account name
+    #   $2-<USER_MAIL>  : User email
+    # Output : None
+    # Brief  : Setup ssh key for <USER>
+    local USER=$1
+
+    local MAIL_OK=false
+    while ! ${PASSWORD_OK}
+    do
+      local EMAIL1=$(whiptail --title "SSH Key" --passwordbox "Email adress of the user  " 8 78   3>&1 1>&2 2>&3)
+      RET=$?
+      if [[ ${RET} == 1 ]]
+      then
+        return 1
+      fi
+
+      # REGEX PASSWORD
+      #^([a-zA-Z0-9@*#_]{8,15})$
+      #Description
+      #Password matching expression.
+      #Match all alphanumeric character and predefined wild characters.
+      #Password must consists of at least 8 characters and not more than 15 characters.
+      if [[ ! "${EMAIL1}" =~ ^([a-zA-Z0-9@*#]{8,15})$ ]]
+      then
+        whiptail --title "Add Users" --msgbox "This is not an email adresse. Please enter one of the form : \n\
+        email.example@domain.com " 8 78   3>&1 1>&2 2>&3
+      else
+        local EMAIL2=$(whiptail --title "Add Users" --passwordbox "Please enter the email adress again  " 8 78   3>&1 1>&2 2>&3)
+        RET=$?
+        if [[ ${RET} == 1 ]]
+        then
+          return 1
+        fi
+        if [[ ! ${EMAIL1} == ${EMAIL2} ]]
+        then
+          whiptail --title "Add Users" --msgbox "Emails do not match" 8 78   3>&1 1>&2 2>&3
+        else
+          EMAIL_OK=true
+        fi
+      fi
+    done
+    su $1 -c "ssh-keygen -t rsa -b 4096 -C '$2'"
+    # Add  key to ssh-agent
+    su $1 -c "eval '$(ssh-agent -s)'"
+    su $1 -c "ssh-add ~/.ssh/id_rsa"
+    su $1 -c "cat ~/.ssh/id_rsa.pub"
+            echo "Above is the content of $1 public ssh key"
+            echo "Please copy it and put them into your account (github,...)"
+}
+# End of setup_git_config
+
+clone_dotfiles() {
+    # Usage : clone_dotfile <USER> <DOTFILE_LOC>
+    # Input  :
+    #   $1-<USER>         : User account name
+    #   $2-<DOTFILE_LOC>  : Location of dotfiles of the form git@ or https://
+    # Output : None
+    # Brief  : Get dotfiles from server <USER>
+    if [ "$#" -ne 2 ]
+    then
+        echo "[WARNING]-Calling ${FUNCNAME} without the right number of argument"
+    else
+        verbose ${FUNCNAME}
+        echo "Get dotfiles from $2."
+        ask_continue ${FUNCNAME}
+        if [[ $yn == [Yy] ]]
+        then
+          su $1 -c "vcsh clone $2"
+          su $1 -c "mkdir ~/.log"
+          su $1 -c "mr up"
+        fi
+    fi
+}
+# End of clone_dotfiles()
+
+# Change shell
+chg_shell() {
+    # Usage : chg_shell <USER>
+    # Input  :
+    #   $1-<USER>       : User account name
+    # Output : None
+    # Brief  : Change shell for <USER>
+    if [ "$#" -ne 1 ]
+    then
+        echo "[WARNING]-Calling ${FUNCNAME} without the right number of argument"
+    else
+        verbose ${FUNCNAME}
+        echo "Change shell for user $1"
+        ask_continue ${FUNCNAME}
+        if [[ $yn == [Yy] ]]
+        then
+            su $1 -c "chsh -s /bin/zsh"
+        fi
+    fi
+}
+
 update_user () {
   calc_wt_size
   local FULL_NAME[0]=$( getent passwd root | cut -d: -f5 | cut -d, -f1 )
@@ -359,6 +505,8 @@ update_user () {
 
   CHOICE=$( cat results_menu.txt )
 
+  local EMAIL1="empty"
+
   if ( whiptail --title "Update User" --yesno "Do you want to change GECOS informations of user :  ${CHOICE}" 8 60 )
   then
     chfn ${CHOICE}
@@ -369,19 +517,142 @@ update_user () {
     passwd ${CHOICE}
   fi
 
+  if ( whiptail --title "Update User" --yesno "Do you want to set an email adress for user :  ${CHOICE} \n \
+  If no, you will be ask email adress again when setting up git.) " 8 60 )
+  then
+    local MAIL_OK=false
+    while ! ${MAIL_OK}
+    do
+      EMAIL1=$(whiptail --title "Update User" --passwordbox "Email adress of the user  " 8 78   3>&1 1>&2 2>&3)
+      RET=$?
+      if [[ ${RET} == 1 ]]
+      then
+        return 1
+      fi
+
+      # REGEX PASSWORD
+      #^([a-zA-Z0-9@*#_]{8,15})$
+      #Description
+      #Password matching expression.
+      #Match all alphanumeric character and predefined wild characters.
+      #Password must consists of at least 8 characters and not more than 15 characters.
+      if [[ ! "${EMAIL1}" =~ ^([a-zA-Z0-9@*#]{8,15})$ ]] # TODO : Update regex
+      then
+        whiptail --title "Add Users" --msgbox "This is not an email adresse. Please enter one of the form : \n\
+        email.example@domain.com " 8 78   3>&1 1>&2 2>&3
+      else
+        local EMAIL2=$(whiptail --title "Add Users" --passwordbox "Please enter the email adress again  " 8 78   3>&1 1>&2 2>&3)
+        RET=$?
+        if [[ ${RET} == 1 ]]
+        then
+          return 1
+        fi
+        if [[ ! ${EMAIL1} == ${EMAIL2} ]]
+        then
+          whiptail --title "Add Users" --msgbox "Emails do not match" 8 78   3>&1 1>&2 2>&3
+        else
+          EMAIL_OK=true
+        fi
+      fi
+    done
+  fi
+
+  if ( whiptail --title "Update User" --yesno "Do you want to set an ssh key for user (userfull for git) :  ${CHOICE}" 8 60 )
+  then
+    if [[ ${EMAIL1} == "empty" ]]
+    then
+      while ! ${MAIL_OK}
+      do
+        EMAIL1=$(whiptail --title "Update User" --passwordbox "Email adress of the user  " 8 78   3>&1 1>&2 2>&3)
+        RET=$?
+        if [[ ${RET} == 1 ]]
+        then
+          return 1
+        fi
+
+        # REGEX PASSWORD
+        #^([a-zA-Z0-9@*#_]{8,15})$
+        #Description
+        #Password matching expression.
+        #Match all alphanumeric character and predefined wild characters.
+        #Password must consists of at least 8 characters and not more than 15 characters.
+        if [[ ! "${EMAIL1}" =~ ^([a-zA-Z0-9@*#]{8,15})$ ]] # TODO : Update regex
+        then
+          whiptail --title "Add Users" --msgbox "This is not an email adresse. Please enter one of the form : \n\
+          email.example@domain.com " 8 78   3>&1 1>&2 2>&3
+        else
+          local EMAIL2=$(whiptail --title "Add Users" --passwordbox "Please enter the email adress again  " 8 78   3>&1 1>&2 2>&3)
+          RET=$?
+          if [[ ${RET} == 1 ]]
+          then
+            return 1
+          fi
+          if [[ ! ${EMAIL1} == ${EMAIL2} ]]
+          then
+            whiptail --title "Add Users" --msgbox "Emails do not match" 8 78   3>&1 1>&2 2>&3
+          else
+            EMAIL_OK=true
+          fi
+        fi
+      done
+    generate_ssh_key ${CHOICE} ${EMAIL1}
+  fi
+
   if type -t git &>/dev/null && ( whiptail --title "Update User" --yesno "Do you want set git informations for user  :  ${CHOICE}" 8 60 )
   then
-    echo "Git user"
-    read
+    if [[ ${EMAIL1} == "empty" ]]
+    then
+      while ! ${MAIL_OK}
+      do
+        EMAIL1=$(whiptail --title "Update User" --passwordbox "Email adress of the user  " 8 78   3>&1 1>&2 2>&3)
+        RET=$?
+        if [[ ${RET} == 1 ]]
+        then
+          return 1
+        fi
+
+        # REGEX PASSWORD
+        #^([a-zA-Z0-9@*#_]{8,15})$
+        #Description
+        #Password matching expression.
+        #Match all alphanumeric character and predefined wild characters.
+        #Password must consists of at least 8 characters and not more than 15 characters.
+        if [[ ! "${EMAIL1}" =~ ^([a-zA-Z0-9@*#]{8,15})$ ]] # TODO : Update regex
+        then
+          whiptail --title "Add Users" --msgbox "This is not an email adresse. Please enter one of the form : \n\
+          email.example@domain.com " 8 78   3>&1 1>&2 2>&3
+        else
+          local EMAIL2=$(whiptail --title "Add Users" --passwordbox "Please enter the email adress again  " 8 78   3>&1 1>&2 2>&3)
+          RET=$?
+          if [[ ${RET} == 1 ]]
+          then
+            return 1
+          fi
+          if [[ ! ${EMAIL1} == ${EMAIL2} ]]
+          then
+            whiptail --title "Add Users" --msgbox "Emails do not match" 8 78   3>&1 1>&2 2>&3
+          else
+            EMAIL_OK=true
+          fi
+        fi
+      done
+    fi
+    local USER_FOUND=false
+    local idx=0
+    while ! ${USER_FOUND}
+    do
+      if [[ ${CHOICE} == ${USERNAME[${idx}]} ]]
+      then
+        setup_git_config ${USERNAME[${idx}]} ${FULL_NAME[${idx}]} ${EMAIL1}
+      else
+        echo "Programmer Error : User ${CHOICE} not found"
+        read
+      fi
+      idx=$(( ${idx} + 1 ))
+    done
   fi
 
-  if type -t baba &>/dev/null && ( whiptail --title "Update User" --yesno "Do you want set git informations for user  :  ${CHOICE}" 8 60 )
-  then
-    echo "baba user"
-    read
-  fi
-
-
+  # TODO : Get dofiles from git and vcsh 
   local MENU_USER="whiptail --title 'Update user' --menu  'Select what you want to do :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
   MENU_USER="${MENU_USER} 'Update GECOS' 'Update GEOCS information such as Fullname, Room...'"
   MENU_USER="${MENU_USER} 'Change password' 'Change the password of the user'"
@@ -482,9 +753,7 @@ Password        : The one you set
 
 delete_user () {
   calc_wt_size
-  local FULL_NAME[0]=$( getent passwd root | cut -d: -f5 | cut -d, -f1 )
-  local USERNAME[0]=$( getent passwd root | cut -d: -f1 )
-  idx=1
+  idx=0
   for i in /home/*
   do
     if ! echo ${i} | grep -q "lost+found"
@@ -571,10 +840,10 @@ config_user () {
   done
 }
 
-chg_usr_pwd "root"
-ask_arch
-chg_locale
-chg_timezone
-config_keyboard
-setup_all_pkg
+#chg_usr_pwd "root"
+#ask_arch
+#chg_locale
+#chg_timezone
+#config_keyboard
+#setup_all_pkg
 config_user
