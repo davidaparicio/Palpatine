@@ -507,23 +507,23 @@ update_user () {
 
   local EMAIL1="empty"
 
-  if ( whiptail --title "Update User" --yesno "Do you want to change GECOS informations of user :  ${CHOICE}" 8 60 )
+  if ( whiptail --title "Update ${CHOICE}" --yesno "Do you want to change GECOS informations of user :  ${CHOICE}" 8 60 )
   then
     chfn ${CHOICE}
   fi
 
-  if ( whiptail --title "Update User" --yesno "Do you want to change password user :  ${CHOICE}" 8 60 )
+  if ( whiptail --title "Update ${CHOICE}r" --yesno "Do you want to change password user :  ${CHOICE}" 8 60 )
   then
     passwd ${CHOICE}
   fi
 
-  if ( whiptail --title "Update User" --yesno "Do you want to set an email adress for user :  ${CHOICE} \n \
+  if ( whiptail --title "Update ${CHOICE}" --yesno "Do you want to set an email adress for user :  ${CHOICE} \n \
   If no, you will be ask email adress again when setting up git.) " 8 60 )
   then
     local MAIL_OK=false
     while ! ${MAIL_OK}
     do
-      EMAIL1=$(whiptail --title "Update User" --passwordbox "Email adress of the user  " 8 78   3>&1 1>&2 2>&3)
+      EMAIL1=$(whiptail --title "Update ${CHOICE}" --inputbox "Email adress of the user  " 8 78   3>&1 1>&2 2>&3)
       RET=$?
       if [[ ${RET} == 1 ]]
       then
@@ -538,10 +538,10 @@ update_user () {
       #Password must consists of at least 8 characters and not more than 15 characters.
       if [[ ! "${EMAIL1}" =~ ^([a-zA-Z0-9@*#]{8,15})$ ]] # TODO : Update regex
       then
-        whiptail --title "Add Users" --msgbox "This is not an email adresse. Please enter one of the form : \n\
+        whiptail --title "Update ${CHOICE}" --msgbox "This is not an email adresse. Please enter one of the form : \n\
         email.example@domain.com " 8 78   3>&1 1>&2 2>&3
       else
-        local EMAIL2=$(whiptail --title "Add Users" --passwordbox "Please enter the email adress again  " 8 78   3>&1 1>&2 2>&3)
+        local EMAIL2=$(whiptail --title "Update ${CHOICE}" --inputbox "Please enter the email adress again  " 8 78   3>&1 1>&2 2>&3)
         RET=$?
         if [[ ${RET} == 1 ]]
         then
@@ -549,7 +549,7 @@ update_user () {
         fi
         if [[ ! ${EMAIL1} == ${EMAIL2} ]]
         then
-          whiptail --title "Add Users" --msgbox "Emails do not match" 8 78   3>&1 1>&2 2>&3
+          whiptail --title "Update ${CHOICE}" --msgbox "Emails do not match" 8 78   3>&1 1>&2 2>&3
         else
           EMAIL_OK=true
         fi
@@ -557,13 +557,13 @@ update_user () {
     done
   fi
 
-  if ( whiptail --title "Update User" --yesno "Do you want to set an ssh key for user (userfull for git) :  ${CHOICE}" 8 60 )
+  if ( whiptail --title "Update ${CHOICE}" --yesno "Do you want to set an ssh key for user (userfull for git) :  ${CHOICE}" 8 60 )
   then
     if [[ ${EMAIL1} == "empty" ]]
     then
       while ! ${MAIL_OK}
       do
-        EMAIL1=$(whiptail --title "Update User" --passwordbox "Email adress of the user  " 8 78   3>&1 1>&2 2>&3)
+        EMAIL1=$(whiptail --title "Update ${CHOICE}" --inputbox "Email adress of the user  " 8 78   3>&1 1>&2 2>&3)
         RET=$?
         if [[ ${RET} == 1 ]]
         then
@@ -578,10 +578,10 @@ update_user () {
         #Password must consists of at least 8 characters and not more than 15 characters.
         if [[ ! "${EMAIL1}" =~ ^([a-zA-Z0-9@*#]{8,15})$ ]] # TODO : Update regex
         then
-          whiptail --title "Add Users" --msgbox "This is not an email adresse. Please enter one of the form : \n\
+          whiptail --title "Update ${CHOICE}" --msgbox "This is not an email adresse. Please enter one of the form : \n\
           email.example@domain.com " 8 78   3>&1 1>&2 2>&3
         else
-          local EMAIL2=$(whiptail --title "Add Users" --passwordbox "Please enter the email adress again  " 8 78   3>&1 1>&2 2>&3)
+          local EMAIL2=$(whiptail --title "Update ${CHOICE}" --inputbox "Please enter the email adress again  " 8 78   3>&1 1>&2 2>&3)
           RET=$?
           if [[ ${RET} == 1 ]]
           then
@@ -598,13 +598,13 @@ update_user () {
     generate_ssh_key ${CHOICE} ${EMAIL1}
   fi
 
-  if type -t git &>/dev/null && ( whiptail --title "Update User" --yesno "Do you want set git informations for user  :  ${CHOICE}" 8 60 )
+  if type -t git &>/dev/null && ( whiptail --title "Update ${CHOICE}" --yesno "Do you want set git informations for user  :  ${CHOICE}" 8 60 )
   then
     if [[ ${EMAIL1} == "empty" ]]
     then
       while ! ${MAIL_OK}
       do
-        EMAIL1=$(whiptail --title "Update User" --passwordbox "Email adress of the user  " 8 78   3>&1 1>&2 2>&3)
+        EMAIL1=$(whiptail --title "Update ${CHOICE}" --inputbox "Email adress of the user  " 8 78   3>&1 1>&2 2>&3)
         RET=$?
         if [[ ${RET} == 1 ]]
         then
@@ -619,10 +619,10 @@ update_user () {
         #Password must consists of at least 8 characters and not more than 15 characters.
         if [[ ! "${EMAIL1}" =~ ^([a-zA-Z0-9@*#]{8,15})$ ]] # TODO : Update regex
         then
-          whiptail --title "Add Users" --msgbox "This is not an email adresse. Please enter one of the form : \n\
+          whiptail --title "Update ${CHOICE}" --msgbox "This is not an email adresse. Please enter one of the form : \n\
           email.example@domain.com " 8 78   3>&1 1>&2 2>&3
         else
-          local EMAIL2=$(whiptail --title "Add Users" --passwordbox "Please enter the email adress again  " 8 78   3>&1 1>&2 2>&3)
+          local EMAIL2=$(whiptail --title "Update ${CHOICE}" --inputbox "Please enter the email adress again  " 8 78   3>&1 1>&2 2>&3)
           RET=$?
           if [[ ${RET} == 1 ]]
           then
@@ -630,7 +630,7 @@ update_user () {
           fi
           if [[ ! ${EMAIL1} == ${EMAIL2} ]]
           then
-            whiptail --title "Add Users" --msgbox "Emails do not match" 8 78   3>&1 1>&2 2>&3
+            whiptail --title "Update  ${CHOICE}" --msgbox "Emails do not match" 8 78   3>&1 1>&2 2>&3
           else
             EMAIL_OK=true
           fi
@@ -652,14 +652,26 @@ update_user () {
     done
   fi
 
-  if type -t git &>/dev/null && ( whiptail --title "Update User" --yesno "Do you want set dotfiles from a git repo for user  :  ${CHOICE}" 8 60 )
+  if type -t git &>/dev/null && ( whiptail --title "Update ${CHOICE}" --yesno "Do you want set dotfiles from a git repo for user  :  ${CHOICE}" 8 60 )
   then
-    # TODO : Get dofiles from git
+    local GIT_REPO="" # TODO : Get dofiles from git
+    # whiptail --title "Update User" --inputbox ""
   fi
 
   if type -t vcsh &>/dev/null && type -t mr &>/dev/null && ( whiptail --title "Update User" --yesno "Do you want set myRepos dotfiles from a vcsh repo for user  :  ${CHOICE}" 8 60 )
   then
-    # TODO : Get dofiles from vcsh
+    local VCSH_MR_REPO_OK=false
+    local VCSH_MR_REPO=""
+    while ! ${VCSH_MR_REPO_OK}
+    do
+      VCSH_MR_REPO=$(whiptail --title "Update ${CHOICE}" --inputbox "Please enter myRepos address to clone via vcsh" 8 60  3>&1 1>&2 2>&3)
+      if ( whiptail --title "Update ${CHOICE}" --yesno "Are you sure this is the right adress ? \n\
+      ${VCSH_MR_REPO} " 8 78   3>&1 1>&2 2>&3 )
+      then
+        VCSH_MR_REPO_OK=true
+      fi
+    done
+    
   fi
 
   local MENU_USER="whiptail --title 'Update user' --menu  'Select what you want to do :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
