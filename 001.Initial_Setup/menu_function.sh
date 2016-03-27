@@ -2,42 +2,23 @@
 
 source global.sh
 
-# FROM RASPI-CONFIG
-calc_wt_size() {
-  # NOTE: it's tempting to redirect stderr to /dev/null, so supress error 
-  # output from tput. However in this case, tput detects neither stdout or 
-  # stderr is a tty and so only gives default 80, 24 values
-  WT_HEIGHT=17
-  WT_WIDTH=$(tput cols)
-
-  if [ -z "$WT_WIDTH" ] || [ "$WT_WIDTH" -lt 60 ]
-  then
-    WT_WIDTH=80
-  fi
-  if [ "$WT_WIDTH" -gt 178 ]
-  then
-    WT_WIDTH=120
-  fi
-  WT_MENU_HEIGHT=$(($WT_HEIGHT-7))
-}
-
 do_menu () {
   # USAGE = do_menu <CAT>
-  # INPUT : 
+  # INPUT :
   #   CAT : Category of application. Must be the same as the file menu_${CAT}.sh and APP_${CAT}.sh
 
   local NAME=$1
   local LOWER_NAME=`echo "${NAME}" | tr '[:upper:]' '[:lower:]'`
   local UPPER_NAME=`echo "${NAME}" | tr '[:lower:]' '[:upper:]'`
-  
+
   source menu/*${LOWER_NAME}.sh
-  
+
   local ARR_NAME="APP_${NAME}_NAME[@]"
   local ARR_PKG="APP_${NAME}_PKG[@]"
   local ARR_DESC="APP_${NAME}_DESC[@]"
   local ARR_STAT="APP_${NAME}_STAT[@]"
   local CAT_NAME="APP_${NAME}_CAT"
-  
+
   local APP_ARR_NAME=("${!ARR_NAME}")
   local APP_ARR_PKG=("${!ARR_PKG}")
   local APP_ARR_DESC=("${!ARR_DESC}")
@@ -47,7 +28,7 @@ do_menu () {
   local NB_APP=${#APP_ARR_NAME[@]}
 
   calc_wt_size
-  
+
   local MENU_APP="whiptail --title '${CAT_NAME}' --checklist  'Select which ${CAT_NAME} you want to install :' \
   $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
   for (( idx=0 ; idx <= ${NB_APP}-1 ; idx++ ))
@@ -57,17 +38,17 @@ do_menu () {
 
   bash -c "${MENU_APP}" 2> results_menu.txt
   RET=$?
-  if [[ ${RET} == 1 ]]
+  if [[ ${RET} -eq 1 ]]
   then
     return 1
   fi
 
   CHOICE=$( cat results_menu.txt )
-  
+
   for (( idx=0 ; idx <= ${NB_APP}-1 ; idx++ ))
   do
     if echo ${CHOICE} | grep -q "\"${APP_ARR_NAME[${idx}]}\""
-    then  
+    then
       CMD="sed -i 's/STAT\[${idx}\]=\"\(OFF\|ON\)\"/STAT\[${idx}\]=\"ON\"/g' menu/*${LOWER_NAME}.sh"
       eval ${CMD}
     else
@@ -89,7 +70,7 @@ all_categorie_menu () {
     sed -n "${BEGIN},${END}p" ${i} >> menu_categories.sh
   done
   source menu_categories.sh
-  
+
   local ALL_CAT
   local NB_CAT
   local CAT_NAME
@@ -98,8 +79,6 @@ all_categorie_menu () {
   IFS=':' read -r -a ALL_CAT <<< "${ALL_APP_CAT}"
   NB_CAT=$(( ${#ALL_CAT[@]} - 1 ))
 
-  calc_wt_size
-  
   local MENU_CAT="whiptail --title 'Category of application' --menu  'Select which category of application you want to install :' \
   $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
   for (( idx=1 ; idx <= ${NB_CAT} ; idx++ ))
@@ -112,8 +91,8 @@ all_categorie_menu () {
 
   bash -c "${MENU_CAT}" 2> results_menu.txt
   RET=$?
-  if [[ ${RET} == 1 ]]
-  then 
+  if [[ ${RET} -eq 1 ]]
+  then
     return 1
   fi
 
@@ -123,7 +102,7 @@ all_categorie_menu () {
   then
     do_finish
   fi
-  
+
   for (( idx=0 ; idx <= ${NB_CAT} ; idx++ ))
   do
     CAT_NAME="APP_${ALL_CAT[${idx}]}_CAT"
@@ -137,7 +116,7 @@ all_categorie_menu () {
 
 do_finish () {
   # USAGE = do_menu <CAT>
-  # INPUT : 
+  # INPUT :
   #   CAT : Category of application. Must be the same as the file menu_${CAT}.sh and APP_${CAT}.sh
   ALL_APP_CAT=""
   echo '#!/bin/bash  ' > menu_categories.sh
@@ -162,7 +141,7 @@ do_finish () {
 
   IFS=':' read -r -a ALL_CAT <<< "${ALL_APP_CAT}"
   NB_CAT=$(( ${#ALL_CAT[@]} - 1 ))
-  
+
   MENU_ASK_FINISH="whiptail --title 'Last Check Before Install' --yesno  'This is the list of program this script will install : "
   for (( idxCat=1 ; idxCat <= ${NB_CAT} ; idxCat++ ))
   do
@@ -170,15 +149,15 @@ do_finish () {
     local NAME=${ALL_CAT[${idxCat}]}
     local LOWER_NAME=`echo "${NAME}" | tr '[:upper:]' '[:lower:]'`
     local UPPER_NAME=`echo "${NAME}" | tr '[:lower:]' '[:upper:]'`
-  
+
     source menu/*${LOWER_NAME}.sh
-  
+
     local ARR_NAME="APP_${NAME}_NAME[@]"
     local ARR_PKG="APP_${NAME}_PKG[@]"
     local ARR_DESC="APP_${NAME}_DESC[@]"
     local ARR_STAT="APP_${NAME}_STAT[@]"
     local CAT_NAME="APP_${NAME}_CAT"
-  
+
     local APP_ARR_NAME=("${!ARR_NAME}")
     local APP_ARR_PKG=("${!ARR_PKG}")
     local APP_ARR_DESC=("${!ARR_DESC}")
@@ -188,7 +167,7 @@ do_finish () {
     local NB_APP=${#APP_ARR_NAME[@]}
 
     calc_wt_size
-  
+
     for (( idx=0 ; idx <= ${NB_APP} ; idx++ ))
     do
       if [[ ${APP_ARR_STAT[${idx}]} == "ON" ]]
@@ -199,9 +178,9 @@ do_finish () {
             CAT_DONE=true
             HEIGHT=$(( HEIGHT + 1 ))
         fi
-        MENU_ASK_FINISH="${MENU_ASK_FINISH} \n= ${APP_ARR_NAME[${idx}]} : ${APP_ARR_DESC[${idx}]}" 
+        MENU_ASK_FINISH="${MENU_ASK_FINISH} \n= ${APP_ARR_NAME[${idx}]} : ${APP_ARR_DESC[${idx}]}"
         HEIGHT=$(( HEIGHT + 1 ))
-        
+
         if type -t ${APP_ARR_NAME[${idx}]}_routine &>/dev/null
         then
           ${APP_ARR_NAME[${idx}]}_routine
@@ -211,23 +190,23 @@ do_finish () {
       fi
     done
     CAT_DONE=false
-    MENU_ASK_FINISH="${MENU_ASK_FINISH} \n " 
+    MENU_ASK_FINISH="${MENU_ASK_FINISH} \n "
     HEIGHT=$(( HEIGHT + 2 ))
   done
-  MENU_ASK_FINISH="${MENU_ASK_FINISH}' $HEIGHT $WT_WIDTH " 
+  MENU_ASK_FINISH="${MENU_ASK_FINISH}' $HEIGHT $WT_WIDTH "
   bash -c "${MENU_ASK_FINISH}"
   RET=$?
-  if [[ ${RET} == 0 ]]
+  if [[ ${RET} -eq 0 ]]
   then
     for i in ${ALL_REPO_ADD}
     do
       add-apt-repository -y $i
     done
     apt-get update && apt-get upgrade -y && apt-get install -y ${ALL_PKG_CHOOSEN}
-  elif [[ ${RET} == 1 ]]
+  elif [[ ${RET} -eq 1 ]]
   then
     return 1
-  fi 
+  fi
 }
 
 all_categorie_menu_loop () {
@@ -235,10 +214,10 @@ all_categorie_menu_loop () {
   do
     all_categorie_menu
     RET=$?
-    if [[ ${RET} == 1 ]]
+    if [[ ${RET} -eq 1 ]]
     then
-      return 1 
-    elif [[ ${RET} == 2 ]]
+      return 1
+    elif [[ ${RET} -eq 2 ]]
     then
       return 2
     fi
@@ -260,7 +239,7 @@ setup_ask_go_through () {
     sed -n "${BEGIN},${END}p" ${i} >> menu_categories.sh
   done
   source menu_categories.sh
-  
+
   local ALL_CAT
   local NB_CAT
   local CAT_NAME
@@ -268,8 +247,6 @@ setup_ask_go_through () {
   IFS=':' read -r -a ALL_CAT <<< "${ALL_APP_CAT}"
   NB_CAT=$(( ${#ALL_CAT[@]} - 1 ))
 
-  calc_wt_size
-  
   echo "#!/bin/bash" > setup_go_through.sh
   echo  >> setup_go_through.sh
   echo "source menu_function.sh" >> setup_go_through.sh
@@ -290,7 +267,7 @@ setup_ask_go_through () {
   chmod 755 setup_go_through.sh
   ./setup_go_through.sh
   RET=$?
-  if [[ ${RET} == 1 ]]
+  if [[ ${RET} -eq 1 ]]
   then
     all_categorie_menu_loop
     RET=$?
@@ -304,10 +281,10 @@ setup_ask_go_through () {
 setup_direct_finish () {
   do_finish
   RET=$?
-  if [[ ${RET} == 2 ]]
+  if [[ ${RET} -eq 2 ]]
   then
-    return 2 
-  elif [[ ${RET} == 1 ]]; then
+    return 2
+  elif [[ ${RET} -eq 1 ]]; then
     all_categorie_menu_loop
     return 2
   fi
