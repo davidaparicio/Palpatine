@@ -421,6 +421,7 @@ add_user () {
   local LAST_NAME=$(whiptail --title "Add Users" --inputbox "Last name of the new user (you can leave it empty) " 8 78   3>&1 1>&2 2>&3)
 
   local PASSWORD_OK=false
+
   while ! ${PASSWORD_OK}
   do
     local PASSWORD1=$(whiptail --title "Add Users" --passwordbox "Password for the new user  " 8 78   3>&1 1>&2 2>&3)
@@ -571,10 +572,10 @@ config_user () {
   done
 }
 
-#chg_usr_pwd "root"
-#ask_arch
-#chg_locale
-#chg_timezone
-#config_keyboard
-#setup_all_pkg
+chg_usr_pwd "root"
+ask_arch
+chg_locale
+chg_timezone
+config_keyboard
+setup_all_pkg
 config_user
