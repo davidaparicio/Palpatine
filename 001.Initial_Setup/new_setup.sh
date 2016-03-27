@@ -331,7 +331,7 @@ update_user () {
   calc_wt_size
   FULL_NAME[0]=$( getent passwd root | cut -d: -f5 | cut -d, -f1 )
   USERNAME[0]=$( getent passwd root | cut -d: -f1 )
-  idx=0
+  idx=1
   for i in /home/*
   do
     if ! echo ${i} | grep -q "lost+found"
