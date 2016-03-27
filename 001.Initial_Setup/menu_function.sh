@@ -9,7 +9,7 @@ do_menu () {
   local LOWER_NAME=`echo "${NAME}" | tr '[:upper:]' '[:lower:]'`
   local UPPER_NAME=`echo "${NAME}" | tr '[:lower:]' '[:upper:]'`
 
-  source menu/*${LOWER_NAME}.sh
+  source 001.Initial_Setup/menu/*${LOWER_NAME}.sh
 
   local ARR_NAME="APP_${NAME}_NAME[@]"
   local ARR_PKG="APP_${NAME}_PKG[@]"
@@ -47,10 +47,10 @@ do_menu () {
   do
     if echo ${CHOICE} | grep -q "\"${APP_ARR_NAME[${idx}]}\""
     then
-      CMD="sed -i 's/STAT\[${idx}\]=\"\(OFF\|ON\)\"/STAT\[${idx}\]=\"ON\"/g' menu/*${LOWER_NAME}.sh"
+      CMD="sed -i 's/STAT\[${idx}\]=\"\(OFF\|ON\)\"/STAT\[${idx}\]=\"ON\"/g' 001.Initial_Setup/menu/*${LOWER_NAME}.sh"
       eval ${CMD}
     else
-      CMD="sed -i 's/STAT\[${idx}\]=\"\(OFF\|ON\)\"/STAT\[${idx}\]=\"OFF\"/g' menu/*${LOWER_NAME}.sh"
+      CMD="sed -i 's/STAT\[${idx}\]=\"\(OFF\|ON\)\"/STAT\[${idx}\]=\"OFF\"/g' 001.Initial_Setup/menu/*${LOWER_NAME}.sh"
       eval ${CMD}
     fi
   done
@@ -60,14 +60,14 @@ do_menu () {
 
 all_categorie_menu () {
   ALL_APP_CAT=""
-  echo '#!/bin/bash  \n\n' > menu_categories.sh
-  for i in menu/*.sh
+  echo '#!/bin/bash  \n\n' > 001.Initial_Setup/menu_categories.sh
+  for i in 001.Initial_Setup/menu/*.sh
   do
     BEGIN=$( grep -in "# BEGIN " ${i} | cut -d ':' -f1 )
     END=$( grep -in "# END " ${i} | cut -d ':' -f1 )
-    sed -n "${BEGIN},${END}p" ${i} >> menu_categories.sh
+    sed -n "${BEGIN},${END}p" ${i} >> 001.Initial_Setup/menu_categories.sh
   done
-  source menu_categories.sh
+  source 001.Initial_Setup/menu_categories.sh
 
   local ALL_CAT
   local NB_CAT
@@ -117,14 +117,14 @@ do_finish () {
   # INPUT :
   #   CAT : Category of application. Must be the same as the file menu_${CAT}.sh and APP_${CAT}.sh
   ALL_APP_CAT=""
-  echo '#!/bin/bash  ' > menu_categories.sh
-  for i in menu/*.sh
+  echo '#!/bin/bash  ' > 001.Initial_Setup/menu_categories.sh
+  for i in 001.Initial_Setup/menu/*.sh
   do
     BEGIN=$( grep -in "# BEGIN " ${i} | cut -d ':' -f1 )
     END=$( grep -in "# END " ${i} | cut -d ':' -f1 )
-    sed -n "${BEGIN},${END}p" ${i} >> menu_categories.sh
+    sed -n "${BEGIN},${END}p" ${i} >> 001.Initial_Setup/menu_categories.sh
   done
-  source menu_categories.sh
+  source 001.Initial_Setup/menu_categories.sh
 
   calc_wt_size
 
@@ -148,7 +148,7 @@ do_finish () {
     local LOWER_NAME=`echo "${NAME}" | tr '[:upper:]' '[:lower:]'`
     local UPPER_NAME=`echo "${NAME}" | tr '[:lower:]' '[:upper:]'`
 
-    source menu/*${LOWER_NAME}.sh
+    source 001.Initial_Setup/menu/*${LOWER_NAME}.sh
 
     local ARR_NAME="APP_${NAME}_NAME[@]"
     local ARR_PKG="APP_${NAME}_PKG[@]"
@@ -229,14 +229,14 @@ setup_ask_categories () {
 
 setup_ask_go_through () {
   ALL_APP_CAT=""
-  echo '#!/bin/bash  \n\n' > menu_categories.sh
-  for i in menu/*.sh
+  echo '#!/bin/bash  \n\n' > 001.Initial_Setup/menu_categories.sh
+  for i in 001.Initial_Setup/menu/*.sh
   do
     BEGIN=$( grep -in "# BEGIN " ${i} | cut -d ':' -f1 )
     END=$( grep -in "# END " ${i} | cut -d ':' -f1 )
-    sed -n "${BEGIN},${END}p" ${i} >> menu_categories.sh
+    sed -n "${BEGIN},${END}p" ${i} >> 001.Initial_Setup/menu_categories.sh
   done
-  source menu_categories.sh
+  source 001.Initial_Setup/menu_categories.sh
 
   local ALL_CAT
   local NB_CAT
@@ -245,34 +245,34 @@ setup_ask_go_through () {
   IFS=':' read -r -a ALL_CAT <<< "${ALL_APP_CAT}"
   NB_CAT=$(( ${#ALL_CAT[@]} - 1 ))
 
-  echo "#!/bin/bash" > setup_go_through.sh
-  echo  >> setup_go_through.sh
-  echo "source menu_function.sh" >> setup_go_through.sh
-  echo  >> setup_go_through.sh
-  echo "go_through() { " >> setup_go_through.sh
+  echo "#!/bin/bash" > 001.Initial_Setup/setup_go_through.sh
+  echo  >> 001.Initial_Setup/setup_go_through.sh
+  echo "source 001.Initial_Setup/menu_function.sh" >> 001.Initial_Setup/setup_go_through.sh
+  echo  >> 001.Initial_Setup/setup_go_through.sh
+  echo "go_through() { " >> 001.Initial_Setup/setup_go_through.sh
   for (( idx=1 ; idx <= ${NB_CAT} ; idx++ ))
   do
-    echo do_menu ${ALL_CAT[${idx}]} >> setup_go_through.sh
-    echo "RET=\$? " >> setup_go_through.sh
-    echo "if [[ \${RET} == 1 ]] " >> setup_go_through.sh
-    echo "then " >> setup_go_through.sh
-    echo "return 1" >> setup_go_through.sh
-    echo "fi " >> setup_go_through.sh
+    echo do_menu ${ALL_CAT[${idx}]} >> 001.Initial_Setup/setup_go_through.sh
+    echo "RET=\$? " >> 001.Initial_Setup/setup_go_through.sh
+    echo "if [[ \${RET} == 1 ]] " >> 001.Initial_Setup/setup_go_through.sh
+    echo "then " >> 001.Initial_Setup/setup_go_through.sh
+    echo "return 1" >> 001.Initial_Setup/setup_go_through.sh
+    echo "fi " >> 001.Initial_Setup/setup_go_through.sh
   done
-  echo "} " >> setup_go_through.sh
-  echo "go_through" >> setup_go_through.sh
+  echo "} " >> 001.Initial_Setup/setup_go_through.sh
+  echo "go_through" >> 001.Initial_Setup/setup_go_through.sh
 
-  chmod 755 setup_go_through.sh
-  ./setup_go_through.sh
+  chmod 755 001.Initial_Setup/setup_go_through.sh
+  ./001.Initial_Setup/setup_go_through.sh
   RET=$?
   if [[ ${RET} -eq 1 ]]
   then
     all_categorie_menu_loop
     RET=$?
-    rm setup_go_through.sh
+    rm 001.Initial_Setup/setup_go_through.sh
     return ${RET}
   fi
-  rm setup_go_through.sh
+  rm 001.Initial_Setup/setup_go_through.sh
   do_finish
 }
 

@@ -1,7 +1,5 @@
 #!/bin/bash
 
-
-
 # FROM RASPI-CONFIG
 is_pione() {
    if grep -q "^Revision\s*:\s*00[0-9a-fA-F][0-9a-fA-F]$" /proc/cpuinfo; then
@@ -620,7 +618,7 @@ setup_pkg_base () {
 }
 
 setup_pkg_ask () {
-  source menu_function.sh
+  source 001.Initial_Setup/menu_function.sh
 	FUN=$(whiptail --title "Package to setup" --menu "Whatever the choice to make, \
 		you will be able to come back to this menu before running the setup. \n\
 		Do you whant to :" \
@@ -739,8 +737,8 @@ setup_update_sudoer () {
 }
 
 setup_all_pkg() {
-	setup_pk_fullupdate
-	setup_pkg__base
+	setup_pkg_fullupdate
+	setup_pkg_base
 	setup_pkg_ask
 }
 
