@@ -113,9 +113,6 @@ all_categorie_menu () {
 }
 
 do_finish () {
-  # USAGE = do_menu <CAT>
-  # INPUT :
-  #   CAT : Category of application. Must be the same as the file menu_${CAT}.sh and APP_${CAT}.sh
   ALL_APP_CAT=""
   echo '#!/bin/bash  ' > 001.Initial_Setup/menu_categories.sh
   for i in 001.Initial_Setup/menu/*.sh
@@ -287,13 +284,3 @@ setup_direct_finish () {
     return 2
   fi
 }
-# TODO : Make sure this app are included by defaults
-#  - vim
-#  - git
-#  - mr
-#  - vcsh
-#  - zsh
-#  - xclip
-#  - awesome
-#  - awesome-extra
-#  - terminator
