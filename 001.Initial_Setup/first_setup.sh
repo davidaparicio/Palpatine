@@ -49,7 +49,7 @@ get_init_sys() {
 # FROM RASPI-CONFIG
 expand_rootfs() {
   get_init_sys
-  if [ $SYSTEMD -eq 1 ]; then
+  if [ ${SYSTEMD} -eq 1 ]; then
     ROOT_PART=$(mount | sed -n 's|^/dev/\(.*\) on / .*|\1|p')
   else
     if ! [ -h /dev/root ]; then
@@ -60,37 +60,37 @@ expand_rootfs() {
   fi
 
   PART_NUM=${ROOT_PART#mmcblk0p}
-  if [ "$PART_NUM" = "$ROOT_PART" ]; then
-    whiptail --msgbox "$ROOT_PART is not an SD card. Don't know how to expand" 20 60 2
+  if [ "${PART_NUM}" = "${ROOT_PART}" ]; then
+    whiptail --msgbox "${ROOT_PART} is not an SD card. Don't know how to expand" 20 60 2
     return 0
   fi
 
   # NOTE: the NOOBS partition layout confuses parted. For now, let's only
   # agree to work with a sufficiently simple partition layout
-  if [ "$PART_NUM" -ne 2 ]; then
+  if [ "${PART_NUM}" -ne 2 ]; then
     whiptail --msgbox "Your partition layout is not currently supported by this tool. You are probably using NOOBS, in which case your root filesystem is already expanded anyway." 20 60 2
     return 0
   fi
 
   LAST_PART_NUM=$(parted /dev/mmcblk0 -ms unit s p | tail -n 1 | cut -f 1 -d:)
-  if [ $LAST_PART_NUM -ne $PART_NUM ]; then
-    whiptail --msgbox "$ROOT_PART is not the last partition. Don't know how to expand" 20 60 2
+  if [ ${LAST_PART_NUM} -ne ${PART_NUM} ]; then
+    whiptail --msgbox "${ROOT_PART} is not the last partition. Don't know how to expand" 20 60 2
     return 0
   fi
 
   # Get the starting offset of the root partition
   PART_START=$(parted /dev/mmcblk0 -ms unit s p | grep "^${PART_NUM}" | cut -f 2 -d: | sed 's/[^0-9]//g')
-  [ "$PART_START" ] || return 1
+  [ "${PART_START}" ] || return 1
   # Return value will likely be error for fdisk as it fails to reload the
   # partition table because the root fs is mounted
   fdisk /dev/mmcblk0 <<EOF
 p
 d
-$PART_NUM
+${PART_NUM}
 n
 p
-$PART_NUM
-$PART_START
+${PART_NUM}
+${PART_START}
 
 p
 w
@@ -115,7 +115,7 @@ cat <<EOF > /etc/init.d/resize2fs_once &&
 case "\$1" in
   start)
     log_daemon_msg "Starting resize2fs_once" &&
-    resize2fs /dev/$ROOT_PART &&
+    resize2fs /dev/${ROOT_PART} &&
     update-rc.d resize2fs_once remove &&
     rm /etc/init.d/resize2fs_once &&
     log_end_msg \$?
@@ -128,7 +128,7 @@ esac
 EOF
   chmod +x /etc/init.d/resize2fs_once &&
   update-rc.d resize2fs_once defaults &&
-  if [ "$INTERACTIVE" = True ]; then
+  if [ "${INTERACTIVE}" = True ]; then
     whiptail --msgbox "Root partition has been resized.\nThe filesystem will be enlarged upon the next reboot" 20 60 2
   fi
 }
@@ -326,7 +326,7 @@ setup_user_update_set_email () {
   RET=$?
   [[ ${RET} -eq 1 ]] && return 1
 
-  local MENU_USER="whiptail --title 'Update ${USER_CHOOSEN}' --menu  'Select action :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
+  local MENU_USER="whiptail --title 'Update ${USER_CHOOSEN}' --menu  'Select action :' ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   MENU_USER="${MENU_USER} 'SSH Key' 'Generate or update ssh key of the user ${USER_CHOOSEN}'"
   MENU_USER="${MENU_USER} 'Git information' 'Update git information of the user ${USER_CHOOSEN}'"
   MENU_USER="${MENU_USER} 'Vcsh and mr dotfiles' 'Get myRepos config via vcsh from a git repo'"
@@ -395,7 +395,7 @@ setup_user_update_go_through () {
 }
 
 setup_user_update_loop () {
-  local MENU_USER="whiptail --title 'Update ${USER_CHOOSEN}' --menu  'Select what you want to do :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
+  local MENU_USER="whiptail --title 'Update ${USER_CHOOSEN}' --menu  'Select what you want to do :' ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   MENU_USER="${MENU_USER} 'Update GECOS' 'Update GEOCS information such as Fullname, Room...'"
   MENU_USER="${MENU_USER} 'Change password' 'Change the password of the ${USER_CHOOSEN}'"
   MENU_USER="${MENU_USER} 'Change shell' 'Change the shell of the ${USER_CHOOSEN}'"
@@ -445,7 +445,7 @@ setup_user_update_select () {
   done
   NB_USER=$(( ${#USERNAME[@]} - 1 ))
 
-  local MENU_USER="whiptail --title 'Update User' --menu  'Select which user informations you want to update :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
+  local MENU_USER="whiptail --title 'Update User' --menu  'Select which user informations you want to update :' ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   for (( idx=0 ; idx <= ${NB_USER} ; idx++ ))
   do
     MENU_USER="${MENU_USER} '${USERNAME[${idx}]}' '${FULL_NAME[${idx}]}'"
@@ -491,7 +491,7 @@ setup_user_update () {
     [[ ${RET} -eq 1 ]] && return 1
   fi
 
-  local MENU_USER="whiptail --title 'Update ${USER_CHOOSEN}' --menu  'Select how you want to manage user update :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
+  local MENU_USER="whiptail --title 'Update ${USER_CHOOSEN}' --menu  'Select how you want to manage user update :' ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   MENU_USER="${MENU_USER} 'Go through' 'Let the script go through all actions'"
   MENU_USER="${MENU_USER} 'Choose action' 'Let you choose what you want to update'"
   MENU_USER="${MENU_USER} 'CONTINUE' 'Continue to next step'"
@@ -626,7 +626,7 @@ setup_user_delete () {
   done
   local NB_USER=${#USERNAME[@]}
 
-  local MENU_USER="whiptail --title 'Delete User' --menu  'Select which user you want to delete :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
+  local MENU_USER="whiptail --title 'Delete User' --menu  'Select which user you want to delete :' ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   for (( idx=0 ; idx <= ${NB_USER}-1 ; idx++ ))
   do
     MENU_USER="${MENU_USER} '${USERNAME[${idx}]}' '${FULL_NAME[${idx}]}'"
@@ -707,7 +707,7 @@ setup_pkg_ask_finish () {
     MENU_ASK_FINISH="${MENU_ASK_FINISH} \n "
     HEIGHT=$(( HEIGHT + 2 ))
   done
-  MENU_ASK_FINISH="${MENU_ASK_FINISH}' $HEIGHT $WT_WIDTH "
+  MENU_ASK_FINISH="${MENU_ASK_FINISH}' $HEIGHT ${WT_WIDTH} "
   bash -c "${MENU_ASK_FINISH}"
   RET=$?
   if [[ ${RET} -eq 0 ]]
@@ -746,7 +746,7 @@ setup_pkg_ask_menu_app () {
   local NB_APP=${#APP_ARR_NAME[@]}
 
   local MENU_APP="whiptail --title '${CAT_NAME}' --checklist  'Select which ${CAT_NAME} you want to install :' \
-  $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
+  ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   for (( idx=0 ; idx <= ${NB_APP}-1 ; idx++ ))
   do
     MENU_APP="${MENU_APP} '${APP_ARR_NAME[${idx}]}' '${APP_ARR_DESC[${idx}]}' '${APP_ARR_STAT[${idx}]}'"
@@ -777,7 +777,7 @@ setup_pkg_ask_all_cat () {
   local CAT_DESC
 
   local MENU_CAT="whiptail --title 'Category of application' --menu  'Select which category of application you want to install :' \
-  $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
+  ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   for (( idx=1 ; idx <= ${NB_CAT} ; idx++ ))
   do
     CAT_NAME="APP_${ALL_CAT[${idx}]}_CAT"
@@ -874,7 +874,7 @@ setup_pkg_ask () {
   NB_CAT=$(( ${#ALL_CAT[@]} - 1 ))
 
 	PKG_ASK_MENU=$(whiptail --title "Package to setup" --menu "Please choose how \
-to manage package installation :" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --ok-button Select \
+to manage package installation :" ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} --ok-button Select \
 		"1 Go through" "Let the script go through all categories of programm to setup." \
 		"2 Choose" "Choose the categorie of programs you want to setup." \
 		"3 Direct setup" "Setup my minimalistic apps." \
@@ -1000,7 +1000,7 @@ setup_user () {
   local USER_CHOOSEN
   local USER_CHOOSEN_FULLNAME
 
-  local MENU_USER="whiptail --title 'User modification' --menu  'Select what you want to do :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
+  local MENU_USER="whiptail --title 'User modification' --menu  'Select what you want to do :' ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   MENU_USER="${MENU_USER} 'Update User' 'Update user information such as setting a git/vcsh dotfiles, name, mail etc.'"
   MENU_USER="${MENU_USER} 'Add User' 'Add a new user'"
   MENU_USER="${MENU_USER} 'Delete User' 'Delete an existing user'"
@@ -1102,7 +1102,7 @@ first_setup_go_through () {
 }
 
 first_setup_loop () {
-  local SETUP_LOOP="whiptail --title 'First Setup' --menu  'Select how do you whant to manage first setup :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
+  local SETUP_LOOP="whiptail --title 'First Setup' --menu  'Select how do you whant to manage first setup :' ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   SETUP_LOOP="${SETUP_LOOP} 'Change root password' 'Change root password'"
   SETUP_LOOP="${SETUP_LOOP} 'Expand rootfs' 'Will expand rootfs (NB: Will only work on RPi)'"
   SETUP_LOOP="${SETUP_LOOP} 'Change locale' 'Change Locale information'"
@@ -1153,7 +1153,7 @@ first_setup_loop () {
 }
 
 first_setup () {
-  local FIRST_SETUP="whiptail --title 'First Setup' --menu  'Select how do you whant to manage first setup :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
+  local FIRST_SETUP="whiptail --title 'First Setup' --menu  'Select how do you whant to manage first setup :' ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   FIRST_SETUP="${FIRST_SETUP} 'Go through' 'Let the script go through all actions'"
   FIRST_SETUP="${FIRST_SETUP} 'Choose actions' 'Let you choose what action you want to do'"
   FIRST_SETUP="${FIRST_SETUP} 'CONTINUE' 'Continue to the next step'"
