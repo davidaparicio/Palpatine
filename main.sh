@@ -140,8 +140,13 @@ linux_init_os_ubu_version () {
 }
 
 linux_init_os () {
-  local TMP_OS=$(lsb_release -si)
+  local TMP_OS=$(lsb_release -si
   local USER_SET_OS=false
+
+  if [[ ${#TMP_OS} -eq 0 ]]
+  then
+    TMP_OS=$( cat /etc/os-relase | grep NAME | cut -d '"' -f2 )
+  fi
 
   if ( whiptail \
     --title 'Linux Init : OS' \
