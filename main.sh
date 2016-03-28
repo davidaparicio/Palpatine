@@ -121,7 +121,7 @@ linux_init_version () {
       RET=$?
       [[ ${RET} -eq 1 ]] && return 1
 
-      if [[ ! ${TMP_VER} =~ ${SUPPORTED_UBU_VER[@]} ]]
+      if [[ ! ${TMP_VER} =~ ${SUPPORTED_UBU_VER[@]} ]] \
         && ! ( whiptail --title 'Linux Init : OS' \
           --yesno 'The value you enter does belong to supported os. Do you want to retry, if no, the script will exit ? ' ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} )
       then
