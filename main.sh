@@ -140,7 +140,7 @@ linux_init_os_ubu_version () {
 }
 
 linux_init_os () {
-  local TMP_OS=$(lsb_release -si
+  local TMP_OS=$(lsb_release -si )
   local USER_SET_OS=false
 
   if [[ ${#TMP_OS} -eq 0 ]]
