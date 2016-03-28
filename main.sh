@@ -102,9 +102,6 @@ linux_init_version () {
     TMP_VER=$( cat /etc/os-release | grep ^VERSION= | cut -d '"' -f 2 )
   fi
 
-  echo ${TMP_VER}
-  read
-
   if ( whiptail \
     --title 'Linux Init : OS' \
     --yesno "Linux version seems to be : \n\n ${TMP_VER} \n\nIs it right ? " ${WT_HEIGHT} ${WT_WIDTH} )
@@ -173,7 +170,6 @@ linux_init_os () {
     fi
   fi
 
-  echo "Test"
   if ! ${OS_SET} && ( whiptail \
     --title 'Linux Init : OS' \
     --yesno 'Do you want to choose the OS name (if no, the program will exit) ? ' ${WT_HEIGHT} ${WT_WIDTH} )
