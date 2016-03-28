@@ -4,7 +4,7 @@
 ALL_APP_CAT+=':VC'
 APP_VC_CAT="Version Control"
 APP_VC_EX="Version Control System (VCS)"
-# end WM INFO
+# END WM INFO
 
 APP_VC_NAME[0]="CVS"
 APP_VC_PKG[0]="csv"

@@ -4,7 +4,7 @@
 ALL_APP_CAT+=':GRAPH'
 APP_GRAPH_CAT="Graphics"
 APP_GRAPH_EX="Graphics editing tools"
-# end GRAPH INFO
+# END GRAPH INFO
 
 APP_GRAPH_NAME[0]="GIMP Image Editor"
 APP_GRAPH_PKG[0]="gimp"

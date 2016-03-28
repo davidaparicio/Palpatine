@@ -4,7 +4,7 @@
 ALL_APP_CAT+=':DEV'
 APP_DEV_CAT="Developpement tools"
 APP_DEV_EX="Developpement tools"
-# end DEV INFO
+# END DEV INFO
 
 APP_DEV_NAME[0]="QtCreator"
 APP_DEV_PKG[0]="qtcreator"

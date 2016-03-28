@@ -4,7 +4,7 @@
 ALL_APP_CAT+=':WWW'
 APP_WWW_CAT="Internet"
 APP_WWW_EX="Set of internet related apps"
-# end WWW INFO
+# END WWW INFO
 
 APP_WWW_NAME[0]="Firefox"
 APP_WWW_PKG[0]="firefox"

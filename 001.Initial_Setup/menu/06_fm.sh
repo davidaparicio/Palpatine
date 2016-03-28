@@ -4,7 +4,7 @@
 ALL_APP_CAT+=':FM'
 APP_FM_CAT="File Manager"
 APP_FM_EX="File Manager"
-# end FM INFO
+# END FM INFO
 
 APP_FM_NAME[0]="PcmanFM"
 APP_FM_PKG[0]="pcman"
