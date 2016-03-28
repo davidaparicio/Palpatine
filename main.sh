@@ -15,6 +15,12 @@ SUPPORTED_OS[4]='Debian'
 SUPPORTED_OS[5]='ArchLinux'
 SUPPORTED_OS[6]='Raspbian'
 
+SUPPORTED_UBU_VER[0]='14.04'
+
+SUPPORTED_DEB_VER[0]='jessy'
+
+SUPPORTED_PKG_MGR[0]='apt-get'
+
 ###############################################################################
 # FUNCTION
 ###############################################################################
@@ -33,12 +39,101 @@ calc_wt_size() {
   then
     WT_WIDTH=120
   fi
-  WT_MENU_HEIGHT=$(($WT_HEIGHT-7))
+  WT_MENU_HEIGHT=$(($WT_HEIGHT-9))
 }
 
-OS=$(lsb_release -si)
-VER=$(lsb_release -sr)
-echo $OS $ARCH $VER
+linux_init_pkg_mgr () {
+  local NB_PKG_MGR=${#SUPPORTED_PKG_MGR[@]}
+  local EXIST_PKG_MGR=false
+  local PKG_MGR_MENU="whiptail --title 'Linux Init : Package Manager' \
+    --menu 'Please choose the package manager you want to use : ' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
+  local NO_PKG_MGR_MENU="whiptail --title 'Linux Init : Package Manager' \
+    --msgbox 'Sorry but you do not to have one of the package manager supported installed. \n
+    Here is the list of supported package manager :
+    "
+
+  for (( idxMgr=0; idxMgr < ${NB_PKG_MGR}; idxMgr++ ))
+  do
+    if type -t ${SUPPORTED_PKG_MGR[${idx}]} &>/dev/null
+    then
+      echo "supported type -t ${SUPPORTED_PKG_MGR[${idx}]}"
+      EXIST_PKG_MGR=true
+    fi
+    PKG_MGR_MENU="${PKG_MGR_MENU} '${SUPPORTED_PKG_MGR[${idx}]}' ''"
+    NO_PKG_MGR_MENU="${NO_PKG_MGR_MENU}    - ${SUPPORTED_PKG_MGR[${idx}]} \n
+    "
+  done
+  PKG_MGR_MENU="${PKG_MGR_MENU} 'NONE OF THEM' ''"
+  NO_PKG_MGR_MENU="${NO_PKG_MGR_MENU} ' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
+
+  if ! ${EXIST_PKG_MGR}
+  then
+      bash -c "${NO_PKG_MGR_MENU} "
+      return 1
+  fi
+
+  bash -c "${PKG_MGR_MENU} " 2> results_menu.txt
+  RET=$?
+  [[ ${RET} -eq 1 ]] && return 1
+
+  CHOICE=$( cat results_menu.txt )
+
+  case ${CHOICE} in
+    "NONE OF THEM" )
+      whiptail --title 'Linux Init : OS' --msgbox 'Sorry to heard that your pakage manager is not supported. \n
+  Feel free to send a mail to give us your OS name. \n
+  Program will now exit'  $WT_HEIGHT $WT_WIDTH
+      return 1
+    ;;
+  esac
+
+  LINUX_PKG_MGR=${CHOICE}
+  return 0
+}
+
+linux_init_os_ubu_version () {
+  local TMP_VER=$(lsb_release -sr)
+
+  if ( whiptail \
+    --title 'Linux Init : OS' \
+    --yesno "Ubuntu version seems to be : \n\n ${TMP_VER} \n\nIs it right ? " $WT_HEIGHT $WT_WIDTH )
+  then
+    if [[ ! ${TMP_VER} =~ ${SUPPORTED_UBU_VER[@]} ]]
+    then
+      LINUX_VER=${TMP_VER}
+      return 0
+    fi
+  elif ( whiptail \
+  --title 'Linux Init : OS' \
+  --yesno 'Do you want to enter the version (if no, the program will exit) ? ' $WT_HEIGHT $WT_WIDTH )
+  then
+    while true
+    do
+      TMP_VER=$( whiptail --title 'Linux Init : OS' --inputbox  'Please enter a version for ubuntu of the for 14.04/15.04' $WT_HEIGHT $WT_WIDTH 14.04 3>&1 1>&2 2>&3)
+      RET=$?
+      [[ ${RET} -eq 1 ]] && return 1
+
+      if ! [[ ${TMP_VER} =~ ^([0-9]{2}.[0-9]{2})$ ]] \
+      && ! ( whiptail --title 'Linux Init : OS' --msgbox 'The value you enter does not respect Ubuntu version format. \
+        Do you want to retry, if no, the script will exit ? ' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT )
+      then
+        return 1
+      elif  [[ ${TMP_VER} =~ ^([0-9]{2}.[0-9]{2})$ ]] && [[ ! ${TMP_VER} =~ ${SUPPORTED_UBU_VER[@]} ]]
+      then
+        whiptail --title 'Linux Init : OS' --msgbox 'The version of your OS is not supported. The script will now exit.' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT
+        return 1
+      elif [[ ${TMP_VER} =~ ^([0-9]{2}.[0-9]{2})$ ]] && [[ ${TMP_VER} =~ ${SUPPORTED_UBU_VER[@]} ]]
+      then
+        LINUX_VER=TMP_VER
+        return 0
+      else
+        return 1
+      fi
+    done
+  else
+    return 1
+  fi
+}
 
 linux_init_os () {
   local TMP_OS=$(lsb_release -si)
@@ -48,10 +143,9 @@ linux_init_os () {
     --yesno "OS Seems to be : \n\n ${TMP_OS} \n\nIs it right ? " $WT_HEIGHT $WT_WIDTH )
   then
     LINUX_OS=${TMP_OS}
-    return 0
   elif ( whiptail \
     --title 'Linux Init : OS' \
-    --yesno 'Do you want to enter the OS name (if no, the program will exit) ? ' $WT_HEIGHT $WT_WIDTH )
+    --yesno 'Do you want to choose the OS name (if no, the program will exit) ? ' $WT_HEIGHT $WT_WIDTH )
   then
     local LINUX_OS_MENU="whiptail --title 'Linux Init : OS' --menu  'Select your linux OS amoung the following one :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
     for (( idxOS=0; idxOS < ${#SUPPORTED_OS[@]}; idxOS++ ))
@@ -73,55 +167,75 @@ Feel free to send a mail to give us your OS name. \n
 Program will now exit'  $WT_HEIGHT $WT_WIDTH
         return 1
       ;;
-      * )
-        echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}. "
-        return 1
-      ;;
     esac
     LINUX_OS=${CHOICE}
-    USER_SET_OS=true
   else
     return 1
   fi
 
-  # TODO : Check version Ubuntu > 14.04, debian > jessy
+  case ${LINUX_OS} in
+    *[Uu]buntu )
+      linux_init_os_ubu_version
+    ;;
+    # TODO : Check version Ubuntu > 14.04, debian > jessy
+    * )
+      echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}. "
+      return 1
+    ;;
+  esac
+}
+
+linux_init_arch () {
+  local TMP_ARCH=$( arch )
+  if [[ ${TMP_} =~ 'arm' ]]
+  then
+  	if ( whiptail --title 'Linux Init : Archictecture' --yesno "\
+  	It seems you are on an arm machine. \n \
+  	Is it a raspberry ? " $WT_HEIGHT $WT_WIDTH )
+  	then
+  		LINUX_IS_RPI=true
+      LINUX_ARCH=${TMP_ARCH}
+  	else
+      whiptail --title 'Linux Init : Architecture' \
+      --msgbox 'Sorry but for the moment, only raspberry is supported. \
+      The script will now exit' $WT_HEIGHT $WT_WIDTH
+      return 1
+  	fi
+  elif [[ ${TMP_ARCH} == 'x86_64' ]]
+  then
+  	if ( whiptail --title 'Linux Init : Archictecture' --yesno "\
+  	It seems you are on an ${TMP_ARCH} machine. \n\
+  	Is it alright ? "  $WT_HEIGHT $WT_WIDTH )
+  	then
+  		LINUX_ARCH=${TMP_ARCH}
+  	else
+      whiptail --title 'Linux Init : Architecture' \
+      --msgbox 'An error occur during initialisation of the architecture. \
+      The script will now exit' $WT_HEIGHT $WT_WIDTH
+      return 1
+  	fi
+  else
+    whiptail --title 'Linux Init : Architecture' \
+    --msgbox 'Sorry but for the moment, your architecure ${TMP_ARCH} is not supported. \
+    The script will now exit' $WT_HEIGHT $WT_WIDTH
+    return 1
+  fi
+  return 0
 }
 
 linux_init () {
-  local LINUX_INIT_OK=true
   linux_init_os
-  if [[ ${ARCH} =~ 'arm' ]]
-  then
-  	if ( whiptail --title 'Linux Init' --yesno "\
-  	It seems you are on an arm machine. \n \
-  	Is it a raspberry ? " 20 60 )
-  	then
-  		LINUX_IS_RPI=true
-  	else
-  		LINUX_INIT_OK=false
-  	fi
-  elif [[ ${ARCH} == 'x86_64' ]]
-  then
-  	if ( whiptail --title 'Linux Init' --yesno "\
-  	It seems you are on an ${ARCH} machine. \n\
-  	Is it alright ? "  $WT_HEIGHT $WT_WIDTH )
-  	then
-  		ARCH="x86_64"
-  	else
-  		LINUX_INIT_OK=false
-  	fi
-  else
-    LINUX_INIT_OK=false
-  fi
-  if ! ${LINUX_INIT_OK}
-  then
-    whiptail \
-    --title 'Linux Init ERROR' \
-    --msgbox 'Error architecture not supported. \n\nProgram will now exit !' \
-    $WT_HEIGHT $WT_WIDTH
-    exit 1
-  fi
-  return 0
+  RET=$?
+  [[ ${RET} -eq 1 ]] && return 1
+
+  linux_init_arch
+  RET=$?
+  [[ ${RET} -eq 1 ]] && return 1
+
+  linux_init_pkg_mgr
+  RET=$?
+  [[ ${RET} -eq 1 ]] && return 1
+return 0
 }
 
 ###############################################################################
@@ -141,6 +255,7 @@ main_menu () {
   if [[ ${RET} -eq 1 ]]
   then
     whiptail --title "ERROR" --msgbox "An error occured during initialisation.\n\
+Some part of your linux distribution are not supported yet. \n\
 The program will exit" $WT_HEIGHT $WT_WIDTH
     return 1
   fi
@@ -175,4 +290,5 @@ The program will exit" $WT_HEIGHT $WT_WIDTH
 }
 
 # TODO : Check user root and through SSH
+
 main_menu
