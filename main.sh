@@ -92,12 +92,19 @@ Program will now exit' ${WT_HEIGHT} ${WT_WIDTH}
   return 0
 }
 
-linux_init_os_ubu_version () {
-  local TMP_VER=$( lsb_release -sr )
+linux_init_version () {
+  local TMP_VER
+
+  if type -t lsb_release &> /dev/null
+  then
+    TMP_VER=$( lsb_release  -sr )
+  else
+    TMP_VER=$( cat /etc/os-release | grep ^VERSION= | cut -d '"' -f 2 )
+  fi
 
   if ( whiptail \
     --title 'Linux Init : OS' \
-    --yesno "Ubuntu version seems to be : \n\n ${TMP_VER} \n\nIs it right ? " ${WT_HEIGHT} ${WT_WIDTH} )
+    --yesno "Linux version seems to be : \n\n ${TMP_VER} \n\nIs it right ? " ${WT_HEIGHT} ${WT_WIDTH} )
   then
     if [[ ! ${TMP_VER} =~ ${SUPPORTED_UBU_VER[@]} ]]
     then
@@ -110,23 +117,18 @@ linux_init_os_ubu_version () {
   then
     while true
     do
-      TMP_VER=$( whiptail --title 'Linux Init : OS'  --inputbox  'Please enter a version for ubuntu of the for 14.04/15.04' ${WT_HEIGHT} ${WT_WIDTH} 14.04 3>&1 1>&2 2>&3)
+      TMP_VER=$( whiptail --title 'Linux Init : OS'  --inputbox  'Please enter a version for ubuntu (14.04/15.04) or debian/raspbian (jessy)' ${WT_HEIGHT} ${WT_WIDTH} 14.04 3>&1 1>&2 2>&3)
       RET=$?
       [[ ${RET} -eq 1 ]] && return 1
 
-      if ! [[ ${TMP_VER} =~ ^([0-9]{2}.[0-9]{2})$ ]] \
+      if [[ ! ${TMP_VER} =~ ${SUPPORTED_UBU_VER[@]} ]]
         && ! ( whiptail --title 'Linux Init : OS' \
-          --msgbox 'The value you enter does not respect Ubuntu version format. Do you want to retry, if no, the script will exit ? ' ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} )
-      then
-        return 1
-      elif [[ ${TMP_VER} =~ ^([0-9]{2}.[0-9]{2})$ ]] \
-        && [[ ! ${TMP_VER} =~ ${SUPPORTED_UBU_VER[@]} ]]
+          --yesno 'The value you enter does belong to supported os. Do you want to retry, if no, the script will exit ? ' ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} )
       then
         whiptail --title 'Linux Init : OS' \
         --msgbox 'The version of your OS is not supported. The script will now exit.' ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}
         return 1
-      elif [[ ${TMP_VER} =~ ^([0-9]{2}.[0-9]{2})$ ]] \
-        && [[ ${TMP_VER} =~ ${SUPPORTED_UBU_VER[@]} ]]
+      elif [[ ${TMP_VER} =~ ${SUPPORTED_UBU_VER[@]} ]]
       then
         LINUX_VER=TMP_VER
         return 0
@@ -205,7 +207,7 @@ Program will now exit'  ${WT_HEIGHT} ${WT_WIDTH}
 
   case ${LINUX_OS} in
     *[Uu]buntu )
-      linux_init_os_ubu_version
+      linux_init_version
     ;;
     # TODO : Check version Ubuntu > 14.04, debian > jessy
     * )
