@@ -142,22 +142,33 @@ linux_init_os_ubu_version () {
 linux_init_os () {
   local TMP_OS
   local USER_SET_OS=false
+  local OS_SET=false
 
   if type -t "lsb_release" &> /dev/null
   then
     TMP_OS=$(lsb_release -si )
   else
-    TMP_OS=$( cat /etc/os-release | grep NAME | cut -d '"' -f2 )
+    TMP_OS=$( cat /etc/os-release | grep ^NAME | cut -d '"' -f2 )
   fi
-  echo ${TMP_OS}
-  read
 
-  if ( whiptail \
-    --title 'Linux Init : OS' \
-    --yesno "OS Seems to be : \n\n ${TMP_OS} \n\nIs it right ? " ${WT_HEIGHT} ${WT_WIDTH} )
+  if [[ ${TMP_OS} =~ ${SUPPORTED_OS[@]} ]]  \
+    && ! ( whiptail --title 'Linux Init : OS'
+    --yesno "Sorry, your os do not seems to be supported. It seems to be \n\n ${TMP_OS}
+    Do you want to enter your OS ?
+    I WILL NOT BE RESPONSIBLE IF PROBLEM OCCURS" ${WT_HEIGHT} ${WT_WIDTH} )
   then
-    LINUX_OS=${TMP_OS}
-  elif ( whiptail \
+    return 1
+  else
+    if ( whiptail \
+      --title 'Linux Init : OS' \
+      --yesno "OS Seems to be : \n\n ${TMP_OS} \n\nIs it right ? " ${WT_HEIGHT} ${WT_WIDTH} )
+    then
+      LINUX_OS=${TMP_OS}
+      OS_SET=true
+    fi
+  fi
+
+  if ! ${OS_SET} && ( whiptail \
     --title 'Linux Init : OS' \
     --yesno 'Do you want to choose the OS name (if no, the program will exit) ? ' ${WT_HEIGHT} ${WT_WIDTH} )
   then
