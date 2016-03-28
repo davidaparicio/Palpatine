@@ -45,3 +45,8 @@ APP_EDITOR_NAME[7]="geany"
 APP_EDITOR_PKG[7]="geany"
 APP_EDITOR_DESC[7]="Geany is a light text editor."
 APP_EDITOR_STAT[7]="OFF"
+
+APP_EDITOR_NAME[8]="TexMaker"
+APP_EDITOR_PKG[8]="texmaker"
+APP_EDITOR_DESC[8]="LaTeX editor."
+APP_EDITOR_STAT[8]="ON"
