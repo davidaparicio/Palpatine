@@ -140,12 +140,15 @@ linux_init_os_ubu_version () {
 }
 
 linux_init_os () {
-  local TMP_OS=$(lsb_release -si )
+  local TMP_OS
   local USER_SET_OS=false
 
-  if [[ ${#TMP_OS} -eq 0 ]]
+  if type -t "lsb_release" &> /dev/null
   then
-    TMP_OS=$( cat /etc/os-relase | grep NAME | cut -d '"' -f2 )
+    TMP_OS=$(lsb_release -si )
+  else
+  then
+    TMP_OS=$( cat /etc/os-release | grep NAME | cut -d '"' -f2 )
   fi
   echo ${TMP_OS}
   read
