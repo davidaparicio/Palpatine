@@ -168,6 +168,7 @@ linux_init_os () {
     fi
   fi
 
+  echo "Test"
   if ! ${OS_SET} && ( whiptail \
     --title 'Linux Init : OS' \
     --yesno 'Do you want to choose the OS name (if no, the program will exit) ? ' ${WT_HEIGHT} ${WT_WIDTH} )
@@ -197,7 +198,8 @@ Program will now exit'  ${WT_HEIGHT} ${WT_WIDTH}
       ;;
     esac
     LINUX_OS=${CHOICE}
-  else
+  elif ! ${OS_SET}
+  then
     return 1
   fi
 
