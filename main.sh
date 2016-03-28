@@ -147,6 +147,8 @@ linux_init_os () {
   then
     TMP_OS=$( cat /etc/os-relase | grep NAME | cut -d '"' -f2 )
   fi
+  echo ${TMP_OS}
+  read
 
   if ( whiptail \
     --title 'Linux Init : OS' \
