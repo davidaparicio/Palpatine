@@ -316,4 +316,7 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH}
 
 # TODO : Check user root and through SSH
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd ${DIR}
+
 main_menu
