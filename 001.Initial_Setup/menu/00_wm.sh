@@ -47,7 +47,7 @@ APP_WM_STAT[6]="OFF"
 APP_WM_NAME[7]="LXQt"
 APP_WM_PKG[7]="lxqt-metapackage lxqt-panel openbox" 
 APP_WM_DESC[7]="Ligthweight desktop environnement, modular, portable"
-APP_WM_STAT[7]="ON"
+APP_WM_STAT[7]="OFF"
 LXQt_routine () {
 	ALL_REPO_ADD+=" ppa:lubuntu-dev/lubuntu-daily"
 }

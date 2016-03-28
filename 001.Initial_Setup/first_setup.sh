@@ -137,45 +137,39 @@ EOF
 # SETUP USER UPDATE MAIL PART
 ###############################################################################
 setup_user_update_mail_ssh_key () {
-  local USER=$1
+  local USERNAME=$1
   local EMAIL1=$2
 
-  local MAIL_OK=false
-  if [[ ${EMAIL1} == "empty" ]]
-  then
-    ask_email
-  fi
-  whiptail --title "SSH Key ${USER}" --msgbox "You will now be ask some informations to create your ssh key. First enter ${USER} password}" 8 60
-  su ${USER} -c "ssh-keygen -t rsa -b 4096 -C '${EMAIL1}'"
-  # Add  key to ssh-agent
-  su ${USER} -c "eval '$(ssh-agent -s)'"
-  whiptail --title "SSH Key ${CHOICE}" --msgbox 'You will now be ask your ssh key password' 8 60
-  su ${USER} -c "ssh-add ~/.ssh/id_rsa"
+  whiptail --title "SSH Key ${USERNAME}" --msgbox "You will now be ask some informations to create your ssh key. First enter ${USERNAME} password}" 8 60
+  su ${USERNAME} -c "ssh-keygen -t rsa -b 4096 -C '${EMAIL1}'; eval '$(ssh-agent -s)'"
+  whiptail --title "SSH Key ${USERNAME}" --msgbox "You will now be ask first ${USERNAME} password then ${USERNAME} ssh key password" 8 60
+  su ${USERNAME} -c "ssh-add ~/.ssh/id_rsa"
 
   echo "Here is the content of your ssh key : \n\n\
   Please copy it and past it into your version control system (github, bitbucket, gitlab...) \n\n\
   BE WARNED THAT IF YOU DON'T DO IT, FOLLOWING STEP MIGHT NOT BE WORKING"
-  su ${USER} -c "cat ~/.ssh/id_rsa.pub"
+  [[ ${USERNAME} == "root" ]] && cat /root/.ssh/id_rsa.pub || cat /home/${USER}/.ssh/id_rsa.pub
   return 2
 }
 
-setup_user_update_git_config() {
-  local USERNAME=$1
-  local FULLNAME=$2
+setup_user_update_mail_git_config() {
+  echo "Enter ${FUNCNAME} $1 $2 "
+  read
+  local EMAIL1=$1
 
-  if ( whiptail --title "Update ${USERNAME}" --yesno "Script will now running following command : \n\
-      - su $1 -c 'git config --global user.name '${FULLNAME}' \n\
-      local EMAIL=$3
-      - su $1 -c 'git config --global user.email '${EMAIL1}'  \n\
-      - su $1 -c 'git config --global push.default matching " 10 80)
+  if ( whiptail --title "Update ${USER_CHOOSEN}" --yesno "Script will now running following command for user ${USER_CHOOSEN}: \n\
+      - 'git config --global user.name '${USER_CHOOSEN_FULLNAME}' \n\
+      - 'git config --global user.email '${EMAIL1}'  \n\
+      - 'git config --global push.default matching \n\n\
+      You will now be ask password for user ${USER_CHOOSEN}" 10 80)
   then
-    su $1 -c "git config --global user.name '${FULLNAME}'"
-    su $1 -c "git config --global user.email '${EMAIL1}'"
-    su $1 -c "git config --global push.default matching"
+    su ${USER_CHOOSEN} -c "git config --global user.name '${USER_CHOOSEN_FULLNAME}';\
+              git config --global user.email '${EMAIL1}'; \
+              git config --global push.default matching;"
   else
     return 1
   fi
-  return 2
+  return 0
 }
 
 setup_user_update_mail_vcsh_dotfiles () {
@@ -232,7 +226,7 @@ setup_user_update_mail_ask () {
 
  while ! ${MAIL_OK}
  do
-   EMAIL1=$(whiptail --title "Update ${CHOICE}" --inputbox "Email adress of the user  " 8 78   3>&1 1>&2 2>&3)
+   EMAIL1=$(whiptail --title "Update ${USER_CHOOSEN}" --inputbox "Email adress of the user  " 8 78   3>&1 1>&2 2>&3)
    RET=$?
    [[ ${RET} -eq 1 ]] && return 1
 
@@ -241,13 +235,13 @@ setup_user_update_mail_ask () {
      whiptail --title "Update ${CHOICE}" --msgbox "This is not an email adresse. Please enter one of the form : \n\
      email.example@domain.com " 8 78   3>&1 1>&2 2>&3
    else
-     local EMAIL2=$(whiptail --title "Update ${CHOICE}" --inputbox "Please enter the email adress again  " 8 78   3>&1 1>&2 2>&3)
+     local EMAIL2=$(whiptail --title "Update ${USER_CHOOSEN}" --inputbox "Please enter the email adress again  " 8 78   3>&1 1>&2 2>&3)
      RET=$?
      [[ ${RET} -eq 1 ]] && return 1
 
      if [[ ! ${EMAIL1} == ${EMAIL2} ]]
      then
-       whiptail --title "Update  ${CHOICE}" --msgbox "Emails do not match" 8 78   3>&1 1>&2 2>&3
+       whiptail --title "Update  ${USER_CHOOSEN}" --msgbox "Emails do not match" 8 78   3>&1 1>&2 2>&3
      else
        return 2
      fi
@@ -322,20 +316,8 @@ setup_user_update_set_email () {
         setup_user_update_mail_ssh_key ${USER_CHOOSEN} ${EMAIL1}
       ;;
       "Git information" )
-        local USER_FOUND=false
-        local idx=0
-        while ! ${USER_FOUND}
-        do
-          if echo ${USER_CHOOSEN} | grep -q  ${USERNAME[${idx}]}
-          then
-            setup_user_update_mail_git_config ${USERNAME[${idx}]} ${FULL_NAME[${idx}]} ${EMAIL1}
-            USER_FOUND=true
-          else
-            echo "Programmer Error : User ${USER_CHOOSEN} not found"
-            read
-          fi
-          idx=$(( ${idx} + 1 ))
-        done
+        echo setup_user_update_mail_git_config ${EMAIL1}
+        setup_user_update_mail_git_config ${EMAIL1}
       ;;
       "Vcsh and mr dotfiles" )
         setup_user_update_mail_vcsh_dotfiles
@@ -415,10 +397,10 @@ setup_user_update_select () {
       idx=$(( $idx + 1 ))
     fi
   done
-  NB_USER=${#USERNAME[@]}
+  NB_USER=$(( ${#USERNAME[@]} - 1 ))
 
   local MENU_USER="whiptail --title 'Update User' --menu  'Select which user informations you want to update :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
-  for (( idx=0 ; idx <= ${NB_USER}-1 ; idx++ ))
+  for (( idx=0 ; idx <= ${NB_USER} ; idx++ ))
   do
     MENU_USER="${MENU_USER} '${USERNAME[${idx}]}' '${FULL_NAME[${idx}]}'"
   done
@@ -427,7 +409,25 @@ setup_user_update_select () {
   RET=$?
   [[ ${RET} -eq 1 ]] && return 1
 
-  CHOICE=$( cat results_menu.txt )
+  USER_CHOOSEN=$( cat results_menu.txt )
+
+  local USER_FOUND=false
+  local idxUser=0
+  while ! ${USER_FOUND}
+  do
+    if [[ ${idxUser} -gt ${NB_USER} ]]
+    then
+      echo "Programmer error : user ${USER_CHOOSEN} not found"
+      return 1
+    fi
+    if [[ "${USER_CHOOSEN}" =~ "${USERNAME[${idxUser}]}" ]]
+    then
+      USER_CHOOSEN_FULLNAME=${FULL_NAME[${idxUser}]}
+      USER_FOUND=true
+    fi
+    idxUser=$(( ${idxUser} + 1 ))
+  done
+  return 0
 }
 
 ###############################################################################
@@ -438,10 +438,12 @@ setup_user_update () {
   local USERNAME
   local NB_USER
   local USER_CHOOSEN
-
+  local USER_CHOOSEN_FULLNAME
   setup_user_update_select
-
-  USER_CHOOSEN=${CHOICE}
+  RET=$?
+  echo "Ret setup_user_update_select ${RET} ${USER_CHOOSEN_FULLNAME} ${USER_CHOOSEN}"
+  read
+  [[ ${RET} -eq 1 ]] && return 1
 
   local MENU_USER="whiptail --title 'Update user' --menu  'Select how you want to manage user update :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
   MENU_USER="${MENU_USER} 'Go though' 'Let the script go through all actions'"
@@ -463,7 +465,7 @@ setup_user_update () {
       setup_user_update_go_through
       RET=$?
       [[ ${RET} -eq 1 ]] && setup_user_update_loop
-      [[ ${RET} -eq 2 ]] && return 2
+      [[ ${RET} -eq 2 ]] && return 0
     ;;
     "Choose action" )
       setup_user_update_loop
@@ -476,6 +478,7 @@ setup_user_update () {
     ;;
     esac
   done
+  return 0
 }
 
 setup_user_add () {
@@ -598,6 +601,190 @@ setup_user_delete () {
 }
 
 ###############################################################################
+# SETUP INSTALL PACKAGE ASK PART
+###############################################################################
+setup_pkg_ask_finish () {
+  local HEIGHT=3
+  local ALL_PKG_CHOOSEN=""
+  local ALL_REPO_ADD=""
+
+  MENU_ASK_FINISH="whiptail --title 'Last Check Before Install' --yesno  'This is the list of program this script will install : "
+  for (( idxCat=1 ; idxCat <= ${NB_CAT} ; idxCat++ ))
+  do
+    local CAT_DONE=false
+    local NAME=${ALL_CAT[${idxCat}]}
+    local LOWER_NAME=`echo "${NAME}" | tr '[:upper:]' '[:lower:]'`
+    local UPPER_NAME=`echo "${NAME}" | tr '[:lower:]' '[:upper:]'`
+
+    source 001.Initial_Setup/menu/*${LOWER_NAME}.sh
+
+    local ARR_NAME="APP_${NAME}_NAME[@]"
+    local ARR_PKG="APP_${NAME}_PKG[@]"
+    local ARR_DESC="APP_${NAME}_DESC[@]"
+    local ARR_STAT="APP_${NAME}_STAT[@]"
+    local CAT_NAME="APP_${NAME}_CAT"
+
+    local APP_ARR_NAME=("${!ARR_NAME}")
+    local APP_ARR_PKG=("${!ARR_PKG}")
+    local APP_ARR_DESC=("${!ARR_DESC}")
+    local APP_ARR_STAT=("${!ARR_STAT}")
+    CAT_NAME=("${!CAT_NAME}")
+
+    local NB_APP=${#APP_ARR_NAME[@]}
+
+    for (( idx=0 ; idx <= ${NB_APP} ; idx++ ))
+    do
+      if [[ ${APP_ARR_STAT[${idx}]} == "ON" ]]
+      then
+        if ! ${CAT_DONE}
+        then
+            MENU_ASK_FINISH="${MENU_ASK_FINISH}  \n ==== Category : ${CAT_NAME} ===="
+            CAT_DONE=true
+            HEIGHT=$(( HEIGHT + 1 ))
+        fi
+        MENU_ASK_FINISH="${MENU_ASK_FINISH} \n= ${APP_ARR_NAME[${idx}]} : ${APP_ARR_DESC[${idx}]}"
+        HEIGHT=$(( HEIGHT + 1 ))
+
+        if type -t ${APP_ARR_NAME[${idx}]}_routine &>/dev/null
+        then
+          ${APP_ARR_NAME[${idx}]}_routine
+        fi
+        ALL_PKG_CHOOSEN+=" ${APP_ARR_PKG[${idx}]}"
+
+      fi
+    done
+    CAT_DONE=false
+    MENU_ASK_FINISH="${MENU_ASK_FINISH} \n "
+    HEIGHT=$(( HEIGHT + 2 ))
+  done
+  MENU_ASK_FINISH="${MENU_ASK_FINISH}' $HEIGHT $WT_WIDTH "
+  bash -c "${MENU_ASK_FINISH}"
+  RET=$?
+  if [[ ${RET} -eq 0 ]]
+  then
+    for i in ${ALL_REPO_ADD}
+    do
+      add-apt-repository -y $i
+    done
+    apt-get update && apt-get upgrade -y && apt-get install -y ${ALL_PKG_CHOOSEN}
+  elif [[ ${RET} -eq 1 ]]
+  then
+    return 1
+  fi
+  return 0
+}
+
+setup_pkg_ask_menu_app () {
+  local NAME=$1
+  local LOWER_NAME=`echo "${NAME}" | tr '[:upper:]' '[:lower:]'`
+  local UPPER_NAME=`echo "${NAME}" | tr '[:lower:]' '[:upper:]'`
+
+  source 001.Initial_Setup/menu/*${LOWER_NAME}.sh
+
+  local ARR_NAME="APP_${NAME}_NAME[@]"
+  local ARR_PKG="APP_${NAME}_PKG[@]"
+  local ARR_DESC="APP_${NAME}_DESC[@]"
+  local ARR_STAT="APP_${NAME}_STAT[@]"
+  local CAT_NAME="APP_${NAME}_CAT"
+
+  local APP_ARR_NAME=("${!ARR_NAME}")
+  local APP_ARR_PKG=("${!ARR_PKG}")
+  local APP_ARR_DESC=("${!ARR_DESC}")
+  local APP_ARR_STAT=("${!ARR_STAT}")
+  CAT_NAME=("${!CAT_NAME}")
+
+  local NB_APP=${#APP_ARR_NAME[@]}
+
+  local MENU_APP="whiptail --title '${CAT_NAME}' --checklist  'Select which ${CAT_NAME} you want to install :' \
+  $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
+  for (( idx=0 ; idx <= ${NB_APP}-1 ; idx++ ))
+  do
+    MENU_APP="${MENU_APP} '${APP_ARR_NAME[${idx}]}' '${APP_ARR_DESC[${idx}]}' '${APP_ARR_STAT[${idx}]}'"
+  done
+
+  bash -c "${MENU_APP}" 2> results_menu.txt
+  RET=$?
+  [[ ${RET} -eq 1 ]] && return 1
+
+  CHOICE=$( cat results_menu.txt )
+
+  for (( idx=0 ; idx <= ${NB_APP}-1 ; idx++ ))
+  do
+    if echo ${CHOICE} | grep -q "\"${APP_ARR_NAME[${idx}]}\""
+    then
+      CMD="sed -i 's/STAT\[${idx}\]=\"\(OFF\|ON\)\"/STAT\[${idx}\]=\"ON\"/g' 001.Initial_Setup/menu/*${LOWER_NAME}.sh"
+      eval ${CMD}
+    else
+      CMD="sed -i 's/STAT\[${idx}\]=\"\(OFF\|ON\)\"/STAT\[${idx}\]=\"OFF\"/g' 001.Initial_Setup/menu/*${LOWER_NAME}.sh"
+      eval ${CMD}
+    fi
+  done
+  return 0
+}
+
+setup_pkg_ask_all_cat () {
+  local CAT_NAME
+  local CAT_DESC
+
+  local MENU_CAT="whiptail --title 'Category of application' --menu  'Select which category of application you want to install :' \
+  $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
+  for (( idx=1 ; idx <= ${NB_CAT} ; idx++ ))
+  do
+    CAT_NAME="APP_${ALL_CAT[${idx}]}_CAT"
+    CAT_DESC="APP_${ALL_CAT[${idx}]}_EX"
+    MENU_CAT="${MENU_CAT} '${!CAT_NAME}' '${!CAT_DESC}'"
+  done
+  MENU_CAT="${MENU_CAT} 'CONTINUE' 'Continue to the next step'"
+
+  bash -c "${MENU_CAT}" 2> results_menu.txt
+  RET=$?
+  [[ ${RET} -eq 1 ]] && return 1
+
+  CHOICE=$( cat results_menu.txt )
+
+  [[ ${CHOICE} == "CONTINUE" ]] && return 2
+
+  for (( idxCat=0 ; idxCat <= ${NB_CAT} ; idxCat++ ))
+  do
+    CAT_NAME="APP_${ALL_CAT[${idxCat}]}_CAT"
+    if [[ ${!CAT_NAME} == ${CHOICE} ]]
+    then
+        setup_pkg_ask_menu_app ${ALL_CAT[${idxCat}]}
+    fi
+  done
+  return 0
+}
+
+setup_pkg_ask_all_cat_loop () {
+  while true
+  do
+    setup_pkg_ask_all_cat
+    RET=$?
+    [[ ${RET} -eq 1 ]] && return 1
+    if [[ ${RET} -eq 2 ]]
+    then
+      setup_pkg_ask_finish
+      RET=$?
+      [[ ${RET} -eq 0 ]] && return 0
+    fi
+  done
+}
+
+setup_pkg_ask_go_through () {
+  for (( idxCat=1 ; idxCat <= ${NB_CAT} ; idxCat++ ))
+  do
+    setup_pkg_ask_menu_app ${ALL_CAT[${idxCat}]}
+    RET=$?
+    [[ ${RET} -eq 1 ]] && idxCat==$(( ${NB_CAT} + 1 ))
+  done
+  if [[ ${RET} -eq 0 ]]
+  then
+    setup_pkg_ask_finish
+  fi
+  return ${RET}
+}
+
+###############################################################################
 # SETUP INSTALL PACKAGE PART
 ###############################################################################
 setup_pkg_fullupdate () {
@@ -618,31 +805,65 @@ setup_pkg_base () {
 }
 
 setup_pkg_ask () {
-  source 001.Initial_Setup/menu_function.sh
-	FUN=$(whiptail --title "Package to setup" --menu "Whatever the choice to make, \
-		you will be able to come back to this menu before running the setup. \n\
-		Do you whant to :" \
-		$WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --ok-button Select \
+  local ALL_APP_CAT=""
+  echo '#!/bin/bash  \n\n' > 001.Initial_Setup/menu_categories.sh
+  for i in 001.Initial_Setup/menu/*.sh
+  do
+    BEGIN=$( grep -in "# BEGIN " ${i} | cut -d ':' -f1 )
+    END=$( grep -in "# END " ${i} | cut -d ':' -f1 )
+    sed -n "${BEGIN},${END}p" ${i} >> 001.Initial_Setup/menu_categories.sh
+  done
+
+  source 001.Initial_Setup/menu_categories.sh
+
+  local ALL_CAT
+  local NB_CAT
+  local CAT_NAME
+
+  IFS=':' read -r -a ALL_CAT <<< "${ALL_APP_CAT}"
+  NB_CAT=$(( ${#ALL_CAT[@]} - 1 ))
+
+	PKG_ASK_MENU=$(whiptail --title "Package to setup" --menu "Please choose how \
+to manage package installation :" $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT --ok-button Select \
 		"1 Go through" "Let the script go through all categories of programm to setup." \
 		"2 Choose" "Choose the categorie of programs you want to setup." \
 		"3 Direct setup" "Setup my minimalistic apps." \
 		3>&1 1>&2 2>&3)
 	RET=$?
-  if [ $RET -eq 1 ]; then
-  	return 1
-  elif [ $RET -eq 0 ]; then
-    case "$FUN" in
-      1\ *) setup_ask_go_through ;;
-      2\ *) setup_ask_categories ;;
-      3\ *) setup_direct_finish ;;
+  [[ $RET -eq 1 ]] && return 1
+  case ${PKG_ASK_MENU} in
+      1\ *)
+        setup_pkg_ask_go_through
+        RET=$?
+        if [[ ${RET} -eq 1 ]]
+        then
+          setup_pkg_ask_all_cat_loop
+          RET=$?
+        fi
+        return ${RET}
+      ;;
+      2\ *)
+        setup_pkg_ask_all_cat_loop
+        RET=$?
+        if [[ ${RET} -eq 0 ]]
+        then
+          setup_pkg_ask_finish
+          RET=$?
+        fi
+        return ${RET}
+      ;;
+      3\ *)
+        setup_pkg_ask_finish
+        RET=$?
+        if [[ ${RET} -eq 1 ]]
+        then
+          setup_pkg_ask_all_cat_loop
+          RET=$?
+        fi
+        return ${RET}
+      ;;
       *) whiptail --msgbox "Programmer error: unrecognized option" 20 60 1 ;;
-    esac || RET=$?
-      if [ $RET -eq 2 ]; then
-        return 2
-      fi
-  else
-    return 1
-  fi
+  esac
 }
 
 ###############################################################################
@@ -656,8 +877,6 @@ setup_chg_usr_pwd () {
     whiptail --msgbox "You will now be asked to enter a new password for the user : ${USR} " 20 60 1
     passwd ${USR}
     RET=$?
-    echo ${RET}
-    read
     if [[ ${RET} -eq 1 ]]
     then
     	whiptail --msgbox "Password changed successfully" 20 60 1
