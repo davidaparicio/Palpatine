@@ -841,7 +841,7 @@ setup_pkg_fullupdate () {
   whiptail --title "Update Repo and Upgrade" --msgbox "\
   This script will now update and upgrade the system" 20 60
   # TODO : Manage multiple system
-  apt-get update && apt-get upgrade && apt-get dist-upgrade
+  apt-get update && apt-get upgrade -y && apt-get dist-upgrade -y
 }
 
 setup_pkg_base () {
