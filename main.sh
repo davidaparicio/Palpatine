@@ -102,6 +102,9 @@ linux_init_version () {
     TMP_VER=$( cat /etc/os-release | grep ^VERSION= | cut -d '"' -f 2 )
   fi
 
+  echo ${TMP_VER}
+  read
+
   if ( whiptail \
     --title 'Linux Init : OS' \
     --yesno "Linux version seems to be : \n\n ${TMP_VER} \n\nIs it right ? " ${WT_HEIGHT} ${WT_WIDTH} )
@@ -130,7 +133,7 @@ linux_init_version () {
         return 1
       elif [[ ${TMP_VER} =~ ${SUPPORTED_UBU_VER[@]} ]]
       then
-        LINUX_VER=TMP_VER
+        LINUX_VER=${TMP_VER}
         return 0
       else
         return 1
@@ -204,17 +207,7 @@ Program will now exit'  ${WT_HEIGHT} ${WT_WIDTH}
   then
     return 1
   fi
-
-  case ${LINUX_OS} in
-    *[Uu]buntu )
-      linux_init_version
-    ;;
-    # TODO : Check version Ubuntu > 14.04, debian > jessy
-    * )
-      echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}. "
-      return 1
-    ;;
-  esac
+  return 0
 }
 
 linux_init_arch () {
@@ -257,6 +250,10 @@ linux_init_arch () {
 
 linux_init () {
   linux_init_os
+  RET=$?
+  [[ ${RET} -eq 1 ]] && return 1
+
+  linux_init_version
   RET=$?
   [[ ${RET} -eq 1 ]] && return 1
 
