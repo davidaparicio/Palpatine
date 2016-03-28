@@ -212,7 +212,7 @@ Program will now exit'  ${WT_HEIGHT} ${WT_WIDTH}
 
 linux_init_arch () {
   local TMP_ARCH=$( arch )
-  if [[ ${TMP_} =~ 'arm' ]]
+  if [[ ${TMP_ARCH} =~ 'arm' ]]
   then
   	if ( whiptail --title 'Linux Init : Archictecture' --yesno "\
   	It seems you are on an arm machine. \n \
