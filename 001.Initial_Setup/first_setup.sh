@@ -938,35 +938,20 @@ setup_chg_usr_pwd () {
   done
 }
 
-setup_ask_arch () {
-  ARCH=$( arch )
-  if echo ${ARCH} | grep "arm"
+setup_expand_rootfs () {
+  if ${LINUX_IS_RPI}
   then
-  	if ( whiptail --title "Setup RPi" --yesno "\
-  	It seems you are on an arm machine. \n \
-  	Is it a raspberry ? " 20 60 )
-  	then
-  		ARCH="RPI"
-  		if ( whiptail --title "Setup RPi" --yesno "\
-  		Do you want to expand rootfs ? \n"  20 60 )
-  		then
-    		expand_rootfs
-  		fi
-  	else
-  		ARCH="ARM"
-  	fi
-  elif [[ "${ARCH}" == "x86_64" ]]
-  then
-  	if ( whiptail --title "Setup Archictecture" --yesno "\
-  	It seems you are on an ${ARCH} machine. \n\
-  	Is it alright ? "  20 60 )
-  	then
-  		ARCH="x86-64"
-  	else
-  		ARCH="Unknown_x86_64"
-  	fi
-  	# TODO : Add other arch
+    if ( whiptail --title 'Expand Rootfs' --yesno 'Are you sure  you are on a RPi and you want to expand rootfs ?
+I WILL NOT BE RESPONSIBLE IF DAMAGE OCCURS TO YOUR ROOTFS' ${WT_HEIGHT} ${WT_WIDTH} )
+    then
+      expand_rootfs
+      RET=$?
+      [[ ${RET} -eq 1 ]] && return 1
+    fi
+  else
+    whiptail --title 'Expand Rootfs' --yesno 'You said that this linux distribution is not an RPi one. Nothing to do' ${WT_HEIGHT} ${WT_WIDTH}
   fi
+  return 0
 }
 
 setup_chg_locale() {
@@ -1119,7 +1104,7 @@ first_setup_go_through () {
 first_setup_loop () {
   local SETUP_LOOP="whiptail --title 'First Setup' --menu  'Select how do you whant to manage first setup :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT"
   SETUP_LOOP="${SETUP_LOOP} 'Change root password' 'Change root password'"
-  SETUP_LOOP="${SETUP_LOOP} 'Confirm distro' 'Ask you to confirm some linux distribution information'"
+  SETUP_LOOP="${SETUP_LOOP} 'Expand rootfs' 'Will expand rootfs (NB: Will only work on RPi)'"
   SETUP_LOOP="${SETUP_LOOP} 'Change locale' 'Change Locale information'"
   SETUP_LOOP="${SETUP_LOOP} 'Change timezone' 'Change timezone'"
   SETUP_LOOP="${SETUP_LOOP} 'Change keyboard' 'Change keyboard layout'"
@@ -1141,8 +1126,8 @@ first_setup_loop () {
       "Change root password" )
         setup_chg_usr_pwd 'root'
       ;;
-      "Confirm distro" )
-        setup_ask_arch
+      "Expand rootfs" )
+        setup_expand_rootfs
       ;;
       "Change locale" )
         setup_chg_locale
