@@ -147,7 +147,6 @@ linux_init_os () {
   then
     TMP_OS=$(lsb_release -si )
   else
-  then
     TMP_OS=$( cat /etc/os-release | grep NAME | cut -d '"' -f2 )
   fi
   echo ${TMP_OS}
