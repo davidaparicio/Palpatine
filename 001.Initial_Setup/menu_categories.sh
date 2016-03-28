@@ -34,3 +34,23 @@ ALL_APP_CAT+=':FM'
 APP_FM_CAT="File Manager"
 APP_FM_EX="File Manager"
 # end FM INFO
+# BEGIN GRAPH INFO
+ALL_APP_CAT+=':GRAPH'
+APP_GRAPH_CAT="Graphics"
+APP_GRAPH_EX="Graphics editing tools"
+# end GRAPH INFO
+# BEGIN WWW INFO
+ALL_APP_CAT+=':WWW'
+APP_WWW_CAT="Internet"
+APP_WWW_EX="Set of internet related apps"
+# end WWW INFO
+# BEGIN OFFICE INFO
+ALL_APP_CAT+=':OFFICE'
+APP_OFFICE_CAT="Office"
+APP_OFFICE_EX="Office Application"
+# END OFFICE INFO
+# BEGIN MEDIA INFO
+ALL_APP_CAT+=':MEDIA'
+APP_MEDIA_CAT="Media Application"
+APP_MEDIA_EX="Media Application"
+# end MEDIA INFO
