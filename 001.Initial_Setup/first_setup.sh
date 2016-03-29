@@ -1044,9 +1044,9 @@ first_setup_go_through () {
     [[ ${RET} -eq 1 ]] && return 1
   fi
 
-  if ( whiptail --title 'Confirm distro' --yesno 'Do you want to confirm information about linux disctribution ? ' 10 60 )
+  if ( whiptail --title 'Update sudoer' --yesno 'Do you want to update sudoer files by adding line "Defaults rootpw" ? ' 10 60 )
   then
-    setup_ask_arch
+    setup_update_sudoer
     RET=$?
     [[ ${RET} -eq 1 ]] && return 1
   fi
@@ -1068,13 +1068,6 @@ first_setup_go_through () {
   if ( whiptail --title 'Change keyboard' --yesno 'Do you want to change the keyboard layout ? ' 10 60 )
   then
     setup_config_keyboard
-    RET=$?
-    [[ ${RET} -eq 1 ]] && return 1
-  fi
-
-  if ( whiptail --title 'Update sudoer' --yesno 'Do you want to update sudoer files ? ' 10 60 )
-  then
-    setup_update_sudoer
     RET=$?
     [[ ${RET} -eq 1 ]] && return 1
   fi
@@ -1104,6 +1097,7 @@ first_setup_go_through () {
 first_setup_loop () {
   local SETUP_LOOP="whiptail --title 'First Setup' --menu  'Select how do you whant to manage first setup :' ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   SETUP_LOOP="${SETUP_LOOP} 'Change root password' 'Change root password'"
+  SETUP_LOOP="${SETUP_LOOP} 'Change sudoer file' 'Will change sudoers file to add line Defaults rootpw'"
   SETUP_LOOP="${SETUP_LOOP} 'Expand rootfs' 'Will expand rootfs (NB: Will only work on RPi)'"
   SETUP_LOOP="${SETUP_LOOP} 'Change locale' 'Change Locale information'"
   SETUP_LOOP="${SETUP_LOOP} 'Change timezone' 'Change timezone'"
@@ -1125,6 +1119,9 @@ first_setup_loop () {
       ;;
       "Change root password" )
         setup_chg_usr_pwd 'root'
+      ;;
+      "Change sudoer file" )
+        setup_update_sudoer
       ;;
       "Expand rootfs" )
         setup_expand_rootfs
@@ -1173,11 +1170,11 @@ first_setup () {
         first_setup_go_through
         RET=$?
         [[ ${RET} -eq 1 ]] && first_setup_loop
-        [[ ${RET} -eq 0 ]] && return
+        [[ ${RET} -eq 0 ]] && return 0
       ;;
       "Choose actions" )
         first_setup_loop
-        [[ ${RET} -eq 0 ]] && return
+        [[ ${RET} -eq 0 ]] && return 0
       ;;
       * )
         echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}. "
