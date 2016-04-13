@@ -34,7 +34,7 @@ APP_WM_STAT[4]="OFF"
 APP_WM_NAME[5]="Awesome_3.5"
 APP_WM_PKG[5]="awesome awesome-extra"
 APP_WM_DESC[5]="A light and very customable WM v3.5"
-APP_WM_STAT[5]="ON"
+APP_WM_STAT[5]="OFF"
 Awesome_3.5_routine () {
 	ALL_REPO_ADD+=" ppa:klaus-vormweg/awesome"
 }
