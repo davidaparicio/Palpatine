@@ -7,6 +7,6 @@ APP_FM_EX="File Manager"
 # END FM INFO
 
 APP_FM_NAME[0]="PcmanFM"
-APP_FM_PKG[0]="pcman"
+APP_FM_PKG[0]="pcmanfm"
 APP_FM_DESC[0]="Lightweight and fast file manager"
 APP_FM_STAT[0]="ON"

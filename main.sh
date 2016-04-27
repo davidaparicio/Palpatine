@@ -210,31 +210,31 @@ linux_init_arch () {
   local TMP_ARCH=$( arch )
   if [[ ${TMP_ARCH} =~ 'arm' ]]
   then
-  	if ( whiptail --title 'Linux Init : Archictecture' --yesno "\
-  	It seems you are on an arm machine. \n \
-  	Is it a raspberry ? " ${WT_HEIGHT} ${WT_WIDTH} )
-  	then
-  		LINUX_IS_RPI=true
+    if ( whiptail --title 'Linux Init : Archictecture' --yesno "\
+    It seems you are on an arm machine. \n \
+    Is it a raspberry ? " ${WT_HEIGHT} ${WT_WIDTH} )
+    then
+      LINUX_IS_RPI=true
       LINUX_ARCH=${TMP_ARCH}
-  	else
+    else
       whiptail --title 'Linux Init : Architecture' \
       --msgbox 'Sorry but for the moment, only raspberry is supported. \
       The script will now exit' ${WT_HEIGHT} ${WT_WIDTH}
       return 1
-  	fi
+    fi
   elif [[ ${TMP_ARCH} == 'x86_64' ]]
   then
-  	if ( whiptail --title 'Linux Init : Archictecture' --yesno "\
-  	It seems you are on an ${TMP_ARCH} machine. \n\
-  	Is it alright ? "  ${WT_HEIGHT} ${WT_WIDTH} )
-  	then
-  		LINUX_ARCH=${TMP_ARCH}
-  	else
+    if ( whiptail --title 'Linux Init : Archictecture' --yesno "\
+    It seems you are on an ${TMP_ARCH} machine. \n\
+    Is it alright ? "  ${WT_HEIGHT} ${WT_WIDTH} )
+    then
+      LINUX_ARCH=${TMP_ARCH}
+    else
       whiptail --title 'Linux Init : Architecture' \
       --msgbox 'An error occur during initialisation of the architecture. \
       The script will now exit' ${WT_HEIGHT} ${WT_WIDTH}
       return 1
-  	fi
+    fi
   else
     whiptail --title 'Linux Init : Architecture' \
     --msgbox 'Sorry but for the moment, your architecure ${TMP_ARCH} is not supported. \
