@@ -34,7 +34,7 @@ APP_WM_STAT[4]="OFF"
 APP_WM_NAME[5]="Awesome_3.5"
 APP_WM_PKG[5]="awesome awesome-extra"
 APP_WM_DESC[5]="A light and very customable WM v3.5"
-APP_WM_STAT[5]="OFF"
+APP_WM_STAT[5]="ON"
 Awesome_3.5_routine () {
 	ALL_REPO_ADD+=" ppa:klaus-vormweg/awesome"
 }
@@ -42,7 +42,7 @@ Awesome_3.5_routine () {
 APP_WM_NAME[6]="KDE"
 APP_WM_PKG[6]="kde-full"
 APP_WM_DESC[6]="Full desktop environnement, graphical, easy to use."
-APP_WM_STAT[6]="OFF"
+APP_WM_STAT[6]="ON"
 
 APP_WM_NAME[7]="LXQt"
 APP_WM_PKG[7]="lxqt-metapackage lxqt-panel openbox"
