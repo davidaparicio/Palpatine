@@ -128,9 +128,7 @@ esac
 EOF
   chmod +x /etc/init.d/resize2fs_once &&
   update-rc.d resize2fs_once defaults &&
-  if [ "${INTERACTIVE}" = True ]; then
-    whiptail --msgbox "Root partition has been resized.\nThe filesystem will be enlarged upon the next reboot" 20 60 2
-  fi
+  whiptail --msgbox "Root partition has been resized.\nThe filesystem will be enlarged upon the next reboot" 20 60 2
 }
 
 ###############################################################################
@@ -153,8 +151,8 @@ setup_user_update_mail_ssh_key () {
     #Description
     #Password matching expression.
     #Match all alphanumeric character and predefined wild characters.
-    #Password must consists of at least 8 characters and not more than 15 characters.
-    if [[ ! "${PASSWORD1}" =~ ^([a-zA-Z0-9@\*#]{8,15})$ ]]
+    #Password must consists of at least 8 characters and not more than 3333332 characters.
+    if [[ ! "${PASSWORD1}" =~ ^([a-zA-Z0-9@\*\#]{8,32})$ ]]
     then
       whiptail --title "SSH Key ${USER_CHOOSEN}" --msgbox "Password must be at least eight char long and contains alphanumeric char and predefined wild characters " 8 78   3>&1 1>&2 2>&3
     else
