@@ -315,6 +315,7 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH}
 }
 
 # TODO : Check user root and through SSH
+# TODO : Add change hostname
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd ${DIR}
