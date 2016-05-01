@@ -845,9 +845,9 @@ setup_pkg_fullupdate () {
 setup_pkg_base () {
   whiptail --title "Setup Base Package" --msgbox "\
   This script will now install the following packages : \n\
-  	- apt-transport-https \n\
-  	- software-properties-common \n\
-  	- python-software-properties \n" 20 60
+    - apt-transport-https \n\
+    - software-properties-common \n\
+    - python-software-properties \n" 20 60
   # TODO : Manage multiple system
   apt-get install -y apt-transport-https software-properties-common python-software-properties
 }
@@ -871,13 +871,13 @@ setup_pkg_ask () {
   IFS=':' read -r -a ALL_CAT <<< "${ALL_APP_CAT}"
   NB_CAT=$(( ${#ALL_CAT[@]} - 1 ))
 
-	PKG_ASK_MENU=$(whiptail --title "Package to setup" --menu "Please choose how \
+  PKG_ASK_MENU=$(whiptail --title "Package to setup" --menu "Please choose how \
 to manage package installation :" ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} --ok-button Select \
-		"1 Go through" "Let the script go through all categories of programm to setup." \
-		"2 Choose" "Choose the categorie of programs you want to setup." \
-		"3 Direct setup" "Setup my minimalistic apps." \
-		3>&1 1>&2 2>&3)
-	RET=$?
+    "1 Go through" "Let the script go through all categories of programm to setup." \
+    "2 Choose" "Choose the categorie of programs you want to setup." \
+    "3 Direct setup" "Setup my minimalistic apps." \
+    3>&1 1>&2 2>&3)
+  RET=$?
   [[ $RET -eq 1 ]] && return 1
   case ${PKG_ASK_MENU} in
       1\ *)
@@ -927,7 +927,7 @@ setup_chg_usr_pwd () {
     RET=$?
     if [[ ${RET} -eq 1 ]]
     then
-    	whiptail --msgbox "Password changed successfully" 20 60 1
+      whiptail --msgbox "Password changed successfully" 20 60 1
       return 0
     elif ! ( whiptail --yesno "Failed to change password. Do you wan to retry ? " 20 60 1 )
     then
@@ -973,25 +973,25 @@ setup_update_sudoer () {
   then
     whiptail --title "Update sudoer file" --msgbox "\
     The following line is already present in /etc/sudoers \n \n\
-    		\"Defaults rootpw\" \n \n\
+        \"Defaults rootpw\" \n \n\
     Nothing to do. Will continue" 20 60
     return 0
   elif ( whiptail --title "Update sudoer file" --yesno "\
   Do you want to add the following line to sudoer ? \n \n\
-  		\"Defaults rootpw\" \n \n\
+      \"Defaults rootpw\" \n \n\
   This will make OS to ask root password when using sudo instead of user password." 20 60  )
   then
-  	sudo sed -i.bak -e "\$aDefaults rootpw" /etc/sudoers
-  	return 0
+    sudo sed -i.bak -e "\$aDefaults rootpw" /etc/sudoers
+    return 0
   else
-  	return 1
+    return 1
   fi
 }
 
 setup_all_pkg() {
-	setup_pkg_fullupdate
-	setup_pkg_base
-	setup_pkg_ask
+  setup_pkg_fullupdate
+  setup_pkg_base
+  setup_pkg_ask
 }
 
 setup_user () {
