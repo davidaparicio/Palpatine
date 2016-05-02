@@ -44,6 +44,32 @@ calc_wt_size() {
   WT_MENU_HEIGHT=$((${WT_HEIGHT}-9))
 }
 
+top_level_parent_pid () {
+  # Look up the parent of the given PID.
+  pid=${1:-$$}
+  stat=($(</proc/${pid}/stat))
+  ppid=${stat[3]}
+
+  # /sbin/init always has a PID of 1, so if you reach that, the current PID is
+  # the top-level parent. Otherwise, keep looking.
+  # As the recurse process is here to find if connected through ssh, then it
+  # will stop if one of the parent process is ssh
+  if ps -p $ppid | grep -q ssh
+  then
+    IS_SSH=true
+    return 0
+  fi
+
+  if ! [[ ${ppid} -eq 1 ]]
+  then
+    top_level_parent_pid ${ppid}
+  fi
+}
+
+###############################################################################
+# INTERACTIVE MENU
+###############################################################################
+# Package manager selection
 linux_init_pkg_mgr () {
   local nb_pkg_mgr=${#SUPPORTED_PKG_MGR[@]}
   local exist_pkg_mgr=false
@@ -52,7 +78,7 @@ linux_init_pkg_mgr () {
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   local no_pkg_mgr_menu="whiptail --title 'Linux Init : Package Manager' \
     --msgbox 'Sorry but you do not to have one of the package manager supported installed.
-    Here is the list of supported package manager :
+Here is the list of supported package manager :
     "
 
   for (( idx=0; idx < ${nb_pkg_mgr}; idx++ ))
@@ -90,6 +116,7 @@ linux_init_pkg_mgr () {
   return 0
 }
 
+# Function to choose OS/VER/ARCH
 choose_linux_var () {
   local linux_var=$1
   local arr_supported_var
@@ -100,11 +127,12 @@ choose_linux_var () {
     arr_supported_var=("${!arr_supported_var}")
   elif [[ "${linux_var}" == "VER" ]]
   then
-    # Get supported version for validated OS and validate it
+    # Get supported version for validated OS
     arr_supported_var="SUPPORTED_${LINUX_OS^^}_VER[@]"
     arr_supported_var=("${!arr_supported_var}")
   elif [[ "${linux_var}" == "ARCH" ]]
   then
+    # Get supported architecture
     arr_supported_var="SUPPORTED_ARCH[@]"
     arr_supported_var=("${!arr_supported_var}")
   fi
@@ -150,6 +178,7 @@ If you choose \"NONE OF THEM\", the program will exit) ? ' ${WT_HEIGHT} ${WT_WID
   fi
 }
 
+# Ask user if arch is arm if it's a raspberry
 ask_rpi () {
   if [[ ${TMP_ARCH} =~ 'arm' ]]
   then
@@ -249,44 +278,21 @@ linux_init_os () {
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
     return 0
   fi
-  return 0
 }
 
 linux_init () {
   linux_init_os
-  RET=$? ;
-  [[ ${RET} -eq 1 ]] && return 1
+  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
 
   linux_init_pkg_mgr
   RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-return 0
+  return 0
 }
 
 ###############################################################################
 # ALL SOURCE
 ###############################################################################
 source 001.Initial_Setup/first_setup.sh
-
-top_level_parent_pid () {
-  # Look up the parent of the given PID.
-  pid=${1:-$$}
-  stat=($(</proc/${pid}/stat))
-  ppid=${stat[3]}
-
-  # /sbin/init always has a PID of 1, so if you reach that, the current PID is
-  # the top-level parent. Otherwise, keep looking.
-  if ps -p $ppid | grep -q ssh
-  then
-    IS_SSH=true
-  fi
-
-  if ! [[ ${ppid} -eq 1 ]]
-  then
-    top_level_parent_pid ${ppid}
-  fi
-}
-
-
 
 test_root_ssh () {
   [[ $( whoami ) == "root" ]] && IS_ROOT=true
@@ -335,11 +341,10 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
   do
     bash -c "${MAIN_MENU} " 2> results_menu.txt
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-
     CHOICE=$( cat results_menu.txt )
 
     case ${CHOICE} in
-      "FINISH" )
+    "FINISH" )
       if [[ ${ASK_TO_REBOOT} -eq 1 ]] \
         && (whiptail --title 'Reboot needed' \
         --yesno 'A reboot is needed. Do you want to reboot now ? '  10 80 )
@@ -348,7 +353,7 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
       fi
       return 0
       ;;
-     "First setup" )
+    "First setup" )
       first_setup
       ;;
     * ) echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}. "
@@ -359,6 +364,8 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
 }
 
 # TODO : Add change hostname
+# TODO : Separate initialisation, package installation and user management.
+# TODO : If whiptail is not install, ask package manager and install whiptail
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd ${DIR}
