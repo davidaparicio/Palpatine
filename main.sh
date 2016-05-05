@@ -319,9 +319,7 @@ ${WT_HEIGHT} ${WT_WIDTH}
 }
 
 main_menu () {
-  local MAIN_MENU
-  calc_wt_size
-  test_root_ssh
+  local main_menu
 
   whiptail \
   --title 'Linux Config' \
@@ -332,14 +330,14 @@ main_menu () {
 Some part of your linux distribution are not supported yet.\n
 The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
 
-  MAIN_MENU="whiptail --title 'Main Menu' --menu  'Select what you want to do :' \
+  main_menu="whiptail --title 'Main Menu' --menu  'Select what you want to do :' \
   ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
-  MAIN_MENU="${MAIN_MENU} 'Initial setup' 'Access to initial config such as timezone, hostname...'"
-  MAIN_MENU="${MAIN_MENU} 'FINISH'        'Exit the script'"
+  main_menu="${main_menu} 'Initial setup' 'Access to initial config such as timezone, hostname...'"
+  main_menu="${main_menu} 'FINISH'        'Exit the script'"
 
   while true
   do
-    bash -c "${MAIN_MENU} " 2> results_menu.txt
+    bash -c "${main_menu} " 2> results_menu.txt
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
     CHOICE=$( cat results_menu.txt )
 
@@ -364,16 +362,97 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
   done
 }
 
-# TODO : Add change hostname
+################################################################################
+# NOT INTERACTIVE MENU JUST ASK PACKAGE MANAGER TO USE TO INSTAL WHIPTAIL
+################################################################################
+
+install_whiptail () {
+  local sep_line=$( printf "%-${WT_WIDTH}s" "=")
+  sep_line=${sep_line// /=}
+
+  local nb_pkg_mgr=${#SUPPORTED_PKG_MGR[@]}
+  local exist_pkg_mgr=false
+  local pkg_mgr_menu="
+${sep_line}
+| Pre-Init : Choose package manager
+${sep_line}
+|
+|  WARNING : whiptail does not seems to be install. Which package manager use
+|  to install whiptail ?
+|  To do so, enter the number in front of the name of you package manager.
+|"
+  local no_pkg_mgr_menu="
+================================================================================
+|                    Pre-Init : No supported package manager                   |
+================================================================================
+|
+|  WARNING : whiptail does not seems to be install and you do not seem to have
+|  a supported package manager.
+|  Here is a list of supported package manager
+|"
+
+  for (( idx=0; idx < ${nb_pkg_mgr}; idx++ ))
+  do
+    if type -t ${SUPPORTED_PKG_MGR[idx]} &>/dev/null
+    then
+      exist_pkg_mgr=true
+    fi
+    pkg_mgr_menu="${pkg_mgr_menu}
+|  ${idx} - ${SUPPORTED_PKG_MGR[idx]} "
+    no_pkg_mgr_menu="${no_pkg_mgr_menu}
+|  ${idx} - ${SUPPORTED_PKG_MGR[idx]} "
+  done
+
+  pkg_mgr_menu="${pkg_mgr_menu}
+|
+${sep_line}"
+  no_pkg_mgr_menu="${pkg_mgr_menu}
+|
+${sep_line}"
+  if ! ${EXIST_PKG_MGR}
+  then
+      echo ${no_pkg_mgr_menu}
+      return 1
+  fi
+
+  while true
+  do
+    clear
+    echo "${pkg_mgr_menu}"
+    read CHOICE
+    if [[ ${CHOICE} == [0-9] ]] && [[ ${CHOICE} -lt ${#SUPPORTED_PKG_MGR[@]} ]]
+    then
+      LINUX_PKG_MGR=${SUPPORTED_PKG_MGR[CHOICE]}
+      $LINUX_PKG_MGR install whiptail
+      return 0
+    else
+      echo ${sep_line}
+      echo 'Please enter a valid number'
+      echo 'Do you want to retry ? [Y/n]'
+      read CHOICE
+      if ! [[ ${#CHOICE} -eq 0 ]] || ! [[ "YyYesyes" =~ ${CHOICE} ]]
+      then
+        clear
+        echo ${sep_line}
+        echo 'Setup aborted !'
+        read
+        exit 1
+      fi
+    fi
+  done
+}
+
 # TODO : Separate initialisation, package installation and user management.
-# TODO : If whiptail is not install, ask package manager and install whiptail
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd ${DIR}
 
-if type -t whiptail &>/dev/null
+calc_wt_size
+test_root_ssh
+
+if ! type -t whiptail &>/dev/null
 then
-  INTERACTIVE=false
+  install_whiptail
 fi
 
 main_menu
