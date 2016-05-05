@@ -212,7 +212,7 @@ linux_init_os () {
   tmp_os_name=$( cat /etc/os-release | grep ^NAME | cut -d '"' -f2 )
 
   if ( whiptail \
-    --title 'Linux Init' \
+    --title 'Linux Init : Validation of your OS' \
     --yesno "You seems to be running on : \n\n ${tmp_os_name} - ${tmp_ver_name} - ${tmp_arch} \n\nIs it right ? " ${WT_HEIGHT} ${WT_WIDTH} )
   then
     # Validate OS
@@ -292,7 +292,7 @@ linux_init () {
 ###############################################################################
 # ALL SOURCE
 ###############################################################################
-source 001.Initial_Setup/first_setup.sh
+source 001.Initial_Setup/initial_setup.sh
 
 test_root_ssh () {
   [[ $( whoami ) == "root" ]] && IS_ROOT=true
@@ -334,8 +334,8 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
 
   MAIN_MENU="whiptail --title 'Main Menu' --menu  'Select what you want to do :' \
   ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
-  MAIN_MENU="${MAIN_MENU} 'First setup' 'Let the script go through all actions'"
-  MAIN_MENU="${MAIN_MENU} 'FINISH' 'Exit the script'"
+  MAIN_MENU="${MAIN_MENU} 'Initial setup' 'Access to initial config such as timezone, hostname...'"
+  MAIN_MENU="${MAIN_MENU} 'FINISH'        'Exit the script'"
 
   while true
   do
@@ -345,16 +345,17 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
 
     case ${CHOICE} in
     "FINISH" )
-      if [[ ${ASK_TO_REBOOT} -eq 1 ]] \
-        && (whiptail --title 'Reboot needed' \
-        --yesno 'A reboot is needed. Do you want to reboot now ? '  10 80 )
+      if [[ ${ASK_TO_REBOOT} ]] \
+        && (whiptail --title 'REBOOT NEEDED' \
+          --yesno 'A reboot is needed. Do you want to reboot now ? ' \
+          ${WT_HEIGHT} ${WT_WIDTH} )
       then
         reboot
       fi
       return 0
       ;;
-    "First setup" )
-      first_setup
+    "Initial setup" )
+      initial_setup
       ;;
     * ) echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}. "
       return 1
@@ -376,3 +377,4 @@ then
 fi
 
 main_menu
+
