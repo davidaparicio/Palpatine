@@ -6,7 +6,10 @@ APP_GRAPH_CAT="Graphics"
 APP_GRAPH_EX="Graphics editing tools"
 # END GRAPH INFO
 
-APP_GRAPH_NAME[0]="GIMP Image Editor"
-APP_GRAPH_PKG[0]="gimp"
-APP_GRAPH_DESC[0]="Create images and edit photographs"
-APP_GRAPH_STAT[0]="OFF"
+idx=0
+
+APP_GRAPH_NAME[idx]="GIMP Image Editor"
+APP_GRAPH_PKG[idx]="gimp"
+APP_GRAPH_DESC[idx]="Create images and edit photographs"
+APP_GRAPH_STAT[idx]="OFF"
+(( idx++ ))

@@ -136,8 +136,6 @@ EOF
 }
 
 ###############################################################################
-# FIRST SETUP PART
-###############################################################################
 setup_chg_root_pwd () {
   while true
   do
@@ -239,7 +237,8 @@ setup_update_sudoer () {
   elif ( whiptail --title '001.Initial Setup : Update sudoer file'\
     --yesno ' Do you want to add the following line to sudoer ? \n\n
   "Defaults rootpw" \n\n
-This will make OS to ask root password when using sudo instead of user password.' ${WT_HEIGHT} ${WT_WIDTH}  )
+This will make OS to ask root password when using sudo instead of user password.'\
+    ${WT_HEIGHT} ${WT_WIDTH} )
   then
     sudo sed -i.bak -e '$ a\Defaults rootpw' /etc/sudoers
     return 0
@@ -315,21 +314,18 @@ initial_setup_loop () {
   then
     setup_loop="${setup_loop} 'Expand rootfs'       'Will expand rootfs (NB: Will only work on RPi)'"
   fi
-  setup_loop="${setup_loop} 'Change root password' 'Change root password'"
-  setup_loop="${setup_loop} 'Change sudoer file'   'Will change sudoers file to add line Defaults rootpw'"
-  setup_loop="${setup_loop} 'Change locale'        'Change Locale information'"
-  setup_loop="${setup_loop} 'Change timezone'      'Change timezone'"
-  setup_loop="${setup_loop} 'Change keyboard'      'Change keyboard layout'"
-  setup_loop="${setup_loop} 'Change hostname'      'Change hostname'"
-  setup_loop="${setup_loop} '<-- Back'             'Go to main menu'"
+  setup_loop="${setup_loop} 'Change root password' 'Change root password' \
+  'Change sudoer file'   'Will change sudoers file to add line Defaults rootpw' \
+  'Change locale'        'Change Locale information' \
+  'Change timezone'      'Change timezone' \
+  'Change keyboard'      'Change keyboard layout' \
+  'Change hostname'      'Change hostname' \
+  '<-- Back'             'Go to main menu'"
   while true
   do
-
     bash -c "${setup_loop}" 2> results_menu.txt
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-
     CHOICE=$( cat results_menu.txt )
-
     case ${CHOICE} in
       '<-- Back' )
         return 1
@@ -366,35 +362,31 @@ initial_setup_loop () {
 initial_setup () {
   local initial_setup="whiptail --title '001.Initial Setup' \
     --menu  'Select how do you whant to manage first setup :' \
-    ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
-  initial_setup="${initial_setup} 'Go through'     'Let the script go through all actions'"
-  initial_setup="${initial_setup} 'Choose actions' 'Let you choose what action you want to do'"
-  initial_setup="${initial_setup} '<-- Back'       'Return to main menu'"
-  while true
-  do
-    bash -c "${initial_setup}" 2> results_menu.txt
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
+    'Go through'     'Let the script go through all actions' \
+    'Choose actions' 'Let you choose what action you want to do' \
+    '<-- Back'       'Return to main menu'"
 
-    CHOICE=$( cat results_menu.txt )
-
-    case ${CHOICE} in
-      '<-- Back' )
-        return 0
-      ;;
-      'Go through' )
-        initial_setup_go_through
-        RET=$? ; [[ ${RET} -eq 0 ]] && return 0
-        initial_setup_loop
-        RET=$? ; [[ ${RET} -eq 0 ]] && return 0 || return 1
-      ;;
-      'Choose actions' )
-        initial_setup_loop
-        RET=$? ; [[ ${RET} -eq 0 ]] && return 0 || return 1
-      ;;
-      * )
-        echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}. "
-        return 1
-      ;;
-   esac
-  done
+  bash -c "${initial_setup}" 2> results_menu.txt
+  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+  CHOICE=$( cat results_menu.txt )
+  case ${CHOICE} in
+    '<-- Back' )
+      return 0
+    ;;
+    'Go through' )
+      initial_setup_go_through
+      RET=$? ; [[ ${RET} -eq 0 ]] && return 0
+      initial_setup_loop
+      RET=$? ; [[ ${RET} -eq 0 ]] && return 0 || return 1
+    ;;
+    'Choose actions' )
+      initial_setup_loop
+      RET=$? ; [[ ${RET} -eq 0 ]] && return 0 || return 1
+    ;;
+    * )
+      echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}. "
+      return 1
+    ;;
+ esac
 }

@@ -6,12 +6,20 @@ APP_<CAT>_CAT="Categorie Name"
 APP_<CAT>_EX="Categorie Description"
 # end <CAT> INFO
 
-APP_<CAT>_NAME[0]="<Name>"
-APP_<CAT>_PKG[0]="package"
-APP_<CAT>_DESC[0]="Description of the package"
-APP_<CAT>_STAT[0]="OFF"
-<Name>_routine () {
-	ALL_REPO_ADD+=" ppa:<name>/<repo>"
-    ALL_PKG_CHOOSEN+=" APP_<CAT>_PKG[0]"
+idx=0
 
+APP_<CAT>_NAME[idx]="App_Name"
+APP_<CAT>_PKG[idx]="package"
+APP_<CAT>_DESC[idx]="Description of the package"
+APP_<CAT>_STAT[idx]="OFF"
+App_Name_routine () {
+  case ${LINUX_OS} in
+  SUPPORTED_OS )
+    #TODO
+    ;;
+  *)
+    echo "Your OS does not support installation of Awesome 3.5"
+    ;;
+  esac
 }
+(( idx++ ))

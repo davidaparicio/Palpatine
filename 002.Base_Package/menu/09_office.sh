@@ -6,12 +6,16 @@ APP_OFFICE_CAT="Office"
 APP_OFFICE_EX="Office Application"
 # END OFFICE INFO
 
-APP_OFFICE_NAME[0]="LibreOffice"
-APP_OFFICE_PKG[0]="libreoffice"
-APP_OFFICE_DESC[0]="Open source Office suite"
-APP_OFFICE_STAT[0]="ON"
+idx=0
 
-APP_OFFICE_NAME[1]="TexLive Full"
-APP_OFFICE_PKG[1]="texlive-full"
-APP_OFFICE_DESC[1]="The complete suite of LaTex"
-APP_OFFICE_STAT[1]="ON"
+APP_OFFICE_NAME[idx]="LibreOffice"
+APP_OFFICE_PKG[idx]="libreoffice"
+APP_OFFICE_DESC[idx]="Open source Office suite"
+APP_OFFICE_STAT[idx]="OFF"
+(( idx++ ))
+
+APP_OFFICE_NAME[idx]="TexLive Full"
+APP_OFFICE_PKG[idx]="texlive-full"
+APP_OFFICE_DESC[idx]="The complete suite of LaTex"
+APP_OFFICE_STAT[idx]="OFF"
+(( idx++ ))

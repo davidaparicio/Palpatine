@@ -6,17 +6,22 @@ APP_WWW_CAT="Internet"
 APP_WWW_EX="Set of internet related apps"
 # END WWW INFO
 
-APP_WWW_NAME[0]="Firefox"
-APP_WWW_PKG[0]="firefox"
-APP_WWW_DESC[0]="Well known internet browers"
-APP_WWW_STAT[0]="ON"
+idx=0
 
-APP_WWW_NAME[1]="Thunderbird"
-APP_WWW_PKG[1]="thunderbird"
-APP_WWW_DESC[1]="Well known email clien"
-APP_WWW_STAT[1]="ON"
+APP_WWW_NAME[idx]="Firefox"
+APP_WWW_PKG[idx]="firefox"
+APP_WWW_DESC[idx]="Well known internet browers"
+APP_WWW_STAT[idx]="ON"
+(( idx++ ))
 
-APP_WWW_NAME[2]="Deluge"
-APP_WWW_PKG[2]="deluge"
-APP_WWW_DESC[2]="BitTorrent client"
-APP_WWW_STAT[2]="ON"
+APP_WWW_NAME[idx]="Thunderbird"
+APP_WWW_PKG[idx]="thunderbird"
+APP_WWW_DESC[idx]="Well known email client"
+APP_WWW_STAT[idx]="ON"
+(( idx++ ))
+
+APP_WWW_NAME[idx]="Deluge"
+APP_WWW_PKG[idx]="deluge"
+APP_WWW_DESC[idx]="BitTorrent client"
+APP_WWW_STAT[idx]="ON"
+(( idx++ ))

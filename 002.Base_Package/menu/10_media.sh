@@ -6,7 +6,10 @@ APP_MEDIA_CAT="Media Application"
 APP_MEDIA_EX="Media Application"
 # END MEDIA INFO
 
-APP_MEDIA_NAME[0]="VLC"
-APP_MEDIA_PKG[0]="vlc"
-APP_MEDIA_DESC[0]="Media Player"
-APP_MEDIA_STAT[0]="ON"
+idx=0
+
+APP_MEDIA_NAME[idx]="VLC"
+APP_MEDIA_PKG[idx]="vlc"
+APP_MEDIA_DESC[idx]="Media Player"
+APP_MEDIA_STAT[idx]="ON"
+(( idx++ ))

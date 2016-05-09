@@ -6,42 +6,102 @@ APP_EDITOR_CAT="Text Editor"
 APP_EDITOR_EX="A set of text editor"
 # END WM INFO
 
-APP_EDITOR_NAME[1]="vim"
-APP_EDITOR_PKG[1]="vim"
-APP_EDITOR_DESC[1]="vi iMproved is a screen-oriented text editor originally"
-APP_EDITOR_STAT[1]="ON"
+idx=0
 
-APP_EDITOR_NAME[2]="emacs"
-APP_EDITOR_PKG[2]="emacs"
-APP_EDITOR_DESC[2]="A screen-based editor with an embedded computer language"
-APP_EDITOR_STAT[2]="OFF"
+APP_EDITOR_NAME[idx]="vim"
+APP_EDITOR_PKG[idx]="vim"
+APP_EDITOR_DESC[idx]="vi iMproved is a screen-oriented text editor originally"
+APP_EDITOR_STAT[idx]="OFF"
+vim_routine() {
+  case ${LINUX_OS} in
+    debian|ubuntu)
+      ${LINUX_PKG_MGR} install -y vim
+      ;;
+    *)
+      echo "This script does not support installation of vim on your OS"
+      ;;
+    esac
+}
+(( idx++ ))
 
-APP_EDITOR_NAME[3]="nano"
-APP_EDITOR_PKG[3]="nano"
-APP_EDITOR_DESC[3]="A screen-based editor"
-APP_EDITOR_STAT[3]="ON"
+APP_EDITOR_NAME[idx]="emacs"
+APP_EDITOR_PKG[idx]="emacs"
+APP_EDITOR_DESC[idx]="A screen-based editor with an embedded computer language"
+APP_EDITOR_STAT[idx]="OFF"
+emacs_routine() {
+  case ${LINUX_OS} in
+    debian|ubuntu)
+      ${LINUX_PKG_MGR} install -y emacs
+      ;;
+    *)
+      echo "This script does not support installation of emacs on your OS"
+      ;;
+    esac
+}
+(( idx++ ))
 
-APP_EDITOR_NAME[4]="KWrite"
-APP_EDITOR_PKG[4]="kwrite"
-APP_EDITOR_DESC[4]="KWrite is a simple text editor built on the KDE Platform."
-APP_EDITOR_STAT[4]="OFF"
+APP_EDITOR_NAME[idx]="nano"
+APP_EDITOR_PKG[idx]="nano"
+APP_EDITOR_DESC[idx]="A screen-based editor"
+APP_EDITOR_STAT[idx]="OFF"
+nano_routine() {
+  case ${LINUX_OS} in
+    debian|ubuntu)
+      ${LINUX_PKG_MGR} install -y nano
+      ;;
+    *)
+      echo "This script does not support installation of nano on your OS"
+      ;;
+    esac
+}
+(( idx++ ))
 
-APP_EDITOR_NAME[5]="Leafpad"
-APP_EDITOR_PKG[5]="leafpad"
-APP_EDITOR_DESC[5]="Leafpad is a simple text editor."
-APP_EDITOR_STAT[5]="OFF"
+APP_EDITOR_NAME[idx]="KWrite"
+APP_EDITOR_PKG[idx]="kwrite"
+APP_EDITOR_DESC[idx]="KWrite is a simple text editor built on the KDE Platform."
+APP_EDITOR_STAT[idx]="OFF"
+KWrite_routine() {
+  case ${LINUX_OS} in
+    debian|ubuntu)
+      ${LINUX_PKG_MGR} install -y nano
+      ;;
+    *)
+      echo "This script does not support installation of KWrite on your OS"
+      ;;
+    esac
+}
+(( idx++ ))
 
-APP_EDITOR_NAME[6]="Kate"
-APP_EDITOR_PKG[6]="kate"
-APP_EDITOR_DESC[6]="Kate is a text editor built for the KDE Platform."
-APP_EDITOR_STAT[6]="OFF"
+APP_EDITOR_NAME[idx]="Leafpad"
+APP_EDITOR_PKG[idx]="leafpad"
+APP_EDITOR_DESC[idx]="Leafpad is a simple text editor."
+APP_EDITOR_STAT[idx]="OFF"
+KWrite_routine() {
+  case ${LINUX_OS} in
+    debian|ubuntu)
+      ${LINUX_PKG_MGR} install -y leafpad
+      ;;
+    *)
+      echo "This script does not support installation of KWrite on your OS"
+      ;;
+    esac
+}
+(( idx++ ))
 
-APP_EDITOR_NAME[7]="geany"
-APP_EDITOR_PKG[7]="geany"
-APP_EDITOR_DESC[7]="Geany is a light text editor."
-APP_EDITOR_STAT[7]="OFF"
+APP_EDITOR_NAME[idx]="Kate"
+APP_EDITOR_PKG[idx]="kate"
+APP_EDITOR_DESC[idx]="Kate is a text editor built for the KDE Platform."
+APP_EDITOR_STAT[idx]="OFF"
+(( idx++ ))
 
-APP_EDITOR_NAME[8]="TexMaker"
-APP_EDITOR_PKG[8]="texmaker"
-APP_EDITOR_DESC[8]="LaTeX editor."
-APP_EDITOR_STAT[8]="ON"
+APP_EDITOR_NAME[idx]="geany"
+APP_EDITOR_PKG[idx]="geany"
+APP_EDITOR_DESC[idx]="Geany is a light text editor."
+APP_EDITOR_STAT[idx]="OFF"
+(( idx++ ))
+
+APP_EDITOR_NAME[idx]="TexMaker"
+APP_EDITOR_PKG[idx]="texmaker"
+APP_EDITOR_DESC[idx]="LaTeX editor."
+APP_EDITOR_STAT[idx]="OFF"
+(( idx++ ))

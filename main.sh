@@ -1,6 +1,8 @@
 #!/bin/bash
 
 ASK_TO_REBOOT=false
+BASE_PKG_INSTALLED=true
+NEED_UPDATE=false
 IS_SSH=false
 IS_ROOT=false
 LINUX_OS='Unknown'
@@ -22,28 +24,126 @@ SUPPORTED_OS[2]='raspbian'
 SUPPORTED_RASPBIAN_VER[0]='8'
 
 SUPPORTED_PKG_MGR[0]='apt-get'
+SUPPORTED_PKG_MGR[1]='apt'
+SUPPORTED_PKG_MGR[2]='aptitude'
+
+################################################################################
+# INSTALL AND UPDATE DEPANDING ON PACKAGE MANAGER
+################################################################################
+do_fullupdate () {
+  whiptail --title 'Update Repo and Upgrade' \
+  --msgbox 'This script will now update and upgrade the system' ${WT_HEIGHT} ${WT_WIDTH}
+  case ${LINUX_PKG_MGR} in
+    apt* )
+    ${LINUX_PKG_MGR} update && ${LINUX_PKG_MGR} upgrade -y && ${LINUX_PKG_MGR} dist-upgrade -y
+    NEED_UPDATE=false
+    ;;
+    * )
+      echo "Programmer error : Option ${LINUX_PKG_MGR} not supported."
+    ;;
+  esac
+  return 0
+}
+
+do_setup_pkg_base () {
+  case ${LINUX_PKG_MGR} in
+    apt* )
+    whiptail --title 'Setup Base Package' \
+      --msgbox 'This script will now install the following packages :
+      - apt-transport-https
+      - software-properties-common
+      - python-software-properties ' ${WT_HEIGHT} ${WT_WIDTH}
+    ${LINUX_PKG_MGR} install -y \
+    apt-transport-https \
+    software-properties-common \
+    python-software-properties
+    ;;
+    * )
+      echo "Programmer error : Option ${LINUX_PKG_MGR} not supported."
+    ;;
+  esac
+  BASE_PKG_INSTALLED=true
+  return 0
+}
+
+################################################################################
+# NOT INTERACTIVE MENU JUST ASK PACKAGE MANAGER TO USE TO INSTAL WHIPTAIL
+################################################################################
+install_whiptail () {
+  local sep_line=$( printf "%-${WT_WIDTH}s" "=")
+  sep_line=${sep_line// /=}
+
+  local nb_pkg_mgr=${#SUPPORTED_PKG_MGR[@]}
+  local exist_pkg_mgr=false
+  local pkg_mgr_menu="
+${sep_line}
+| Pre-Init : Choose package manager
+${sep_line}
+|
+|  WARNING : whiptail does not seems to be install. Which package manager use
+|  to install whiptail ?
+|  To do so, enter the number in front of the name of you package manager.
+|"
+  local no_pkg_mgr_menu="
+${sep_line}
+|                    Pre-Init : No supported package manager                   |
+${sep_line}
+|
+|  WARNING : whiptail does not seems to be install and you do not seem to have
+|  a supported package manager.
+|  Here is a list of supported package manager
+|"
+
+  for (( idx=0; idx < ${nb_pkg_mgr}; idx++ ))
+  do
+    if type -t ${SUPPORTED_PKG_MGR[idx]} &>/dev/null
+    then
+      exist_pkg_mgr=true
+    fi
+    pkg_mgr_menu="${pkg_mgr_menu}
+|  ${idx} - ${SUPPORTED_PKG_MGR[idx]} "
+    no_pkg_mgr_menu="${no_pkg_mgr_menu}
+|  ${idx} - ${SUPPORTED_PKG_MGR[idx]} "
+  done
+
+  pkg_mgr_menu="${pkg_mgr_menu}
+|
+${sep_line}"
+  no_pkg_mgr_menu="${pkg_mgr_menu}
+|
+${sep_line}"
+  if ! ${EXIST_PKG_MGR}
+  then
+      echo ${no_pkg_mgr_menu}
+      return 1
+  fi
+
+  while true
+  do
+    clear
+    echo "${pkg_mgr_menu}" ; read CHOICE
+    if [[ ${CHOICE} == [0-9] ]] && [[ ${CHOICE} -lt ${#SUPPORTED_PKG_MGR[@]} ]]
+    then
+      LINUX_PKG_MGR=${SUPPORTED_PKG_MGR[CHOICE]}
+      $LINUX_PKG_MGR install whiptail
+      return 0
+    else
+      echo "${sep_line}
+Please enter a valid number
+Do you want to retry ? [Y/n]" ; read CHOICE
+      if ! [[ ${#CHOICE} -eq 0 ]] || ! [[ "YyYesyes" =~ ${CHOICE} ]]
+      then
+        clear
+        echo "${sep_line}
+Setup aborted !" ; read ; exit 1
+      fi
+    fi
+  done
+}
 
 ###############################################################################
 # FUNCTION
 ###############################################################################
-calc_wt_size() {
-  # NOTE: it's tempting to redirect stderr to /dev/null, so supress error
-  # output from tput. However in this case, tput detects neither stdout or
-  # stderr is a tty and so only gives default 80, 24 values
-  WT_HEIGHT=17
-  WT_WIDTH=$( tput cols )
-
-  if [ -z "${WT_WIDTH}" ] || [ "${WT_WIDTH}" -lt 60 ]
-  then
-    WT_WIDTH=80
-  fi
-  if [ "${WT_WIDTH}" -gt 178 ]
-  then
-    WT_WIDTH=120
-  fi
-  WT_MENU_HEIGHT=$((${WT_HEIGHT}-9))
-}
-
 top_level_parent_pid () {
   # Look up the parent of the given PID.
   pid=${1:-$$}
@@ -66,9 +166,71 @@ top_level_parent_pid () {
   fi
 }
 
-###############################################################################
+preamble() {
+  [[ $( whoami ) == "root" ]] && IS_ROOT=true
+  top_level_parent_pid $PPID
+
+  if ! ${IS_ROOT} && ! ${IS_SSH}
+  then
+    whiptail --title "ERROR" \
+      --msgbox "Please run this script as root, you can either log as root or use sudo. \n
+N.B. : It will work better if run through ssh" ${WT_HEIGHT} ${WT_WIDTH}
+    exit 1
+  elif ! ${IS_ROOT} && ${IS_SSH}
+  then
+    whiptail --title "ERROR" \
+      --msgbox "You seems to be connected by SSH, that is goot but you MUST be log as root.\n
+You can either log as root or use sudo" ${WT_HEIGHT} ${WT_WIDTH}
+    exit 1
+  elif ${IS_ROOT} && ! ${IS_SSH}
+  then
+    whiptail --title "WARNING" --msgbox "You run this script as root but not through SSH.
+Process will continue but some part might not be working.\n
+N.B. : This will mainly impact git/vcsh configuration and the copy of your ssh-key to your favorite version controle host." \
+${WT_HEIGHT} ${WT_WIDTH}
+  fi
+  if ( whiptail --title "WARNING" --yesno "
+  THERE IS NO WARRANTY FOR THIS PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE \
+LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER \
+PARTIES PROVIDE THE PROGRAM \"AS IS\" WITHOUT WARRANTY OF ANY KIND, EITHER \
+EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF \
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE \
+QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE \
+DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION. \
+                                --- BE CAREFUL!---
+
+  Continue ?
+  " ${WT_HEIGHT} ${WT_WIDTH} )
+  then
+    return 0
+  else
+    exit 1
+  fi
+}
+
+calc_wt_size() {
+  # NOTE: it's tempting to redirect stderr to /dev/null, so supress error
+  # output from tput. However in this case, tput detects neither stdout or
+  # stderr is a tty and so only gives default 80, 24 values
+  WT_HEIGHT=17
+  WT_WIDTH=$( tput cols )
+
+  if [ -z "${WT_WIDTH}" ] || [ "${WT_WIDTH}" -lt 60 ]
+  then
+    WT_WIDTH=80
+  fi
+  if [ "${WT_WIDTH}" -gt 178 ]
+  then
+    WT_WIDTH=120
+  fi
+  WT_MENU_HEIGHT=$((${WT_HEIGHT}-9))
+  WT_WIDE_HEIGHT=34
+  WT_WIDE_MENU_HEIGHT=$((${WT_WIDE_HEIGHT}-9))
+}
+
+################################################################################
 # INTERACTIVE MENU
-###############################################################################
+################################################################################
 # Package manager selection
 linux_init_pkg_mgr () {
   local nb_pkg_mgr=${#SUPPORTED_PKG_MGR[@]}
@@ -242,24 +404,29 @@ linux_init_os () {
     else
       if ! ${os_valid} || ! ${ver_valid}
       then
-        whiptail --title "Linux Init" \
-        --msgbox "Your OS is not supported, you will be ask if you want to choose amoung supported OS and version"
-        choose_linux_var "OS"
+        whiptail --title 'Linux Init' \
+        --msgbox 'Your OS is not supported, you will be ask if you want to \
+choose amoung supported OS and version'
+        choose_linux_var 'OS'
         RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-        choose_linux_var "VER"
+        choose_linux_var 'VER'
         RET=$? ; [[ ${RET} -eq 1 ]] && return 1
         linux_user_set=true
       fi
       if ! ${arch_valid}
       then
-        whiptail --title "Linux Init" \
-        --msgbox "Your archictecture does not seem to be supported, you will be ask if you want to choose amoung supported one."
-        choose_linux_var "ARCH"
+        whiptail --title 'Linux Init' \
+        --msgbox 'Your archictecture does not seem to be supported, you will be \
+ask if you want to choose amoung supported one.'
+        choose_linux_var 'ARCH'
         RET=$? ; [[ ${RET} -eq 1 ]] && return 1
         linux_user_set=true
       fi
-      if $linux_user_set && ( whiptail --title "Linux Init" \
-        --yesno "Do you want to continue with the followin option for you linux ? \n\n --> ${LINUX_OS} - ${LINUX_VER} - ${LINUX_ARCH} \n
+      if $linux_user_set && ( whiptail --title 'Linux Init' \
+        --yesno "Do you want to continue with the followin option for you linux ?
+
+      --> ${LINUX_OS} - ${LINUX_VER} - ${LINUX_ARCH}
+
       YES : The script will continue assuming your linux is like you set, BUT some part might not be working.
       NO  : The script will exit." ${WT_HEIGHT} ${WT_WIDTH} )
       then
@@ -270,11 +437,11 @@ linux_init_os () {
     fi
     return 0
   else
-    choose_linux_var "OS"
+    choose_linux_var 'OS'
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-    choose_linux_var "VER"
+    choose_linux_var 'VER'
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-    choose_linux_var "ARCH"
+    choose_linux_var 'ARCH'
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
     return 0
   fi
@@ -290,40 +457,17 @@ linux_init () {
 }
 
 ###############################################################################
-# ALL SOURCE
+# MAIN MENU
 ###############################################################################
-source 001.Initial_Setup/initial_setup.sh
-
-test_root_ssh () {
-  [[ $( whoami ) == "root" ]] && IS_ROOT=true
-  top_level_parent_pid $PPID
-
-  if ! ${IS_ROOT} && ! ${IS_SSH}
-  then
-    whiptail --title "ERROR" --msgbox "Please run this script as root, you can either log as root or use sudo. \n
-N.B. : It will work better if run through ssh" ${WT_HEIGHT} ${WT_WIDTH}
-    exit 1
-  elif ! ${IS_ROOT} && ${IS_SSH}
-  then
-    whiptail --title "ERROR" \
-      --msgbox "You seems to be connected by SSH, that is goot but you MUST be log as root.\n
-You can either log as root or use sudo" ${WT_HEIGHT} ${WT_WIDTH}
-    exit 1
-  elif ${IS_ROOT} && ! ${IS_SSH}
-  then
-    whiptail --title "WARNING" --msgbox "You run this script as root, process will continue but some part might not be working.\n
-N.B. : This will mainly impact git/vcsh configuration and the copy of your ssh-key to your favorite version controle host." \
-${WT_HEIGHT} ${WT_WIDTH}
-  fi
-  return 0
-}
-
 main_menu () {
+  source 001.*/*_setup.sh
+  source 002.*/*_setup.sh
   local main_menu
 
   whiptail \
-  --title 'Linux Config' \
-  --msgbox  'Before continuing to main menu, you need to set some information about your linux distribution' ${WT_HEIGHT} ${WT_WIDTH}
+    --title 'Linux Config' \
+    --msgbox  'Before continuing to main menu, you need to set some information about your linux distribution' \
+    ${WT_HEIGHT} ${WT_WIDTH}
   linux_init
   RET=$? ; [[ ${RET} -eq 1 ]] && whiptail --title 'ERROR' \
     --msgbox 'An error occured during initialisation.\n
@@ -331,20 +475,21 @@ Some part of your linux distribution are not supported yet.\n
 The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
 
   main_menu="whiptail --title 'Main Menu' --menu  'Select what you want to do :' \
-  ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
-  main_menu="${main_menu} 'Initial setup' 'Access to initial config such as timezone, hostname...'"
-  main_menu="${main_menu} 'FINISH'        'Exit the script'"
+  ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
+  'Initial setup' 'Access to initial config such as timezone, hostname...' \
+  'Package setup' 'Select package to install' \
+  'FINISH'        'Exit the script'"
 
   while true
   do
-    bash -c "${main_menu} " 2> results_menu.txt
+    bash -c "${main_menu}" 2> results_menu.txt
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
     CHOICE=$( cat results_menu.txt )
 
     case ${CHOICE} in
-    "FINISH" )
+    'FINISH' )
       if [[ ${ASK_TO_REBOOT} ]] \
-        && (whiptail --title 'REBOOT NEEDED' \
+        && ( whiptail --title 'REBOOT NEEDED' \
           --yesno 'A reboot is needed. Do you want to reboot now ? ' \
           ${WT_HEIGHT} ${WT_WIDTH} )
       then
@@ -352,103 +497,29 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
       fi
       return 0
       ;;
-    "Initial setup" )
+    'Initial setup' )
       initial_setup
       ;;
-    * ) echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}. "
+    'Package setup' )
+      [[ ${NEED_UPDATE} == true ]] && do_fullupdate
+      [[ ${BASE_PKG_INSTALLED} == false ]] && do_setup_pkg_base
+      package_setup
+      ;;
+    * )
+      echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."
       return 1
       ;;
    esac
   done
 }
 
-################################################################################
-# NOT INTERACTIVE MENU JUST ASK PACKAGE MANAGER TO USE TO INSTAL WHIPTAIL
-################################################################################
-
-install_whiptail () {
-  local sep_line=$( printf "%-${WT_WIDTH}s" "=")
-  sep_line=${sep_line// /=}
-
-  local nb_pkg_mgr=${#SUPPORTED_PKG_MGR[@]}
-  local exist_pkg_mgr=false
-  local pkg_mgr_menu="
-${sep_line}
-| Pre-Init : Choose package manager
-${sep_line}
-|
-|  WARNING : whiptail does not seems to be install. Which package manager use
-|  to install whiptail ?
-|  To do so, enter the number in front of the name of you package manager.
-|"
-  local no_pkg_mgr_menu="
-================================================================================
-|                    Pre-Init : No supported package manager                   |
-================================================================================
-|
-|  WARNING : whiptail does not seems to be install and you do not seem to have
-|  a supported package manager.
-|  Here is a list of supported package manager
-|"
-
-  for (( idx=0; idx < ${nb_pkg_mgr}; idx++ ))
-  do
-    if type -t ${SUPPORTED_PKG_MGR[idx]} &>/dev/null
-    then
-      exist_pkg_mgr=true
-    fi
-    pkg_mgr_menu="${pkg_mgr_menu}
-|  ${idx} - ${SUPPORTED_PKG_MGR[idx]} "
-    no_pkg_mgr_menu="${no_pkg_mgr_menu}
-|  ${idx} - ${SUPPORTED_PKG_MGR[idx]} "
-  done
-
-  pkg_mgr_menu="${pkg_mgr_menu}
-|
-${sep_line}"
-  no_pkg_mgr_menu="${pkg_mgr_menu}
-|
-${sep_line}"
-  if ! ${EXIST_PKG_MGR}
-  then
-      echo ${no_pkg_mgr_menu}
-      return 1
-  fi
-
-  while true
-  do
-    clear
-    echo "${pkg_mgr_menu}"
-    read CHOICE
-    if [[ ${CHOICE} == [0-9] ]] && [[ ${CHOICE} -lt ${#SUPPORTED_PKG_MGR[@]} ]]
-    then
-      LINUX_PKG_MGR=${SUPPORTED_PKG_MGR[CHOICE]}
-      $LINUX_PKG_MGR install whiptail
-      return 0
-    else
-      echo ${sep_line}
-      echo 'Please enter a valid number'
-      echo 'Do you want to retry ? [Y/n]'
-      read CHOICE
-      if ! [[ ${#CHOICE} -eq 0 ]] || ! [[ "YyYesyes" =~ ${CHOICE} ]]
-      then
-        clear
-        echo ${sep_line}
-        echo 'Setup aborted !'
-        read
-        exit 1
-      fi
-    fi
-  done
-}
-
-# TODO : Separate initialisation, package installation and user management.
+# TODO : Separate initialisation, package installation and user management. (WIP)
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd ${DIR}
 
 calc_wt_size
-test_root_ssh
+preamble
 
 if ! type -t whiptail &>/dev/null
 then
@@ -456,4 +527,3 @@ then
 fi
 
 main_menu
-
