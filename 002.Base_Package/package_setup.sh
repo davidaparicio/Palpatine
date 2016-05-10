@@ -1,6 +1,6 @@
 #!/bin/bash
 
-##############################################################################
+################################################################################
 do_install_pkg() {
   local pkg=$1
   case ${LINUX_PKG_MGR} in
@@ -97,11 +97,25 @@ setup_pkg_ask_finish () {
         do
           pourcent=$( awk "BEGIN { print "$i"/"$nb_routine"*100 }" )
           pourcent=${pourcent%%.*}
-          ${all_routine[i]} 2>&1 >> ${dir}/install_pkg.log | whiptail --gauge "INSTALLATION :
-  Installation of ${all_app_choosen[i]} \n\n
-  Please wait..." 10 ${WT_WIDTH} ${pourcent}
+          ${all_routine[i]}
+          RET=$?
+          [[ ${RET} -eq 1 ]] && \
+            whiptail --title 'WARNING'  \
+            --msgbox "Sorry but ${all_routine[i]%%_routine} supported yet for you distrib." \
+            ${WT_HEIGHT} ${WT_WIDTH}
         done
-        return 0
+        echo =================================================================
+        echo You can take a look at installation log above
+        echo Press Enter to continue
+        echo =================================================================
+        read
+        if ( whiptail --title '002.Package Setup' --yesno 'Was everything ok ?' \
+          ${WT_HEIGHT} ${WT_WIDTH} )
+        then
+          return 0
+        else
+          return 1
+        fi
       ;;
     esac
   done
@@ -221,7 +235,7 @@ package_menu () {
   CHOICE=$( cat results_menu.txt )
   case ${CHOICE} in
     '<-- Back' )
-      return 0
+      return 1
       ;;
     'Go through' )
       setup_pkg_go_through

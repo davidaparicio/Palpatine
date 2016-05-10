@@ -16,8 +16,9 @@ git_routine() {
   ${LINUX_PKG_MGR} install -y git
     ;;
   *)
-    echo "This script does not support installation of git on your OS"
+    return 1
   esac
+  return 0
 }
 (( idx++ ))
 
@@ -30,8 +31,9 @@ vcsh_routine() {
   ${LINUX_PKG_MGR} install -y vcsh
     ;;
   *)
-    echo "This script does not support installation of vcsh on your OS"
+    return 1
   esac
+  return 0
 }
 (( idx++ ))
 
@@ -44,8 +46,9 @@ myRepo_routine () {
   ${LINUX_PKG_MGR} install -y mr
     ;;
   *)
-    echo "This script does not support installation of myRepo on your OS"
+    return 1
   esac
+  return 0
 }
 (( idx++ ))
 
@@ -59,8 +62,9 @@ CVS_routine() {
   ${LINUX_PKG_MGR} install -y cvs
     ;;
   *)
-    echo "This script does not support installation of CVS on your OS"
+    return 1
   esac
+  return 0
 }
 (( idx++ ))
 
@@ -73,8 +77,9 @@ Mercurial_routine() {
   ${LINUX_PKG_MGR} install -y mercurial
     ;;
   *)
-    echo "This script does not support installation of mercurial on your OS"
+    return 1
   esac
+  return 0
 }
 (( idx++ ))
 
@@ -87,7 +92,8 @@ Subversion_routine() {
   ${LINUX_PKG_MGR} install -y subversion
     ;;
   *)
-    echo "This script does not support installation of subversion on your OS"
+    return 1
   esac
+  return 0
 }
 (( idx++ ))

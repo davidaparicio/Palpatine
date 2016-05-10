@@ -17,9 +17,10 @@ ash_routine() {
       ${LINUX_PKG_MGR} install -y ash
     ;;
     *)
-      echo "This script does not support installation of ash on your OS"
+      return 1
     ;;
   esac
+  return 0
 }
 (( idx++ ))
 
@@ -32,9 +33,10 @@ dash_routine() {
       ${LINUX_PKG_MGR} install -y dash
     ;;
     *)
-      echo "This script does not support installation of dash on your OS"
+      return 1
     ;;
   esac
+  return 0
 }
 (( idx++ ))
 
@@ -47,23 +49,25 @@ mksh_routine() {
       ${LINUX_PKG_MGR} install -y mksh
     ;;
     *)
-      echo "This script does not support installation of mksh on your OS"
+      return 1
     ;;
   esac
+  return 0
 }
 (( idx++ ))
 
 APP_SHELL_NAME[idx]="zsh"
 APP_SHELL_DESC[idx]="A relatively modern shell that is backward compatible with bash"
-APP_SHELL_STAT[idx]="ON"
+APP_SHELL_STAT[idx]="OFF"
 zsh_routine() {
   case ${LINUX_OS} in
     debian|ubuntu)
       ${LINUX_PKG_MGR} install -y zsh
     ;;
     *)
-      echo "This script does not support installation of zsg on your OS"
+      return 1
     ;;
   esac
+  return 0
 }
 (( idx++ ))

@@ -7,19 +7,19 @@ APP_<CAT>_EX="Categorie Description"
 # end <CAT> INFO
 
 idx=0
-
 APP_<CAT>_NAME[idx]="App_Name"
-APP_<CAT>_PKG[idx]="package"
 APP_<CAT>_DESC[idx]="Description of the package"
 APP_<CAT>_STAT[idx]="OFF"
 App_Name_routine () {
   case ${LINUX_OS} in
   SUPPORTED_OS )
-    #TODO
+    #TODO "Write setup bash line"
+    echo "Write setup bash line"
     ;;
   *)
-    echo "Your OS does not support installation of Awesome 3.5"
+    return 1
     ;;
   esac
+  return 0
 }
 (( idx++ ))
