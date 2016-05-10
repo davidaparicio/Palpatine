@@ -189,7 +189,8 @@ setup_hostname() {
   local hostname_set=""
   local hostname_regex="^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$"
 
-  whiptail --msgbox "\
+  whiptail --title '001.Initial Setup : Change hostname' \
+    --msgbox "\
 Please note: RFCs mandate that a hostname's labels \
 may contain only the ASCII letters 'a' through 'z' (case-insensitive), \
 the digits '0' through '9', and the hyphen. \
