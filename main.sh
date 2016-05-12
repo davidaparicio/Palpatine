@@ -1,4 +1,7 @@
 #!/bin/bash
+LC_ALL_bak=${LC_ALL}
+LC_ALL=C
+
 
 ASK_TO_REBOOT=false
 BASE_PKG_INSTALLED=true
@@ -460,8 +463,6 @@ linux_init () {
 # MAIN MENU
 ###############################################################################
 main_menu () {
-  source 001.*/*_setup.sh
-  source 002.*/*_setup.sh
   local main_menu
 
   whiptail \
@@ -476,9 +477,10 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
 
   main_menu="whiptail --title 'Main Menu' --menu  'Select what you want to do :' \
   ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
-  'Initial setup' 'Access to initial config such as timezone, hostname...' \
-  'Package setup' 'Select package to install' \
-  'FINISH'        'Exit the script'"
+  'Initial setup'    'Access to initial config such as timezone, hostname...' \
+  'Package setup'    'Select package to install' \
+  'User Management'  'Manage user (add, update, delete)' \
+  'FINISH'           'Exit the script'"
 
   while true
   do
@@ -486,24 +488,24 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
     CHOICE=$( cat results_menu.txt )
 
+    # Sourcing file to that it's possible do modify file while script is running
     case ${CHOICE} in
     'FINISH' )
-      if [[ ${ASK_TO_REBOOT} ]] \
-        && ( whiptail --title 'REBOOT NEEDED' \
-          --yesno 'A reboot is needed. Do you want to reboot now ? ' \
-          ${WT_HEIGHT} ${WT_WIDTH} )
-      then
-        reboot
-      fi
       return 0
       ;;
     'Initial setup' )
+      source 001.Initial_Setup/initial_setup.sh
       initial_setup
       ;;
     'Package setup' )
       [[ ${NEED_UPDATE} == true ]] && do_fullupdate
       [[ ${BASE_PKG_INSTALLED} == false ]] && do_setup_pkg_base
+      source 002.Package_Setup/package_setup.sh
       package_setup
+      ;;
+    'User Management')
+      source 003.User_Management/user_management.sh
+      user_management
       ;;
     * )
       echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."
@@ -512,8 +514,6 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
    esac
   done
 }
-
-# TODO : Separate initialisation, package installation and user management. (WIP)
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd ${DIR}
@@ -527,3 +527,15 @@ then
 fi
 
 main_menu
+RET=$? ; [[ ${RET} -eq 1 ]] && exit 1
+
+#if [[ ${ASK_TO_REBOOT} ]] \
+#  && ( whiptail --title 'REBOOT NEEDED' \
+#    --yesno 'A reboot is needed. Do you want to reboot now ? ' \
+#    ${WT_HEIGHT} ${WT_WIDTH} )
+#then
+#  reboot
+#fi
+
+LC_ALL=${LC_ALL_bak}
+locale
