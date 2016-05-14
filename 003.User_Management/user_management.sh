@@ -1,475 +1,118 @@
 #!/bin/bash
 
-###############################################################################
-## SETUP USER UPDATE MAIL PART
-################################################################################
-#user_update_mail_ssh_key () {
-#  whiptail --title "SSH Key ${USER_CHOOSEN}" --msgbox "You will now be ask some informations to create your ssh key." 8 60
-#
-#  local PASSWORD_OK=false
-#  local PASSWORD1=""
-#
-#  while ! ${PASSWORD_OK}
-#  do
-#    PASSWORD1=$(whiptail --title "SSH Key ${USER_CHOOSEN}" --passwordbox "First enter the password you want for the ssh key for ${USER_CHOOSEN} " 8 78   3>&1 1>&2 2>&3)
-#    RET=$?
-#    [[ ${RET} -eq 1 ]] && return 1
-#
-#    # REGEX PASSWORD
-#    #^([a-zA-Z0-9@*#_]{8,15})$
-#    #Description
-#    #Password matching expression.
-#    #Match all alphanumeric character and predefined wild characters.
-#    #Password must consists of at least 8 characters and not more than 3333332 characters.
-#    if [[ ! "${PASSWORD1}" =~ ^([a-zA-Z0-9@\*\#]{8,32})$ ]]
-#    then
-#      whiptail --title "SSH Key ${USER_CHOOSEN}" --msgbox "Password must be at least eight char long and contains alphanumeric char and predefined wild characters " 8 78   3>&1 1>&2 2>&3
-#    else
-#      local PASSWORD2=$(whiptail --title "SSH Key ${USER_CHOOSEN}" --passwordbox "Please enter the password again  " 8 78   3>&1 1>&2 2>&3)
-#      RET=$?
-#      [[ ${RET} -eq 1 ]] && return 1
-#      if [[ ! ${PASSWORD1} == ${PASSWORD2} ]]
-#      then
-#        whiptail --title "SSH Key ${USER_CHOOSEN}" --msgbox "Passwords do not match" 8 78   3>&1 1>&2 2>&3
-#      else
-#        PASSWORD_OK=true
-#      fi
-#    fi
-#  done
-#  local PATH_RSA
-#  if [[ ${USER_CHOOSEN} == "root" ]]
-#  then
-#    PATH_RSA=$( whiptail --title "SSH Key ${USER_CHOOSEN}" --inputbox "Where do you want to store ssh key for ${USER_CHOOSEN}" 8 78 "/${USER_CHOOSEN}/.ssh/id_rsa" 3>&1 1>&2 2>&3)
-#  else
-#    PATH_RSA=$( whiptail --title "SSH Key ${USER_CHOOSEN}" --inputbox "Where do you want to store ssh key for ${USER_CHOOSEN}" 8 78 "/home/${USER_CHOOSEN}/.ssh/id_rsa" 3>&1 1>&2 2>&3)
-#  fi
-#  RET=$?
-#  [[ ${RET} -eq 1 ]] && return 1
-#
-#  whiptail --title "SSH Key ${USER_CHOOSEN}" --msgbox "Will now generate ssh key file for user ${USER_CHOOSEN}." 8 60
-#  su ${USER_CHOOSEN} -c "ssh-keygen -t rsa -b 4096 -N '${PASSWORD1}' -f '${PATH_RSA}' -C '${EMAIL1}'"
-#  whiptail --title "SSH Key ${USER_CHOOSEN}" --msgbox "You will now be ask to enter ssh key password" 8 60
-#  su ${USER_CHOOSEN} -c "eval '$(ssh-agent -s)'; ssh-add ${PATH_RSA}"
-#
-#  clear
-#  echo 'Here is the content of your ssh key'
-#  echo '========================================================================'
-#  [[ ${USER_CHOOSEN} == "root" ]] && cat /root/.ssh/id_rsa.pub || cat /home/${USER_CHOOSEN}/.ssh/id_rsa.pub
-#  echo '========================================================================'
-#  echo 'Please copy it and past it into your version control system (github, bitbucket, gitlab...) \n\n\
-#  BE WARNED THAT IF YOU DO NOT DO IT, FOLLOWING STEP MIGHT NOT BE WORKING'
-#  read
-#  return 2
-#}
-#
-#user_update_mail_git_config() {
-#  if ( whiptail --title "Update ${USER_CHOOSEN}" --yesno "Script will now running following command for user ${USER_CHOOSEN}: \n\
-#      - 'git config --global user.name '${USER_CHOOSEN_FULLNAME}' \n\
-#      - 'git config --global user.email '${EMAIL1}'  \n\
-#      - 'git config --global push.default matching \n\n\
-#      You will now be ask password for user ${USER_CHOOSEN}" 10 80)
-#  then
-#    su ${USER_CHOOSEN} -c "git config --global user.name '${USER_CHOOSEN_FULLNAME}';\
-#              git config --global user.email '${EMAIL1}'; \
-#              git config --global push.default matching;"
-#  else
-#    return 1
-#  fi
-#  return 0
-#}
-#
-#user_update_mail_vcsh_dotfiles () {
-#  local VCSH_MR_REPO_OK=false
-#  local VCSH_MR_REPO=""
-#  while ! ${VCSH_MR_REPO_OK}
-#  do
-#    VCSH_MR_REPO=$(whiptail --title "Update ${USER_CHOOSEN}" --inputbox "Please enter myRepos address to clone via vcsh" 8 60  3>&1 1>&2 2>&3)
-#    RET=$?
-#    [[ ${RET} -eq 1 ]] && return 1
-#
-#    if ! [[ ${#VCSH_MR_REPO}  > 0 ]]
-#    then
-#      whiptail --title "Update ${USER_CHOOSEN}" --msgbox "Please enter something " 8 60  3>&1 1>&2 2>&3
-#    elif ( whiptail --title "Update ${USER_CHOOSEN}" --yesno "Are you sure this is the right adress ? \n ${VCSH_MR_REPO} " 8 78   3>&1 1>&2 2>&3 )
-#    then
-#      su ${USER_CHOOSEN} -c "vcsh clone ${VCSH_MR_REPO}; cd ~/; mr up"
-#      read
-#      if ( whiptail --title "Update ${USER_CHOOSEN}" --yesno "Does everything work ? " 8 78   3>&1 1>&2 2>&3 )
-#      then
-#        VCSH_MR_REPO_OK=true
-#      fi
-#    elif ! ( whiptail --title "Update ${USER_CHOOSEN}" --yesno "Do you want to retry ? " 8 78   3>&1 1>&2 2>&3 )
-#    then
-#      VCSH_MR_REPO_OK=true
-#    fi
-#  done
-#}
-#
-#user_update_mail_cmd_dotfiles () {
-#  local CMD_OK=""
-#  while ! ${CMD_OK}
-#  do
-#    CMD=$(whiptail --title "Update ${USER_CHOOSEN}" --inputbox "Please enter command in one line format if you can. \n\
-#If you can't, you can create a script in your git repo or accessible with wget and run a command like : \n\n\
-#'wget -O - http://link.to/your_script.sh | bash' " 10 80  3>&1 1>&2 2>&3)
-#    if [[ ${#CMD}  > 0 ]] && ( whiptail --title "Update ${USER_CHOOSEN}" --yesno "Are you sure this is the right adress ? \n\
-#    ${VCSH_MR_REPO} " 8 78   3>&1 1>&2 2>&3 )
-#    then
-#      ${CMD}
-#      if ( whiptail --title "Update ${USER_CHOOSEN}" --yesno "Does everything work ? ${VCSH_MR_REPO} " 8 78   3>&1 1>&2 2>&3 )
-#      then
-#        CMD_OK=true
-#      fi
-#    fi
-#
-#    if ! ( whiptail --title "Update ${USER_CHOOSEN}" --yesno "Do you want to retry ? ${VCSH_MR_REPO} " 8 78   3>&1 1>&2 2>&3 )
-#    then
-#      CMD_OK=true
-#    fi
-#  done
-#}
-#
-#user_update_mail_ask () {
-# local MAIL_OK=false
-# local EMAIL_REGEX="^[a-z0-9!#\$%&'*+/=?^_\`{|}~-]+(\.[a-z0-9!#$%&'*+/=?^_\`{|}~-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?\$"
-#
-#  while ! ${MAIL_OK}
-#  do
-#    EMAIL1=$(whiptail --title "Update ${USER_CHOOSEN}" --inputbox "Email adress of the user ${USER_CHOOSEN}" 8 78   3>&1 1>&2 2>&3)
-#    RET=$?
-#    [[ ${RET} -eq 1 ]] && return 1
-#
-#    if [[ ! ${EMAIL1} =~ ${EMAIL_REGEX} ]]
-#    then
-#     whiptail --title "Update ${CHOICE}" --msgbox "This is not an email adresse. Please enter one of the form : \n\
-#     email@domain.com " 8 78
-#    else
-#     local EMAIL2=$(whiptail --title "Update ${USER_CHOOSEN}" --inputbox "Please enter the email adress again" 8 78 3>&1 1>&2 2>&3)
-#     RET=$?
-#     [[ ${RET} -eq 1 ]] && return 1
-#
-#     if [[ ! ${EMAIL1} == ${EMAIL2} ]] && ! ( whiptail --title "Update  ${USER_CHOOSEN}" --yesno "Emails do not match. Do you want to retry ?" 8 78 3>&1 1>&2 2>&3)
-#     then
-#       return 1
-#     else
-#      whiptail --title "Update ${USER_CHOOSEN}" --msgbox "Email successfully set" 8 78
-#      return 0
-#     fi
-#    fi
-#  done
-#}
-#
-################################################################################
-## SETUP USERR UPDATE PART
-################################################################################
-#user_update_gecos () {
-#    chfn ${USER_CHOOSEN}
-#}
-#
-#user_update_chg_passwd () {
-#  while true
-#  do
-#    passwd ${USER_CHOOSEN}
-#    RET=$?
-#    if [[ ${RET} -eq 0 ]]
-#    then
-#      whiptail --msgbox "Password changed successfully" 20 60 1
-#      return 0
-#    elif ! ( whiptail --yesno "Failed to change password. Do you want to retry ? " 20 60 1 )
-#    then
-#      return 1
-#    fi
-#  done
-#}
-#
-#user_update_chg_shell () {
-#    chsh ${USER_CHOOSEN}
-#}
-#
-#user_update_set_email () {
-#  local EMAIL1="empty"
-#
-#  user_update_mail_ask
-#  RET=$?
-#  [[ ${RET} -eq 1 ]] && return 1
-#
-#  local MENU_USER="whiptail --title 'Update ${USER_CHOOSEN}' --menu  'Select action :' ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
-#  MENU_USER="${MENU_USER} 'SSH Key' 'Generate or update ssh key of the user ${USER_CHOOSEN}'"
-#  MENU_USER="${MENU_USER} 'Git information' 'Update git information of the user ${USER_CHOOSEN}'"
-#  MENU_USER="${MENU_USER} 'Vcsh and mr dotfiles' 'Get myRepos config via vcsh from a git repo'"
-#  MENU_USER="${MENU_USER} 'Command dotfiles' 'Get dotfiles from a one line command '"
-#  MENU_USER="${MENU_USER} 'CONTINUE' 'Continue to next step'"
-#  while true
-#  do
-#    bash -c "${MENU_USER} " 2> results_menu.txt
-#    RET=$?
-#    [[ ${RET} -eq 1 ]] && return 1
-#
-#    CHOICE=$( cat results_menu.txt )
-#
-#    case ${CHOICE} in
-#      "CONTINUE" )
-#        return 2
-#      ;;
-#      "SSH Key" )
-#        user_update_mail_ssh_key ${USER_CHOOSEN} ${EMAIL1}
-#      ;;
-#      "Git information" )
-#        user_update_mail_git_config ${EMAIL1}
-#      ;;
-#      "Vcsh and mr dotfiles" )
-#        user_update_mail_vcsh_dotfiles
-#      ;;
-#      "Command dotfiles" )
-#        user_update_mail_cmd_dotfiles
-#      ;;
-#    esac
-#  done
-#}
-#
-#user_update_go_through () {
-#  if ( whiptail --title "Update ${USER_CHOOSEN}" --yesno "Do you want to change GECOS informations of user :  ${USER_CHOOSEN}" 8 60 )
-#  then
-#    user_update_gecos
-#  fi
-#
-#  if ( whiptail --title "Update ${USER_CHOOSEN}r" --yesno "Do you want to change password user :  ${USER_CHOOSEN}" 8 60 )
-#  then
-#    user_update_chg_passwd
-#    RET=$?
-#    [[ ${RET} -eq 1 ]] && return 1
-#  fi
-#
-#  if ( whiptail --title "Update ${USER_CHOOSEN}r" --yesno "Do you want to change shell for user :  ${USER_CHOOSEN}" 8 60 )
-#  then
-#    user_update_chg_shell
-#  fi
-#
-#  if ( whiptail --title "Update ${USER_CHOOSEN}" --yesno "Do you want to enter the email adress for user :  ${USER_CHOOSEN} \n \
-#  If no, Following step will not be launch \n\
-#    - Generating SSH Key \n\
-#    - Setup git user information \n\
-#    - Setup dotfiles repos from git \n\
-#    - Setup dotfiles with vcsh and myRepos " 12 60 )
-#  then
-#    user_update_set_email
-#  else
-#    return 1
-#  fi
-#  RET=$?
-#  [[ ${RET} -eq 1 ]] && return 1
-#  return 2
-#}
-#
-#user_update_loop () {
-#  local MENU_USER="whiptail --title 'Update ${USER_CHOOSEN}' --menu  'Select what you want to do :' ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
-#  MENU_USER="${MENU_USER} 'Update GECOS' 'Update GEOCS information such as Fullname, Room...'"
-#  MENU_USER="${MENU_USER} 'Change password' 'Change the password of the ${USER_CHOOSEN}'"
-#  MENU_USER="${MENU_USER} 'Change shell' 'Change the shell of the ${USER_CHOOSEN}'"
-#  MENU_USER="${MENU_USER} 'Set email' 'Set email and continue with ssh key and dotfiles'"
-#  MENU_USER="${MENU_USER} 'CONTINUE' 'Continue to next step'"
-#  while true
-#  do
-#    bash -c "${MENU_USER} " 2> results_menu.txt
-#    RET=$?
-#    [[ ${RET} -eq 1 ]] && return 1
-#
-#    CHOICE=$( cat results_menu.txt )
-#
-#    case ${CHOICE} in
-#      "CONTINUE" )
-#        return 2
-#      ;;
-#      "Update GECOS" )
-#        user_update_gecos
-#      ;;
-#      "Change password" )
-#        user_update_chg_passwd
-#      ;;
-#      "Change shell" )
-#        user_update_chg_shell
-#      ;;
-#      "Set email" )
-#        user_update_set_email
-#      ;;
-#    esac
-#  done
-#}
-#
-user_update() {
-
-  if [[ ${#USER_CHOOSEN} -eq 0 ]]
-  then
-    local fullname[0]=$( grep "^root:" /etc/passwd | cut -d: -f5 | cut -d, -f1 )
-    local username[0]=$( grep "^root:" /etc/passwd | cut -d: -f1 )
-    _l="/etc/login.defs"
-    _p="/etc/passwd"
-
-    l=$(grep "^UID_MIN" $_l)
-    l1=$(grep "^UID_MAX" $_l)
-    awk -F':' -v "min=${l##UID_MIN}" -v "max=${l1##UID_MAX}" \
-      '{ if ( $3 >= min && $3 <= max  && $7 != "/sbin/nologin" ) print $0 }' \
-      "$_p" > results_menu.txt
-    idx=1
-    while read line
-    do
-      fullname[idx]=$( echo ${line} | cut -d: -f5 | cut -d, -f1 )
-      username[idx]=$( echo ${line} | cut -d: -f1 )
-      idx=$(( $idx + 1 ))
-    done < results_menu.txt
-    local nb_usr=${#username[@]}
-
-    local update_user="whiptail --title '003.User management : Update user' \
-    --menu  'select which user you want to update :' \
-    ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
-    for (( idx = 0 ; idx <= ${nb_usr}-1 ; idx++ ))
-    do
-      update_user="${update_user} '${username[idx]}' '${fullname[idx]}'"
-    done
-
-    bash -c "${update_user} " 2> results_menu.txt
-    RET=$? ;  [[ ${RET} -eq 1 ]] && return 1
-    USER_CHOOSEN=$( cat results_menu.txt )
-  fi
-  USER_CHOOSEN_FULLNAME=$( grep "^${USER_CHOOSEN}:" /etc/passwd | cut -d: -f5 | cut -d, -f1 )
-  USER_CHOOSEN_MAIL=$( grep "^${USER_CHOOSEN}:" /etc/passwd | cut -d: -f5 | cut -d, -f2 )
-${FULL_NAME[${idxUser}]}
-  return 0
-}
-
-user_add () {
-  local username_ok=false
-  local username=""
-  local firstname=""
-  local lastname=""
-  local passwd_ok=false
-  local passwd_regex='[a-zA-Z0-9@*#\-_=!?%&]{8,}'
-  # REGEX PASSWORD
-  #^([a-zA-Z0-9@*#_]{8,15})$
-  #Description
-  #Password matching expression.
-  #Match all alphanumeric character and predefined wild characters.
-  #Password must consists of at least 8 characters and not more than 15 characters.
-  local passwd1=""
-  local passwd2=""
-  local mail_ok=false
-  local mail_regex="^[a-z0-9!#\$%&'*+/=?^_\`{|}~-]+(\.[a-z0-9!#$%&'*+/=?^_\`{|}~-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?\$"
-  local gecos_info
-  local shell
-
-  while ! ${username_ok}
+set_username() {
+  local username_menu
+  while true
   do
-    username="whiptail --title '003.User Management : Add User' \
+    username_menu="whiptail --title 'User Management' \
       --inputbox 'Username for the new user (only lowerscript char)' \
       ${WT_HEIGHT} ${WT_WIDTH}"
-    bash -c "${username}" 2>results_menu.txt
+    bash -c "${username_menu}" 2>results_menu.txt
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-    username=$( cat results_menu.txt )
-    if [[ ${#username} == 0 ]]
+    USERNAME=$( cat results_menu.txt )
+    if [[ ${#USERNAME} == 0 ]]
     then
-      if ! ( whiptail --title '003.User Management : Add Users' \
+      if ! ( whiptail --title 'User Management' \
         --yesno 'Username must be at least one char long. \n\n
 Do you want to retry ? ' ${WT_HEIGHT} ${WT_WIDTH} )
       then
         return 1
       fi
-    elif ! [[ ${username} =~ ^[a-z]*$ ]]
+    elif ! [[ ${USERNAME} =~ ^[a-z]*$ ]]
     then
-      if ! ( whiptail --title '003.User Management : Add Users' \
+      if ! ( whiptail --title 'User Management' \
         --yesno 'Username must contain only lowerscript char [a-z]. \n\n
 Do you want to retry ? ' ${WT_HEIGHT} ${WT_WIDTH} )
       then
         return 1
       fi
-    elif getent passwd ${username}
+    elif getent passwd ${USERNAME}
     then
-      if ! ( whiptail \
-        --title '003.User Management : Add User' \
-        --yesno 'User already exist. \n\nDo you want to retry ?' \
-        ${WT_HEIGHT} ${WT_WIDTH} )
+      if ! ( whiptail --title 'User Management' \
+        --yesno 'User already exist. \n\n
+Do you want to retry ?' ${WT_HEIGHT} ${WT_WIDTH} )
       then
         return 1
       fi
     else
-      username_ok=true
+      return 0
     fi
   done
+}
 
-  firstname="whiptail --title '003.User Management : Add User' \
-    --inputbox 'First name of the new user (you can leave it empty).' \
+set_fullname() {
+  local fullname_menu
+  fullname_menu="whiptail --title 'User Management' \
+    --inputbox 'Fullname of the new user (you can leave it empty).' \
     ${WT_HEIGHT} ${WT_WIDTH}"
-  bash -c "${firstname}" 2>results_menu.txt
+  bash -c "${fullname_menu}" 2>results_menu.txt
   RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-  firstname=$( cat results_menu.txt )
+  USER_FULLNAME=$( cat results_menu.txt )
+  return 0
+}
 
-  lastname="whiptail --title '003.User Management : Add User' \
-    --inputbox 'Last name of the new user (you can leave it empty).' \
-    ${WT_HEIGHT} ${WT_WIDTH}"
-  bash -c "${lastname}" 2>results_menu.txt
-  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-  lastname=$( cat results_menu.txt )
-
-  while ! ${passwd_ok}
+set_passwd () {
+  while true
   do
-    passwd1="whiptail --title '003.User Management : Add User' \
-    --passwordbox 'Password for the new user' ${WT_HEIGHT} ${WT_WIDTH}"
-    bash -c "${passwd1}" 2>results_menu.txt
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-    passwd1=$( cat results_menu.txt )
-
-    if ! [[ ${passwd1} =~ ${passwd_regex} ]]
+    passwd ${USERNAME}
+    RET=$?
+    if [[ ${RET} -eq 0 ]]
     then
-      whiptail --title '003.User Management : Add Users' \
-        --msgbox "Password must be at least eight char long and contains only \
-alphanumeric char either lowercase or uppercase and the following predefined \
-characters  : @ * # - _ = ! ? % &." ${WT_HEIGHT} ${WT_WIDTH}
-    else
-      local passwd2="whiptail --title '003.User Management : Add User' \
-        --passwordbox 'Please enter the password again.' ${WT_HEIGHT} ${WT_WIDTH}"
-      bash -c "${passwd2}" 2> results_menu.txt
-      RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-      passwd2=$( cat results_menu.txt )
-      if [[ ! ${passwd1} == ${passwd2} ]]
-      then
-        whiptail --title '003.User Management : Add User' \
-          --msgbox 'Passwords do not match. Please retry.' ${WT_HEIGHT} ${WT_WIDTH}
-      else
-        passwd_ok=true
-      fi
+      whiptail --title 'User Management' \
+        --msgbox 'Password changed successfully' ${WT_HEIGHT} ${WT_WIDTH}
+      return 0
+    elif ! ( whiptail --title 'User Management' \
+      --yesno 'Failed to change password. Do you want to retry ?' \
+      ${WT_HEIGHT} ${WT_WIDTH} )
+    then
+      return 1
     fi
   done
+}
 
-  while ! ${mail_ok}
+set_mail() {
+  local mail1=''
+  local mail2=''
+  local mail_regex="^[a-z0-9!#\$%&'*+/=?^_\`{|}~-]+(\.[a-z0-9!#$%&'*+/=?^_\`{|}~-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?\$"
+
+  while true
   do
-    mail1="whiptail --title '003.User Management : Add User' \
-      --inputbox 'Email adress of the new user' ${WT_HEIGHT} ${WT_WIDTH}"
+    mail1="whiptail --title 'User Management' \
+      --inputbox 'Email adress of the new user' \
+      ${WT_HEIGHT} ${WT_WIDTH} ${USER_MAIL}"
+
     bash -c "$mail1" 2> results_menu.txt
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
     mail1=$( cat results_menu.txt )
+
     if [[ ! ${mail1} =~ ${mail_regex} ]]
     then
-     whiptail --title '003. User Manage : Add User' \
-       --msgbox 'This is not an email adress. Please enter one of the form : \n\
+     whiptail --title 'User Management' \
+       --msgbox 'This is not an email adress. Please enter one of the form : \n
      email@domain.com.' ${WT_HEIGHT} ${WT_WIDTH}
     else
-      mail2="whiptail --title '003.User Management : Add User' \
+      mail2="whiptail --title 'User Management : Add User' \
         --inputbox 'Please enter email adress again' ${WT_HEIGHT} ${WT_WIDTH}"
       bash -c "$mail2" 2> results_menu.txt
       RET=$? ; [[ ${RET} -eq 1 ]] && return 1
       mail2=$( cat results_menu.txt )
       if [[ ! ${mail1} == ${mail2} ]] && ! ( whiptail \
-        --title '003.User Management : Add User' \
+        --title 'User Management : Add User' \
         --yesno 'Emails do not match. Do you want to retry ?' \
         ${WT_HEIGHT} ${WT_WIDTH} )
      then
        return 1
      else
-       mail_ok=true
+       USER_MAIL=${mail1}
+       return 0
      fi
     fi
   done
+}
 
-  idx=0
+set_shell() {
+  local shell_menu
+
   if type -t sh &> /dev/null
   then
     shell[idx]="'sh' ''"
@@ -501,7 +144,7 @@ characters  : @ * # - _ = ! ? % &." ${WT_HEIGHT} ${WT_WIDTH}
     (( idx++ ))
   fi
 
-  shell_menu="whiptail --title '003.User Management : Add User' \
+  shell_menu="whiptail --title 'User Management' \
     --menu 'Which shell do you want to set for this user :' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   for (( idx = 0 ; idx < ${#shell[@]} ; idx++ ))
@@ -514,29 +157,221 @@ characters  : @ * # - _ = ! ? % &." ${WT_HEIGHT} ${WT_WIDTH}
 
   case ${CHOICE} in
     sh)
-      usr_shell='/bin/sh'
+      USER_SHELL='/bin/sh'
       ;;
     bash)
-      usr_shell='/bin/bash'
+      USER_SHELL='/bin/bash'
       ;;
     zsh)
-      usr_shell='/bin/zsh'
+      USER_SHELL='/bin/zsh'
       ;;
     ash)
-      usr_shell='/bin/ash'
+      USER_SHELL='/bin/ash'
       ;;
     dash)
-      usr_shell='/bin/dash'
+      USER_SHELL='/bin/dash'
       ;;
     mksh)
-      usr_shell='/bin/mksh'
+      USER_SHELL='/bin/mksh'
       ;;
     *)
       echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}. "
       ;;
   esac
 
-  if ( whiptail --title '003.User Management : Add User' \
+  chsh -s ${USER_SHELL} ${USERNAME}
+}
+
+set_git_config() {
+  if ( whiptail --title 'User Management'
+    --yesno "Script will now running following command for user ${USERNAME}: \n\
+      - 'git config --global user.name '${USER_FULLNAME}' \n\
+      - 'git config --global user.email '${USER_MAIL}'  \n\
+      - 'git config --global push.default matching \n\n\
+      You will now be ask password for user ${USERNAME}" \
+      ${WT_HEIGHT} ${WT_WIDTH})
+  then
+    su ${USERNAME} -c \
+      "git config --global user.name '${USER_FULLNAME}';\
+       git config --global user.email '${USER_MAIL}'; \
+       git config --global push.default matching;"
+  else
+    return 1
+  fi
+  return 0
+}
+
+set_ssh_key() {
+  echo
+}
+
+set_dotfiles() {
+  echo
+}
+
+choose_user() {
+  local username[0]=$( grep "^root:" /etc/passwd | cut -d: -f1 )
+  local fullname[0]=$( grep "^root:" /etc/passwd | cut -d: -f5 | cut -d, -f1 )
+  local mail[0]=$( grep "^root:" /etc/passwd | cut -d: -f5 | cut -d, -f2 )
+  local _l='/etc/login.defs'
+  local _p='/etc/passwd'
+
+  local l=$(grep "^UID_MIN" $_l)
+  local l1=$(grep "^UID_MAX" $_l)
+  awk -F':' -v "min=${l##UID_MIN}" -v "max=${l1##UID_MAX}" \
+    '{ if ( $3 >= min && $3 <= max  && $7 != "/sbin/nologin" ) print $0 }' \
+    "$_p" > results_menu.txt
+  idx=1
+  while read line
+  do
+    username[idx]=$( echo ${line} | cut -d: -f1 )
+    fullname[idx]=$( echo ${line} | cut -d: -f5 | cut -d, -f1 )
+    mail[idx]=$( echo ${line} | cut -d: -f5 | cut -d, -f2 )
+    (( idx++ ))
+  done < results_menu.txt
+  local nb_usr=${#username[@]}
+
+  local update_user="whiptail --title 'User management' \
+    --menu  'select which user you want to update :' \
+    ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
+  for (( idx = 0 ; idx <= ${nb_usr}-1 ; idx++ ))
+  do
+    update_user="${update_user} '${username[idx]}' '${fullname[idx]} ${mail[idx]}'"
+  done
+
+  bash -c "${update_user} " 2> results_menu.txt
+  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+  USER_CHOOSEN=$( cat results_menu.txt )
+  USER_FULLNAME=$( grep "^$USER_CHOOSEN:" /etc/passwd | cut -d: -f5 | cut -d, -f1 )
+  USER_MAIL=$( grep "^$USER_CHOOSEN:" /etc/passwd | cut -d: -f5 | cut -d, -f2 )
+  return 0
+}
+
+user_update() {
+  local USER_CHOOSEN
+  local USER_FULLNAME
+  local USER_MAIL
+  local update_menu
+
+  choose_user
+
+  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+  if [[ ${#USER_MAIL} -eq 0 ]] && ( whiptail \
+    --title 'User Management : Update User' \
+    --yesno "User does not seem to have an email adress set. Do you want to \
+set it now ?
+If not, you won't be propose to update/make ssh key, set/update git config, \
+clone dotfiles etc. You still can set it later in the main 'Update User' menu." )
+  then
+    set_email
+  fi
+
+  update_menu="whiptail --title 'User Management : Update User' \
+    --menu 'Choose action you want to do :' \
+    ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}
+    'Change fullname' 'Update fullname of the user'
+    'Change password' 'Change password of the user'
+    'Change email'    'Change email of the user'
+    'Change shell'    'Change shell of the user'
+    'Git config'      'Set git config variables'"
+  while true
+  do
+    if ! [[ ${#USER_MAIL} -eq 0 ]]
+    then
+      update_menu="${update_menu} \
+        'Set SSH Key'    'Generate or overwrite SSH Key of the user' \
+        'Clone dotfiles' 'Clone versioned dotiles'"
+    fi
+    update_menu="${update_menu} '<-- Back' 'Back to User Management menu'"
+
+    bash -c ${update_menu} 2> results_menu.txt
+    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    ${CHOICE}=$( cat results_menu.txt )
+
+    case ${CHOICE} in
+      'Change fullname')
+        set_fullname
+        ;;
+      'Change password')
+        set_passwd
+        ;;
+      'Change email')
+        set_email
+        ;;
+      'Change shell')
+        set_shell
+        ;;
+      'Git config')
+        set_git_config
+        ;;
+      'Set SSH Key')
+        set_ssh_key
+        ;;
+      'Clone dotfiles')
+        set_dotfiles
+        ;;
+      '<-- Back')
+        return 0
+    esac
+  done
+}
+
+user_add () {
+  local USER_FULLNAME=''
+  local USER_SHELL=''
+  local USER_MAIL=''
+  local USERNAME=''
+
+  local passwd_ok=false
+  local passwd_regex='[a-zA-Z0-9@*#\-_=!?%&]{8,}'
+  # REGEX PASSWORD
+  #^([a-zA-Z0-9@*#_]{8,15})$
+  #Description
+  #Password matching expression.
+  #Match all alphanumeric character and predefined wild characters.
+  #Password must consists of at least 8 characters and not more than 15 characters.
+  local passwd1=""
+  local passwd2=""
+
+  set_username
+
+  set_fullname
+
+  while ! ${passwd_ok}
+  do
+    passwd1="whiptail --title 'User Management' \
+    --passwordbox 'Password for the new user' ${WT_HEIGHT} ${WT_WIDTH}"
+    bash -c "${passwd1}" 2>results_menu.txt
+    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    passwd1=$( cat results_menu.txt )
+
+    if ! [[ ${passwd1} =~ ${passwd_regex} ]]
+    then
+      whiptail --title 'User Management' \
+        --msgbox 'Password must be at least eight char long and contains only \
+alphanumeric char either lowercase or uppercase and the following predefined \
+characters  : @ * # - _ = ! ? % &.' ${WT_HEIGHT} ${WT_WIDTH}
+    else
+      local passwd2="whiptail --title 'User Management : Add User' \
+        --passwordbox 'Please enter the password again.' ${WT_HEIGHT} ${WT_WIDTH}"
+      bash -c "${passwd2}" 2> results_menu.txt
+      RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+      passwd2=$( cat results_menu.txt )
+      if [[ ! ${passwd1} == ${passwd2} ]]
+      then
+        whiptail --title 'User Management' \
+          --msgbox 'Passwords do not match. Please retry.' ${WT_HEIGHT} ${WT_WIDTH}
+      else
+        passwd_ok=true
+      fi
+    fi
+  done
+
+  set_email
+
+  set_shell
+
+  if ( whiptail --title 'User Management' \
     --yesno 'Does this user will have sudo abilities ?' ${WT_HEIGHT} ${WT_WIDTH} )
   then
     sudo=true
@@ -544,94 +379,101 @@ characters  : @ * # - _ = ! ? % &." ${WT_HEIGHT} ${WT_WIDTH}
     sudo=false
   fi
 
-  if ( whiptail --title '003.User Management : Add User' \
+  if ( whiptail --title 'User Management : Add User' \
     --yesno "Do you confirm following informations about new user : \n\
-Username       : ${username} \n\
-User Fullname  : ${firstname} ${lastname}  \n\
-User Email     : ${mail1} \n\
-User Shell     : ${usr_shell} \n\
+Username       : ${USERNAME} \n\
+User Fullname  : ${USER_FULLNAME} \n\
+User Email     : ${USER_MAIL} \n\
+User Shell     : ${USER_SHELL} \n\
 Password       : The one you set
 " ${WT_HEIGHT} ${WT_WIDTH} )
   then
-    old_gecos_info="${firstname} ${lastname},,,"
-    new_gecos_info="${firstname} ${lastname},${mail2},,"
+    old_gecos_info="${USER_FULLENAME},,,"
+    new_gecos_info="${USER_FULLENAME},${USER_MAIL},,"
     if ${sudo}
     then
-      useradd -c "${old_gecos_info}" -s ${usr_shell} -G 'sudo' -p "'${passwd1}'"  ${username}
+      useradd -c "${old_gecos_info}" -s ${USER_SHELL} -G 'sudo' -p "'${passwd1}'"  ${USERNAME}
     else
-      useradd -c "${old_gecos_info}" -s ${usr_shell} -p "'${passwd1}'" ${username}
+      useradd -c "${old_gecos_info}" -s ${USER_SHELL} -p "'${passwd1}'" ${USERNAME}
     fi
-    mkdir -p /home/${username}
+    mkdir -p /home/${USERNAME}
   else
     return 1
   fi
 
-  old_line=$( grep "^${username}:" /etc/passwd  )
+  old_line=$( grep "^${USERNAME}:" /etc/passwd  )
   old_line=$( echo ${old_line} | sed -e "s/\//\\\\\//g" )
   new_line=$( echo ${old_line} | sed "s/:${old_gecos_info}:/:${new_gecos_info}:/g" )
-  echo "sed -i \"s/${old_line}/${new_line}/g\" /etc/passwd"
+  sed -i "s/${old_line}/${new_line}/g" /etc/passwd
+  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
 
-  USER_CHOOSEN=${username}
-  USER_CHOOSEN_FULLNAME="${firstname} ${lastname}"
-  USER_CHOOSEN_EMAIL="${email1}"
+  if type -t git &> /dev/null
+  then
+    if ( whiptail --title 'User Management' \
+      --yesno 'Do you want to apply git configuration for this user ?' )
+    then
+      set_git_config
+      RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    fi
+  fi
+
+  if ( whiptail --title 'User Management' \
+    --yesno "User successfully created.
+Do you want to generate a SSH for user ${username} ?
+
+WARNING : If you don't do it know, you won't be propose to clone ssh dotfiles \
+for this user BUT you can do it later by choosing 'Update User' in 'User \
+Management' main menu." )
+  then
+    set_ssk_key
+    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    set_dotfiles
+    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+  fi
+
   return 0
 }
 
 user_delete() {
-  local fullname
-  local username
-  _l="/etc/login.defs"
-  _p="/etc/passwd"
+  local USERNAME
 
-  l=$(grep "^UID_MIN" $_l)
-  l1=$(grep "^UID_MAX" $_l)
-  awk -F':' -v "min=${l##UID_MIN}" -v "max=${l1##UID_MAX}" \
-    '{ if ( $3 >= min && $3 <= max  && $7 != "/sbin/nologin" ) print $0 }' \
-    "$_p" > results_menu.txt
-  idx=0
-  while read line
+  while true
   do
-    fullname[idx]=$( echo ${line} | cut -d: -f5 | cut -d, -f1 )
-    username[idx]=$( echo ${line} | cut -d: -f1 )
-    idx=$(( $idx + 1 ))
-  done < results_menu.txt
-  local nb_usr=${#username[@]}
+    choose_user
 
-  local delete_user="whiptail --title '003.user management : delete user' \
-    --menu  'select which user you want to delete :' \
-    ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
-  for (( idx=0 ; idx <= ${nb_usr}-1 ; idx++ ))
-  do
-    delete_user="${delete_user} '${username[idx]}' '${fullname[idx]}'"
-  done
-
-  bash -c "${delete_user} " 2> results_menu.txt
-  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-  CHOICE=$( cat results_menu.txt )
-
-  if ( whiptail --title '003.User Management : Delete User' \
-    --yesno "Do you really want to delete user :  ${CHOICE}" 8 60 )
-  then
-    if ( whiptail --title '003.User Management : Delete User' \
-    --yesno "Do you want to backup its data to /root/deleted_user.backup/${CHOICE}" \
-    ${WT_HEIGHT} ${WT_WIDTH} )
+    if [[ ${USERNAME} == 'root' ]] && ( whitpail --title 'User Management' \
+      --yesno "You cannot delete user 'root'. Do you want to delete another user ?" \
+        ${WT_HEIGHT} ${WT_WIDTH} )
     then
-      mkdir -p /root/user.backup/${CHOICE}
-      mv /home/${CHOICE} /root/deleted_users.backup/${CHOICE}/home
-      mv /var/spool/mail/${CHOICE} /root/deleted_user.backup/${CHOICE}/mail
+      return 0
     fi
-    userdel ${CHOICE}
-    return 0
-  else
-    return 1
-  fi
+
+    if ( whiptail --title 'User Management' \
+      --yesno "Do you really want to delete user :  ${USERNAME}" \
+      ${WT_HEIGHT} ${WT_WIDTH} )
+    then
+      if ( whiptail --title 'User Management' \
+      --yesno "Do you want to backup its data to /root/deleted_user.backup/${USERNAME}" \
+      ${WT_HEIGHT} ${WT_WIDTH} )
+      then
+        mkdir -p /root/user.backup/${USERNAME}
+        mv /home/${USERNAME} /root/deleted_users.backup/${USERNAME}/home
+        mv /var/spool/mail/${USERNAME} /root/deleted_user.backup/${USERNAME}/mail
+      fi
+      userdel ${USERNAME}
+    fi
+
+    if ( whitpail --title 'User Management' \
+      --yesno 'Do you want to delete another user ?' \
+        ${WT_HEIGHT} ${WT_WIDTH} )
+    then
+      return 0
+    fi
+  done
 }
 
 user_management() {
-  local user_choosen
-  local user_choosen_fullname
-
-  local menu_user="whiptail --title '003.User Management' \
+  local menu_user="whiptail --title 'User Management' \
     --menu  'Select what you want to do :' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
     'Update User' 'Update user information (git/vcsh dotfiles, name, mail etc.)' \
@@ -654,7 +496,6 @@ user_management() {
         ;;
       'Add User')
         user_add
-        RET=$? ; [[ ${RET} -eq 0 ]] && user_update
         ;;
       'Delete User' )
         user_delete

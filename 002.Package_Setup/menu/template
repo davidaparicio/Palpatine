@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# BEGIN <CAT> INFO
+ALL_APP_CAT+=':<CAT>'
+APP_<CAT>_CAT="Categorie Name"
+APP_<CAT>_EX="Categorie Description"
+# end <CAT> INFO
+
+idx=0
+APP_<CAT>_NAME[idx]="App_Name"
+APP_<CAT>_DESC[idx]="Description of the package"
+APP_<CAT>_STAT[idx]="OFF"
+App_Name_routine () {
+  case ${LINUX_OS} in
+  SUPPORTED_OS )
+    #TODO "Write setup bash line"
+    echo "Write setup bash line"
+    ;;
+  *)
+    return 1
+    ;;
+  esac
+  return 0
+}
+(( idx++ ))
