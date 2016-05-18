@@ -537,5 +537,5 @@ RET=$? ; [[ ${RET} -eq 1 ]] && exit 1
 #  reboot
 #fi
 
+rm -f cmd.sh results_menu.txt
 LC_ALL=${LC_ALL_bak}
-locale
