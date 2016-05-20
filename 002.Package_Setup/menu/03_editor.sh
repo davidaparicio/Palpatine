@@ -10,7 +10,7 @@ idx=0
 
 APP_EDITOR_NAME[idx]="vim"
 APP_EDITOR_DESC[idx]="vi iMproved is a screen-oriented text editor originally"
-APP_EDITOR_STAT[idx]="OFF"
+APP_EDITOR_STAT[idx]="ON"
 vim_routine() {
   case ${LINUX_OS} in
     debian|ubuntu)

@@ -20,7 +20,7 @@ setup_pkg_ask_finish () {
   local all_routine
   local nb_routine=0
 
-  menu_ask_finish="whiptail --title '002.Package : Last Check Before Install' \
+  menu_ask_finish="whiptail --title 'Package Setup' \
     --menu  'This is the list of program this script will install :' \
     ${WT_WIDE_HEIGHT} ${WT_WIDTH} ${WT_WIDE_MENU_HEIGHT} "
   for (( idxCat=1 ; idxCat <= ${nb_cat} ; idxCat++ ))
@@ -109,7 +109,7 @@ setup_pkg_ask_finish () {
         echo Press Enter to continue
         echo =================================================================
         read
-        if ( whiptail --title '002.Package Setup' --yesno 'Was everything ok ?' \
+        if ( whiptail --title 'Package Setup' --yesno 'Was everything ok ?' \
           ${WT_HEIGHT} ${WT_WIDTH} )
         then
           return 0
@@ -142,7 +142,7 @@ setup_pkg_all_app () {
 
   local nb_app=${#app_arr_name[@]}
 
-  local menu_app="whiptail --title '002.Package Setup : ${cat_name}' \
+  local menu_app="whiptail --title 'Package Setup' \
     --checklist  'Select which ${cat_name} you want to install :' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   for (( idx=0 ; idx <= ${nb_app}-1 ; idx++ ))
@@ -157,7 +157,7 @@ setup_pkg_all_app () {
   for (( idx=0 ; idx <= ${nb_app}-1 ; idx++ ))
   do
     line=$(grep -n ${app_arr_name[idx]}_routine ${dir}/menu/*${lower_name}.sh | cut -d ":" -f1)
-    (( line-- ))
+    line=$(( line - 1 ))
     if echo ${CHOICE} | grep -q "\"${app_arr_name[idx]}\""
     then
       sed -i "${line}s/\(OFF\|ON\)/ON/g" ${dir}/menu/*${lower_name}.sh
@@ -172,7 +172,7 @@ setup_pkg_all_cat () {
   local cat_name
   local cat_desc
 
-  local menu_cat="whiptail --title '002.Package Setup : Category of application' \
+  local menu_cat="whiptail --title 'Package Setup' \
     --menu  'Select which category of application you want to install :' \
     ${WT_WIDE_HEIGHT} ${WT_WIDTH} ${WT_WIDE_MENU_HEIGHT}"
   for (( idx=1 ; idx <= ${nb_cat} ; idx++ ))
@@ -222,7 +222,7 @@ setup_pkg_go_through () {
 # SETUP INSTALL PACKAGE PART
 ###############################################################################
 package_menu () {
-  local pkg_ask_menu="whiptail --title '002.Package setup' \
+  local pkg_ask_menu="whiptail --title 'Package Setup' \
     --menu 'Select how to manage package setup :' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
     'Go through'     'Let the script go through all categories of programm to setup.' \

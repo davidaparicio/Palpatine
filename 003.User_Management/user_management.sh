@@ -92,13 +92,13 @@ set_email() {
        --msgbox 'This is not an email adress. Please enter one of the form : \n
      email@domain.com.' ${WT_HEIGHT} ${WT_WIDTH}
     else
-      mail2="whiptail --title 'User Management : Add User' \
+      mail2="whiptail --title 'User Management' \
         --inputbox 'Please enter email adress again' ${WT_HEIGHT} ${WT_WIDTH}"
       bash -c "$mail2" 2> results_menu.txt
       RET=$? ; [[ ${RET} -eq 1 ]] && return 1
       mail2=$( cat results_menu.txt )
       if [[ ! ${mail1} == ${mail2} ]] && ! ( whiptail \
-        --title 'User Management : Add User' \
+        --title 'User Management' \
         --yesno 'Emails do not match. Do you want to retry ?' \
         ${WT_HEIGHT} ${WT_WIDTH} )
      then

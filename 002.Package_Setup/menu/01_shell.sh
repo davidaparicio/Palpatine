@@ -58,7 +58,7 @@ mksh_routine() {
 
 APP_SHELL_NAME[idx]="zsh"
 APP_SHELL_DESC[idx]="A relatively modern shell that is backward compatible with bash"
-APP_SHELL_STAT[idx]="OFF"
+APP_SHELL_STAT[idx]="ON"
 zsh_routine() {
   case ${LINUX_OS} in
     debian|ubuntu)

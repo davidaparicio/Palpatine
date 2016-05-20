@@ -139,16 +139,16 @@ EOF
 setup_chg_root_pwd () {
   while true
   do
-    whiptail --title '001.Inital Setup : Root Password'\
+    whiptail --title 'Inital Setup : Root Password'\
       --msgbox 'You will now be asked to enter a new password for the user : root.'\
       ${WT_HEIGHT} ${WT_WIDTH}
     passwd root
     RET=$? ; if [[ ${RET} -eq 0 ]]
     then
-      whiptail --title '001.Inital Setup : Root Password'\
+      whiptail --title 'Inital Setup : Root Password'\
       ---msgbox 'Password changed successfully' ${WT_HEIGHT} ${WT_WIDTH}
       return 0
-    elif ! ( whiptail --title '001.Inital Setup : Root Password'\
+    elif ! ( whiptail --title 'Inital Setup : Root Password'\
       --yesno 'Failed to change password. Do you wan to retry ?'\
       ${WT_HEIGHT} ${WT_WIDTH} )
     then
@@ -158,7 +158,7 @@ setup_chg_root_pwd () {
 }
 
 setup_expand_rootfs () {
-  if ( whiptail --title '001.Inital Setup : Expand Rootfs' \
+  if ( whiptail --title 'Inital Setup : Expand Rootfs' \
     --yesno 'Are you sure  you are on a RPi and you want to expand rootfs ?
 I WILL NOT BE RESPONSIBLE IF DAMAGE OCCURS TO YOUR ROOTFS' ${WT_HEIGHT} ${WT_WIDTH} )
   then
@@ -189,7 +189,7 @@ setup_hostname() {
   local hostname_set=""
   local hostname_regex="^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$"
 
-  whiptail --title '001.Initial Setup : Change hostname' \
+  whiptail --title 'Initial Setup' \
     --msgbox "\
 Please note: RFCs mandate that a hostname's labels \
 may contain only the ASCII letters 'a' through 'z' (case-insensitive), \
@@ -200,13 +200,13 @@ No other symbols, punctuation characters, or blank spaces are permitted." \
 
   while ! ${hostname_ok}
   do
-    hostname_set=$( whiptail --title '001.Initial Setup : Change hostname' \
+    hostname_set=$( whiptail --title 'Initial Setup' \
       --inputbox 'Please enter the hostname you want for this computer. '\
       ${WT_HEIGHT} ${WT_WIDTH} "${curr_hostname}" 3>&1 1>&2 2>&3 )
     if [[ ${#hostname_set} > 0 ]]
     then
       if [[ ${hostname_set} =~ ${hostname_regex} ]] && ( whiptail \
-        --title '001.Initial Setup : Change hostname' \
+        --title 'Initial Setup'\
         --yesno "Are you sure you want this hostname : ${hostname_set} ?" \
         ${WT_HEIGHT} ${WT_WIDTH} )
       then
@@ -216,10 +216,10 @@ No other symbols, punctuation characters, or blank spaces are permitted." \
         return 0
       fi
     else
-      whiptail --title '001.Initial Setup : Change hostname' \
+      whiptail --title 'Initial Setup' \
         --msgbox 'Please enter valid hostname' ${WT_HEIGHT} ${WT_WIDTH}
     fi
-    if ! (whiptail --title '001.Initial Setup : Change hostname' \
+    if ! ( whiptail --title 'Initial Setup' \
       --yesno 'Do you want to retry ? ' ${WT_HEIGHT} ${WT_WIDTH} )
     then
       return 1
@@ -230,12 +230,12 @@ No other symbols, punctuation characters, or blank spaces are permitted." \
 setup_update_sudoer () {
   if grep -q 'Defaults rootpw' /etc/sudoers
   then
-    whiptail --title '001.Initial Setup : Update sudoer file'\
+    whiptail --title 'Initial Setup'\
       --msgbox 'The following line is already present in /etc/sudoers.\n\n
         "Defaults rootpw" \n\n
     Nothing to do. Will continue' ${WT_HEIGHT} ${WT_WIDTH}
     return 0
-  elif ( whiptail --title '001.Initial Setup : Update sudoer file'\
+  elif ( whiptail --title 'Initial Setup'\
     --yesno ' Do you want to add the following line to sudoer ? \n\n
   "Defaults rootpw" \n\n
 This will make OS to ask root password when using sudo instead of user password.'\
@@ -249,21 +249,21 @@ This will make OS to ask root password when using sudo instead of user password.
 }
 
 initial_setup_go_through () {
-  if ${LINUX_IS_RPI} && ( whiptail --title '001.Inital Setup : Expand rootfs' \
+  if ${LINUX_IS_RPI} && ( whiptail --title 'Inital Setup : Expand rootfs' \
     --yesno 'Do you want to expand rootfs ?' ${WT_HEIGHT} ${WT_WIDTH} )
   then
     setup_expand_rootfs
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   fi
 
-  if ( whiptail --title '001.Inital Setup : Change root password' \
+  if ( whiptail --title 'Inital Setup : Change root password' \
     --yesno 'Do you want to change root password ?' ${WT_HEIGHT} ${WT_WIDTH} )
   then
     setup_chg_usr_pwd 'root'
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   fi
 
-  if ( whiptail --title '001.Inital Setup : Update sudoer' \
+  if ( whiptail --title 'Inital Setup : Update sudoer' \
     --yesno 'Do you want to update sudoer files by adding line "Defaults rootpw" ?'\
     ${WT_HEIGHT} ${WT_WIDTH} )
   then
@@ -271,35 +271,35 @@ initial_setup_go_through () {
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   fi
 
-  if ( whiptail --title '001.Inital Setup : Change Locale' \
+  if ( whiptail --title 'Inital Setup : Change Locale' \
     --yesno 'Do you want to change the Locale ? ' ${WT_HEIGHT} ${WT_WIDTH} )
   then
     setup_chg_locale
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   fi
 
-  if ( whiptail --title '001.Inital Setup : Change timezone' \
+  if ( whiptail --title 'Inital Setup : Change timezone' \
     --yesno 'Do you want to change the timezone ?' ${WT_HEIGHT} ${WT_WIDTH} )
   then
     setup_chg_timezone
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   fi
 
-  if ( whiptail --title '001.Initial Setup : Change keyboard' \
+  if ( whiptail --title 'Initial Setup' \
     --yesno 'Do you want to change the keyboard layout ?' ${WT_HEIGHT} ${WT_WIDTH} )
   then
     setup_config_keyboard
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   fi
 
-  if ( whiptail --title '001.Initial Setup : Change hostname' \
+  if ( whiptail --title 'Initial Setup' \
     --yesno 'Do you want to change the hostname ?' ${WT_HEIGHT} ${WT_WIDTH} )
   then
     setup_hostname
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   fi
 
-  if ! ( whiptail --title '001.Initial Setup : FINISH'\
+  if ! ( whiptail --title 'Initial Setup'\
     --yesno 'Does everything went ok ? ' ${WT_HEIGHT} ${WT_WIDTH} )
   then
       return 1
@@ -308,7 +308,7 @@ initial_setup_go_through () {
 }
 
 initial_setup_loop () {
-  local setup_loop="whiptail --title '001.Initial Setup' \
+  local setup_loop="whiptail --title 'Initial Setup' \
     --menu  'Select how do you whant to manage first setup :' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   if ${LINUX_IS_RPI}
@@ -361,7 +361,7 @@ initial_setup_loop () {
 }
 
 initial_setup () {
-  local initial_setup="whiptail --title '001.Initial Setup' \
+  local initial_setup="whiptail --title 'Initial Setup' \
     --menu  'Select how do you whant to manage first setup :' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
     'Go through'     'Let the script go through all actions' \

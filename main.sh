@@ -1,19 +1,28 @@
 #!/bin/bash
+
+# Baclup LC_ALL because it will be change by the script to make regex working
 LC_ALL_bak=${LC_ALL}
 LC_ALL=C
 
-
+# Different boolean init
 ASK_TO_REBOOT=false
 BASE_PKG_INSTALLED=true
 NEED_UPDATE=false
+# Preamble boolean init
 IS_SSH=false
 IS_ROOT=false
+# Variable about LINUX OS.
+LINUX_IS_RPI=true
 LINUX_OS='Unknown'
 LINUX_VER='Unknown'
 LINUX_ARCH='Unknown'
 LINUX_PKG_MGR='Unknown'
-LINUX_IS_RPI=false
+LINUX_LOCAL_IP=$( ip a | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' \
+  | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' )
+# List of OS on which Yunohost can be installed
+SUPPORTED_YUNOHOST=('debian raspbian')
 
+# List of arch, OS and version supported
 SUPPORTED_ARCH[0]='x86_64'
 SUPPORTED_ARCH[1]='arm'
 
@@ -22,10 +31,7 @@ SUPPORTED_UBUNTU_VER[0]='16.04'
 
 SUPPORTED_OS[1]='debian'
 SUPPORTED_DEBIAN_VER[0]='8'
-
-SUPPORTED_OS[2]='raspbian'
-SUPPORTED_RASPBIAN_VER[0]='8'
-
+# List of supported package manager
 SUPPORTED_PKG_MGR[0]='apt-get'
 SUPPORTED_PKG_MGR[1]='apt'
 SUPPORTED_PKG_MGR[2]='aptitude'
@@ -381,7 +387,7 @@ linux_init_os () {
     --yesno "You seems to be running on : \n\n ${tmp_os_name} - ${tmp_ver_name} - ${tmp_arch} \n\nIs it right ? " ${WT_HEIGHT} ${WT_WIDTH} )
   then
     # Validate OS
-    if [[ ${SUPPORTED_OS[@]} =~ ${tmp_os} ]]
+    if ! [[ ${#tmp_os} -eq 0 ]] && [[ ${SUPPORTED_OS[@]} =~ ${tmp_os} ]]
     then
       os_valid=true
       LINUX_OS=${tmp_os}
@@ -389,13 +395,13 @@ linux_init_os () {
     # Get supported version for validated OS and validate it
     arr_supported_ver="SUPPORTED_${LINUX_OS^^}_VER"
     arr_supported_ver=("${!arr_supported_ver}")
-    if [[ ${arr_supported_ver[@]} =~ ${tmp_ver} ]]
+    if ! [[ ${#tmp_ver} -eq 0 ]] && [[ ${arr_supported_ver[@]} =~ ${tmp_ver} ]]
     then
       ver_valid=true
       LINUX_VER=${tmp_ver}
     fi
     # Validate arch
-    if [[ ${SUPPORTED_ARCH[@]} =~ ${tmp_arch} ]]
+    if ! [[ ${#tmp_arch} -eq 0 ]] && [[ ${SUPPORTED_ARCH[@]} =~ ${tmp_arch} ]]
     then
       arch_valid=true
       LINUX_ARCH=${tmp_arch}
@@ -408,8 +414,8 @@ linux_init_os () {
       if ! ${os_valid} || ! ${ver_valid}
       then
         whiptail --title 'Linux Init' \
-        --msgbox 'Your OS is not supported, you will be ask if you want to \
-choose amoung supported OS and version'
+        --msgbox "Your OS is not supported, you will be ask if you want to \
+choose amoung supported OS and version" ${WT_HEIGHT} ${WT_WIDTH}
         choose_linux_var 'OS'
         RET=$? ; [[ ${RET} -eq 1 ]] && return 1
         choose_linux_var 'VER'
@@ -425,7 +431,7 @@ ask if you want to choose amoung supported one.'
         RET=$? ; [[ ${RET} -eq 1 ]] && return 1
         linux_user_set=true
       fi
-      if $linux_user_set && ( whiptail --title 'Linux Init' \
+      if ${linux_user_set} && ( whiptail --title 'Linux Init' \
         --yesno "Do you want to continue with the followin option for you linux ?
 
       --> ${LINUX_OS} - ${LINUX_VER} - ${LINUX_ARCH}
@@ -479,8 +485,13 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
   ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
   'Initial setup'    'Access to initial config such as timezone, hostname...' \
   'Package setup'    'Select package to install' \
-  'User Management'  'Manage user (add, update, delete)' \
-  'FINISH'           'Exit the script'"
+  'User Management'  'Manage user (add, update, delete)'"
+  if [[ ${SUPPORTED_YUNOHOST} =~ ${LINUX_OS} ]]
+  then
+    main_menu="${main_menu} \
+      'Yunohost Management' 'Basic Yunohst management (installation, user, app)'"
+  fi
+  main_menu="${main_menu} 'FINISH'           'Exit the script'"
 
   while true
   do
@@ -506,6 +517,10 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
     'User Management')
       source 003.User_Management/user_management.sh
       user_management
+      ;;
+    'Yunohost Management')
+      source 004.Yunohost_management/yunohost_management.sh
+      ynh_management
       ;;
     * )
       echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."
