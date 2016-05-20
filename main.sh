@@ -1,9 +1,11 @@
 #!/bin/bash
 
-# Baclup LC_ALL because it will be change by the script to make regex working
+# Backup LC_ALL because it will be change by the script to make regex working
 LC_ALL_bak=${LC_ALL}
 LC_ALL=C
 
+# TEST BOOLEAN
+################################################################################
 # Different boolean init
 ASK_TO_REBOOT=false
 BASE_PKG_INSTALLED=true
@@ -11,6 +13,9 @@ NEED_UPDATE=false
 # Preamble boolean init
 IS_SSH=false
 IS_ROOT=false
+
+# LINUX ENVIRONNEMENT
+################################################################################
 # Variable about LINUX OS.
 LINUX_IS_RPI=true
 LINUX_OS='Unknown'
@@ -19,6 +24,9 @@ LINUX_ARCH='Unknown'
 LINUX_PKG_MGR='Unknown'
 LINUX_LOCAL_IP=$( ip a | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' \
   | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' )
+
+# SUPPORTED SYSTEM
+################################################################################
 # List of OS on which Yunohost can be installed
 SUPPORTED_YUNOHOST=('debian raspbian')
 
@@ -31,30 +39,35 @@ SUPPORTED_UBUNTU_VER[0]='16.04'
 
 SUPPORTED_OS[1]='debian'
 SUPPORTED_DEBIAN_VER[0]='8'
+
 # List of supported package manager
 SUPPORTED_PKG_MGR[0]='apt-get'
 SUPPORTED_PKG_MGR[1]='apt'
 SUPPORTED_PKG_MGR[2]='aptitude'
 
-################################################################################
-# INSTALL AND UPDATE DEPANDING ON PACKAGE MANAGER
+# Tools function
 ################################################################################
 do_fullupdate () {
+  # Update repo database, upgrade app and upgrade distrib if available
   whiptail --title 'Update Repo and Upgrade' \
-  --msgbox 'This script will now update and upgrade the system' ${WT_HEIGHT} ${WT_WIDTH}
+  --msgbox 'This script will now update and upgrade the system' \
+  ${WT_HEIGHT} ${WT_WIDTH}
   case ${LINUX_PKG_MGR} in
     apt* )
-    ${LINUX_PKG_MGR} update && ${LINUX_PKG_MGR} upgrade -y && ${LINUX_PKG_MGR} dist-upgrade -y
+    ${LINUX_PKG_MGR} update
+    ${LINUX_PKG_MGR} upgrade -y
+    ${LINUX_PKG_MGR} dist-upgrade -y
     NEED_UPDATE=false
     ;;
     * )
-      echo "Programmer error : Option ${LINUX_PKG_MGR} not supported."
+      echo "Programmer error : Option PACKAGE MANAGER is not supported."
     ;;
   esac
   return 0
 }
 
 do_setup_pkg_base () {
+  # Install packages that will be required later if they are not installed
   case ${LINUX_PKG_MGR} in
     apt* )
     whiptail --title 'Setup Base Package' \
@@ -75,7 +88,6 @@ do_setup_pkg_base () {
   return 0
 }
 
-################################################################################
 # NOT INTERACTIVE MENU JUST ASK PACKAGE MANAGER TO USE TO INSTAL WHIPTAIL
 ################################################################################
 install_whiptail () {
@@ -150,8 +162,7 @@ Setup aborted !" ; read ; exit 1
   done
 }
 
-###############################################################################
-# FUNCTION
+# TOOLS
 ###############################################################################
 top_level_parent_pid () {
   # Look up the parent of the given PID.
@@ -175,7 +186,32 @@ top_level_parent_pid () {
   fi
 }
 
+calc_wt_size() {
+  # NOTE: it's tempting to redirect stderr to /dev/null, so supress error
+  # output from tput. However in this case, tput detects neither stdout or
+  # stderr is a tty and so only gives default 80, 24 values
+  WT_HEIGHT=17
+  WT_WIDTH=$( tput cols )
+
+  if [ -z "${WT_WIDTH}" ] || [ "${WT_WIDTH}" -lt 60 ]
+  then
+    WT_WIDTH=80
+  fi
+  if [ "${WT_WIDTH}" -gt 178 ]
+  then
+    WT_WIDTH=120
+  fi
+  WT_MENU_HEIGHT=$((${WT_HEIGHT}-9))
+  WT_WIDE_HEIGHT=34
+  WT_WIDE_MENU_HEIGHT=$((${WT_WIDE_HEIGHT}-9))
+}
+
+################################################################################
+# INTERACTIVE MENU
+################################################################################
 preamble() {
+  # Check if user is root, if it's connect through SSH and warn it that I'm not
+  # responsible if damage occurs
   [[ $( whoami ) == "root" ]] && IS_ROOT=true
   top_level_parent_pid $PPID
 
@@ -206,7 +242,8 @@ EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF \
 MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE \
 QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. SHOULD THE PROGRAM PROVE \
 DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION. \
-                                --- BE CAREFUL!---
+
+--- BE CAREFUL ! ---
 
   Continue ?
   " ${WT_HEIGHT} ${WT_WIDTH} )
@@ -217,31 +254,8 @@ DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
   fi
 }
 
-calc_wt_size() {
-  # NOTE: it's tempting to redirect stderr to /dev/null, so supress error
-  # output from tput. However in this case, tput detects neither stdout or
-  # stderr is a tty and so only gives default 80, 24 values
-  WT_HEIGHT=17
-  WT_WIDTH=$( tput cols )
-
-  if [ -z "${WT_WIDTH}" ] || [ "${WT_WIDTH}" -lt 60 ]
-  then
-    WT_WIDTH=80
-  fi
-  if [ "${WT_WIDTH}" -gt 178 ]
-  then
-    WT_WIDTH=120
-  fi
-  WT_MENU_HEIGHT=$((${WT_HEIGHT}-9))
-  WT_WIDE_HEIGHT=34
-  WT_WIDE_MENU_HEIGHT=$((${WT_WIDE_HEIGHT}-9))
-}
-
-################################################################################
-# INTERACTIVE MENU
-################################################################################
-# Package manager selection
 linux_init_pkg_mgr () {
+  # Package manager selection
   local nb_pkg_mgr=${#SUPPORTED_PKG_MGR[@]}
   local exist_pkg_mgr=false
   local pkg_mgr_menu="whiptail --title 'Linux Init : Package Manager' \
@@ -287,8 +301,8 @@ Here is the list of supported package manager :
   return 0
 }
 
-# Function to choose OS/VER/ARCH
 choose_linux_var () {
+  # Function to choose OS/VER/ARCH
   local linux_var=$1
   local arr_supported_var
   if [[ "${linux_var}" == "OS" ]]
@@ -322,7 +336,6 @@ If you choose \"NONE OF THEM\", the program will exit) ? ' ${WT_HEIGHT} ${WT_WID
 
   bash -c "${menu} " 2> results_menu.txt
   RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-
   CHOICE=$( cat results_menu.txt )
 
   if [[ "${CHOICE}" == "NONE OF THEM" ]]
@@ -349,8 +362,8 @@ If you choose \"NONE OF THEM\", the program will exit) ? ' ${WT_HEIGHT} ${WT_WID
   fi
 }
 
-# Ask user if arch is arm if it's a raspberry
 ask_rpi () {
+  # Ask user if arch is arm if it's a raspberry
   if [[ ${TMP_ARCH} =~ 'arm' ]]
   then
     if ( whiptail --title 'Linux Init : Archictecture' --yesno "\
@@ -364,6 +377,7 @@ Is it a raspberry ? " ${WT_HEIGHT} ${WT_WIDTH} )
 }
 
 linux_init_os () {
+  # Check linux distrib to know if it's supported
   local arr_supported_ver
   local linux_user_set=false
   local linux_valid=false
@@ -407,6 +421,7 @@ linux_init_os () {
       LINUX_ARCH=${tmp_arch}
     fi
 
+    # If supported linux, return, else ask if user want to set it manually
     if ${os_valid} && ${ver_valid} && ${arch_valid}
     then
       return 0
@@ -457,6 +472,7 @@ ask if you want to choose amoung supported one.'
 }
 
 linux_init () {
+  # Run validation of linux distrib and package manager
   linux_init_os
   RET=$? ; [[ ${RET} -eq 1 ]] && return 1
 
@@ -498,8 +514,6 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
     bash -c "${main_menu}" 2> results_menu.txt
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
     CHOICE=$( cat results_menu.txt )
-
-    # Sourcing file to that it's possible do modify file while script is running
     case ${CHOICE} in
     'FINISH' )
       return 0
@@ -530,27 +544,36 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
   done
 }
 
+# Get script directory, gonna need sometime to be sure to get back to the right
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd ${DIR}
-
+# Compute terminal size
 calc_wt_size
+# Warn the user
 preamble
 
+# Install whiptail if needed
 if ! type -t whiptail &>/dev/null
 then
   install_whiptail
 fi
 
+# Now run the script
 main_menu
-RET=$? ; [[ ${RET} -eq 1 ]] && exit 1
+RET=$?
 
-#if [[ ${ASK_TO_REBOOT} ]] \
-#  && ( whiptail --title 'REBOOT NEEDED' \
-#    --yesno 'A reboot is needed. Do you want to reboot now ? ' \
-#    ${WT_HEIGHT} ${WT_WIDTH} )
-#then
-#  reboot
-#fi
-
+# Clean repo
 rm -f cmd.sh results_menu.txt
 LC_ALL=${LC_ALL_bak}
+
+# If main menu was cancel, exit now
+[[ ${RET} -eq 1 ]] && exit 1
+
+if [[ ${ASK_TO_REBOOT} ]] \
+  && ( whiptail --title 'REBOOT NEEDED' \
+    --yesno 'A reboot is needed. Do you want to reboot now ? ' \
+    ${WT_HEIGHT} ${WT_WIDTH} )
+then
+  reboot
+fi
+
