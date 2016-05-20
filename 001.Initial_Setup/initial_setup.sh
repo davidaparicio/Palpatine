@@ -139,16 +139,16 @@ EOF
 setup_chg_root_pwd () {
   while true
   do
-    whiptail --title 'Inital Setup : Root Password'\
+    whiptail --title 'Inital Setup'\
       --msgbox 'You will now be asked to enter a new password for the user : root.'\
       ${WT_HEIGHT} ${WT_WIDTH}
     passwd root
     RET=$? ; if [[ ${RET} -eq 0 ]]
     then
-      whiptail --title 'Inital Setup : Root Password'\
+      whiptail --title 'Inital Setup'\
       ---msgbox 'Password changed successfully' ${WT_HEIGHT} ${WT_WIDTH}
       return 0
-    elif ! ( whiptail --title 'Inital Setup : Root Password'\
+    elif ! ( whiptail --title 'Inital Setup'\
       --yesno 'Failed to change password. Do you wan to retry ?'\
       ${WT_HEIGHT} ${WT_WIDTH} )
     then
@@ -158,7 +158,7 @@ setup_chg_root_pwd () {
 }
 
 setup_expand_rootfs () {
-  if ( whiptail --title 'Inital Setup : Expand Rootfs' \
+  if ( whiptail --title 'Inital Setup' \
     --yesno 'Are you sure  you are on a RPi and you want to expand rootfs ?
 I WILL NOT BE RESPONSIBLE IF DAMAGE OCCURS TO YOUR ROOTFS' ${WT_HEIGHT} ${WT_WIDTH} )
   then
@@ -249,21 +249,21 @@ This will make OS to ask root password when using sudo instead of user password.
 }
 
 initial_setup_go_through () {
-  if ${LINUX_IS_RPI} && ( whiptail --title 'Inital Setup : Expand rootfs' \
+  if ${LINUX_IS_RPI} && ( whiptail --title 'Inital Setup' \
     --yesno 'Do you want to expand rootfs ?' ${WT_HEIGHT} ${WT_WIDTH} )
   then
     setup_expand_rootfs
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   fi
 
-  if ( whiptail --title 'Inital Setup : Change root password' \
+  if ( whiptail --title 'Inital Setup' \
     --yesno 'Do you want to change root password ?' ${WT_HEIGHT} ${WT_WIDTH} )
   then
     setup_chg_usr_pwd 'root'
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   fi
 
-  if ( whiptail --title 'Inital Setup : Update sudoer' \
+  if ( whiptail --title 'Inital Setup' \
     --yesno 'Do you want to update sudoer files by adding line "Defaults rootpw" ?'\
     ${WT_HEIGHT} ${WT_WIDTH} )
   then
@@ -271,14 +271,14 @@ initial_setup_go_through () {
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   fi
 
-  if ( whiptail --title 'Inital Setup : Change Locale' \
+  if ( whiptail --title 'Inital Setup' \
     --yesno 'Do you want to change the Locale ? ' ${WT_HEIGHT} ${WT_WIDTH} )
   then
     setup_chg_locale
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   fi
 
-  if ( whiptail --title 'Inital Setup : Change timezone' \
+  if ( whiptail --title 'Inital Setup' \
     --yesno 'Do you want to change the timezone ?' ${WT_HEIGHT} ${WT_WIDTH} )
   then
     setup_chg_timezone
