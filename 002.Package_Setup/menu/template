@@ -13,7 +13,8 @@ APP_<CAT>_STAT[idx]="OFF"
 App_Name_routine () {
   case ${LINUX_OS} in
   SUPPORTED_OS )
-    #TODO "Write setup bash line"
+    # TODO : Support 
+    # Write setup bash line"
     echo "Write setup bash line"
     ;;
   *)
