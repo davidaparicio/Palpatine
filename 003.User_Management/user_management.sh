@@ -203,7 +203,7 @@ set_git_config() {
       You will now be ask password for user ${USERNAME}" \
       ${WT_HEIGHT} ${WT_WIDTH})
   then
-    sudo -H -u ${USERNAME} git config --global user.name ${USER_FULLNAME}
+    sudo -H -u ${USERNAME} git config --global user.name "${USER_FULLNAME}"
     sudo -H -u ${USERNAME} git config --global user.email ${USER_MAIL}
     sudo -H -u ${USERNAME} git config --global push.default matching
   else
