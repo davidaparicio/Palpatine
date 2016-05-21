@@ -7,7 +7,6 @@ APP_WM_EX="A set of window manager"
 # END WM INFO
 
 idx=0
-
 APP_WM_NAME[idx]="Awesome_3.4"
 APP_WM_DESC[idx]="A light and very customable WM v3.4"
 APP_WM_STAT[idx]="ON"
@@ -60,7 +59,7 @@ APP_WM_DESC[idx]="Full desktop environnement, graphical, easy to use."
 APP_WM_STAT[idx]="ON"
 Gnome_routine() {
   case ${LINUX_OS} in
-  debian|ubuntu)
+  ubuntu)
     ${LINUX_PKG_MGR} install -y ubuntu-gnome-desktop
   ;;
   *)

@@ -520,7 +520,9 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
       ;;
     'Initial setup' )
       source 001.Initial_Setup/initial_setup.sh
-      initial_setup
+      initial_setup_go_through
+      RET=$? ; [[ ${RET} -eq 0 ]] && return 0
+      initial_setup_loop
       ;;
     'Package setup' )
       [[ ${NEED_UPDATE} == true ]] && do_fullupdate

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # FROM RASPI-CONFIG
+################################################################################
 is_pione() {
    if grep -q "^Revision\s*:\s*00[0-9a-fA-F][0-9a-fA-F]$" /proc/cpuinfo
    then
@@ -13,19 +14,16 @@ is_pione() {
    fi
 }
 
-# FROM RASPI-CONFIG
 is_pitwo() {
    grep -q "^Revision\s*:\s*[ 123][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]04[0-9a-fA-F]$" /proc/cpuinfo
    return $?
 }
 
-# FROM RASPI-CONFIG
 is_pizero() {
    grep -q "^Revision\s*:\s*[ 123][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]09[0-9a-fA-F]$" /proc/cpuinfo
    return $?
 }
 
-# FROM RASPI-CONFIG
 get_pi_type() {
    if is_pione
    then
@@ -38,7 +36,6 @@ get_pi_type() {
    fi
 }
 
-# FROM RASPI-CONFIG
 get_init_sys() {
   if command -v systemctl > /dev/null && systemctl | grep -q '\-\.mount'; then
     SYSTEMD=1
@@ -50,7 +47,6 @@ get_init_sys() {
   fi
 }
 
-# FROM RASPI-CONFIG
 expand_rootfs() {
   get_init_sys
   if [ ${SYSTEMD} -eq 1 ]; then
@@ -135,8 +131,10 @@ EOF
   whiptail --msgbox "Root partition has been resized.\nThe filesystem will be enlarged upon the next reboot" 20 60 2
 }
 
+# Functions
 ###############################################################################
 setup_chg_root_pwd () {
+  # Change root password
   while true
   do
     whiptail --title 'Inital Setup'\
@@ -158,6 +156,9 @@ setup_chg_root_pwd () {
 }
 
 setup_expand_rootfs () {
+  # If is raspberry pi, as to expand rootfs using functions from raspi-config.
+  # TODO : Features
+  # Implement regurarly check from raspi-config source.
   if ( whiptail --title 'Inital Setup' \
     --yesno 'Are you sure  you are on a RPi and you want to expand rootfs ?
 I WILL NOT BE RESPONSIBLE IF DAMAGE OCCURS TO YOUR ROOTFS' ${WT_HEIGHT} ${WT_WIDTH} )
@@ -168,14 +169,19 @@ I WILL NOT BE RESPONSIBLE IF DAMAGE OCCURS TO YOUR ROOTFS' ${WT_HEIGHT} ${WT_WID
 }
 
 setup_chg_locale() {
+  # Change locale
   dpkg-reconfigure locales
 }
 
 setup_chg_timezone() {
+  # Change timezone
   dpkg-reconfigure tzdata
 }
 
 setup_config_keyboard() {
+  # Change keyboard layout
+  # TODO : Support
+  # Will need update when adding new supported linux distrib
   dpkg-reconfigure keyboard-configuration &&
   printf "Reloading keymap. This may take a short while\n" &&
   invoke-rc.d keyboard-setup start || return $?
@@ -184,6 +190,7 @@ setup_config_keyboard() {
 }
 
 setup_hostname() {
+  # Change hostname
   local curr_hostname=`cat /etc/hostname | tr -d " \t\n\r"`
   local hostname_ok=false
   local hostname_set=""
@@ -228,6 +235,8 @@ No other symbols, punctuation characters, or blank spaces are permitted." \
 }
 
 setup_update_sudoer () {
+  # Add line 'Defaults rootpw' to sudoers file to ask root password when using
+  # sudo command
   if grep -q 'Defaults rootpw' /etc/sudoers
   then
     whiptail --title 'Initial Setup'\
@@ -249,6 +258,7 @@ This will make OS to ask root password when using sudo instead of user password.
 }
 
 initial_setup_go_through () {
+  # Go through all function
   if ${LINUX_IS_RPI} && ( whiptail --title 'Inital Setup' \
     --yesno 'Do you want to expand rootfs ?' ${WT_HEIGHT} ${WT_WIDTH} )
   then
@@ -259,7 +269,7 @@ initial_setup_go_through () {
   if ( whiptail --title 'Inital Setup' \
     --yesno 'Do you want to change root password ?' ${WT_HEIGHT} ${WT_WIDTH} )
   then
-    setup_chg_usr_pwd 'root'
+    setup_chg_root_pwd
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   fi
 
@@ -308,6 +318,7 @@ initial_setup_go_through () {
 }
 
 initial_setup_loop () {
+  # Initial setup menu
   local setup_loop="whiptail --title 'Initial Setup' \
     --menu  'Select how do you whant to manage first setup :' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
@@ -358,36 +369,4 @@ initial_setup_loop () {
       ;;
    esac
   done
-}
-
-initial_setup () {
-  local initial_setup="whiptail --title 'Initial Setup' \
-    --menu  'Select how do you whant to manage first setup :' \
-    ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
-    'Go through'     'Let the script go through all actions' \
-    'Choose actions' 'Let you choose what action you want to do' \
-    '<-- Back'       'Return to main menu'"
-
-  bash -c "${initial_setup}" 2> results_menu.txt
-  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-  CHOICE=$( cat results_menu.txt )
-  case ${CHOICE} in
-    '<-- Back' )
-      return 0
-    ;;
-    'Go through' )
-      initial_setup_go_through
-      RET=$? ; [[ ${RET} -eq 0 ]] && return 0
-      initial_setup_loop
-      RET=$? ; [[ ${RET} -eq 0 ]] && return 0 || return 1
-    ;;
-    'Choose actions' )
-      initial_setup_loop
-      RET=$? ; [[ ${RET} -eq 0 ]] && return 0 || return 1
-    ;;
-    * )
-      echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}. "
-      return 1
-    ;;
- esac
 }

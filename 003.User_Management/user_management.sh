@@ -1,6 +1,9 @@
 #!/bin/bash
 
+# Functions
+################################################################################
 set_username() {
+  # Set username
   local username_menu
   while true
   do
@@ -41,6 +44,7 @@ Do you want to retry ?' ${WT_HEIGHT} ${WT_WIDTH} )
 }
 
 set_fullname() {
+  # Set/Change fullname of the user
   local fullname_menu
   fullname_menu="whiptail --title 'User Management' \
     --inputbox 'Fullname of the new user (you can leave it empty).' \
@@ -53,6 +57,7 @@ set_fullname() {
 }
 
 set_passwd () {
+  # Set/Change user password
   while true
   do
     passwd ${USERNAME}
@@ -72,6 +77,7 @@ set_passwd () {
 }
 
 set_email() {
+  # Set/Change user email that will be store in room field in GECOS Fields
   local mail1=''
   local mail2=''
   local mail_regex="^[a-z0-9!#\$%&'*+/=?^_\`{|}~-]+(\.[a-z0-9!#$%&'*+/=?^_\`{|}~-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?\$"
@@ -116,6 +122,7 @@ set_email() {
 }
 
 set_shell() {
+  # Set/Change user shell
   local shell_menu
   local idx=0
   if type -t sh &> /dev/null
@@ -187,6 +194,7 @@ set_shell() {
 }
 
 set_git_config() {
+  # Set global git configuration to avoid doing it later
   if ( whiptail --title 'User Management' \
     --yesno "Script will now running following command for user ${USERNAME}: \n\
       - 'git config --global user.name '${USER_FULLNAME}' \n\
@@ -205,6 +213,7 @@ set_git_config() {
 }
 
 set_ssh_key() {
+  # Generate SSH key for user, based on its email adress
   local id_rsa_file
   local content_rsa
   if [[ ${USERNAME} == "root" ]]
@@ -247,7 +256,8 @@ manually by searching 'add SSH Key github' in your favorite web searcher." \
 }
 
 set_dotfiles() {
-  local dotfile_cmd='vcsh clone git@github.com:user/myRepo.git; cd ~/; mr up'
+  # Propose to clone dotfiles in one command
+  local dotfile_cmd='vcsh clone git@bitbucket.com:vcsh/mr.git; cd ${HOME} && mr up'
   local dotfile_menu="whiptail --title 'User Management' \
     --inputbox 'Please enter the command line that will allow you to clone your \
 dotfiles such that :
@@ -261,10 +271,11 @@ NOTE : No verification will be done, you will just be prompt if everything went 
 ok, and if not you can retry.
 Moreover, if you clone via SSH but do not have set SSH Key neither uplooad it to \
 your favorite version control website/system, some part might not run well.' \
-${WT_HEIGHT} ${WT_WIDTH} 'vcsh clone git@github.com:user/repo.git repo ; cd ~/ ; mr up'"
+${WT_HEIGHT} ${WT_WIDTH}"
 
   while true
   do
+    dotfile_menu="${dotfile_menu} '${dotfile_cmd}'"
     bash -c "${dotfile_menu}" 2> results_menu.txt
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
     dotfile_cmd=$( cat results_menu.txt )
@@ -299,6 +310,7 @@ ${USERNAME} :
 }
 
 choose_user() {
+  # Menu that parse users and propose a list with user to choose
   local mail_regex="^[a-z0-9!#\$%&'*+/=?^_\`{|}~-]+(\.[a-z0-9!#$%&'*+/=?^_\`{|}~-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?\$"
   local username[0]=$( grep "^root:" /etc/passwd | cut -d: -f1 )
   local fullname[0]=$( grep "^root:" /etc/passwd | cut -d: -f5 | cut -d, -f1 )
@@ -354,6 +366,7 @@ choose_user() {
 }
 
 user_update() {
+  # Updating user, choose one and access to functions menu
   local USERNAME=''
   local USER_FULLNAME=''
   local USER_MAIL=''
@@ -430,20 +443,12 @@ clone dotfiles etc. You still can set it later in the main 'Update User' menu." 
 }
 
 user_add () {
+  # Adding user, go through all function. If part fail, go back to user
+  # management menu
   local USER_FULLNAME=''
   local USER_SHELL=''
   local USER_MAIL=''
   local USERNAME=''
-
-  local passwd_regex='[a-zA-Z0-9@*#\-_=!?%&]{8,}'
-  # REGEX PASSWORD
-  #^([a-zA-Z0-9@*#_]{8,15})$
-  #Description
-  #Password matching expression.
-  #Match all alphanumeric character and predefined wild characters.
-  #Password must consists of at least 8 characters and not more than 15 characters.
-  local passwd1=''
-  local passwd2=''
 
   set_username
   RET=$? ; [[ ${RET} -eq 1 ]] && return 1
@@ -526,6 +531,7 @@ Management' main menu." ${WT_HEIGHT} ${WT_WIDTH} )
 }
 
 user_delete() {
+  # Deleting choosen user and propose to make backup into root dir
   local USERNAME=''
   local date
 
@@ -568,6 +574,7 @@ user_delete() {
 }
 
 user_management() {
+  # Main menu about user management
   local menu_user="whiptail --title 'User Management' \
     --menu  'Select what you want to do :' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
@@ -593,7 +600,8 @@ user_management() {
         user_add
         RET=$? ; [[ ${RET} -eq 1 ]] && whiptail --title 'User Management' \
           --msgbox 'An error occured when adding a new user.
-Process Aborted' ${WT_HEIGHT} ${WT_WIDTH}
+
+        Process Aborted' ${WT_HEIGHT} ${WT_WIDTH}
         ;;
       'Delete User' )
         user_delete

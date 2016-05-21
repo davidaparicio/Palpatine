@@ -1,6 +1,7 @@
 #!/bin/bash
 
 ynh_install_off_app() {
+  # Install official Yunohost app
   [[ ${update_app} == true ]] && ynh_get_apps
   update_app=false
   local idx
@@ -33,9 +34,15 @@ ${APP_NAME[idx]}. Try to install it through the web interface" \
       fi
     done
   fi
+  echo =================================================================
+  echo You can take a look at log above
+  echo Press Enter to continue
+  echo =================================================================
+  read
 }
 
 ynh_install_unoff_app() {
+  # Install unofficial Yunohost app from github url
   local unoff_app_menu="whiptail --title 'Yunohost Management' \
     --inputbox 'Pleaser enter the github url of the Yunohost app' \
     ${WT_HEIGHT} ${WT_WIDTH}"
@@ -56,9 +63,15 @@ ${APP_NAME[idx]}. Try to install it through the web interface" \
       return 0
     fi
   done
+  echo =================================================================
+  echo You can take a look at log above
+  echo Press Enter to continue
+  echo =================================================================
+  read
 }
 
 ynh_remove_app() {
+  # Ask which Yunohost app to remove
   [[ ${update_app} == true ]] && ynh_get_apps
   update_app=false
   local idx
@@ -91,9 +104,15 @@ ${APP_NAME[idx]}. Try to install it through the web interface" \
       fi
     done
   fi
+  echo =================================================================
+  echo You can take a look at log above
+  echo Press Enter to continue
+  echo =================================================================
+  read
 }
 
 ynh_get_apps() {
+  # Parse Yunohost official and installed app informations
   clear
   echo 'Please wait while updating apps informations'
   idx=0
@@ -123,6 +142,7 @@ ynh_get_apps() {
 }
 
 ynh_app() {
+  # Main menu to manage Yunohost app
   local APP_DESC=''
   local APP_INSTALL=''
   local APP_ID=''
@@ -133,7 +153,7 @@ ynh_app() {
     --menu  'Select what you want to do :' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
     'Install Official Apps'    'Install official yunohost apps' \
-    'Install Unofficial Apps'  'Install unofficial yunohost apps' \
+    'Install Unofficial Apps'  'Install unofficial yunohost apps from github' \
     'Remove Apps'              'Remove already install apps' \
     '<-- Back'                 'Back to main menu'"
 
@@ -165,6 +185,7 @@ ynh_app() {
 }
 
 ynh_set_username() {
+  # Set Yunohost username
   local tmp_username=''
   local ynh_username="whiptail --title 'Yunohost Management' \
     --inputbox 'Username for the new user (only lowerscript char)' \
@@ -206,6 +227,7 @@ Do you want to retry ?' ${WT_HEIGHT} ${WT_WIDTH} )
 }
 
 ynh_set_fullname() {
+  # Set yunohost fullname
   local name_menu
   name_menu="whiptail --title 'Yunohost Management' \
     --inputbox 'Firstname of the new user (you can leave it empty).' \
@@ -223,6 +245,7 @@ ynh_set_fullname() {
 }
 
 ynh_set_passwd () {
+  # Set Yunohost user password
   local passwd_ok=false
   local passwd_regex='[a-zA-Z0-9@*#\-_=!?%&]{8,}'
   # REGEX PASSWORD
@@ -277,6 +300,7 @@ Do you want to retry ?" ${WT_HEIGHT} ${WT_WIDTH} )
 }
 
 ynh_set_email() {
+  # Set Yunohost user email
   local mail1=''
   local mail2=''
   local mail_regex="^[a-z0-9!#\$%&'*+/=?^_\`{|}~-]+(\.[a-z0-9!#$%&'*+/=?^_\`{|}~-]+)*@([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?\$"
@@ -325,6 +349,7 @@ Do you want to retry ? " ${WT_HEIGHT} ${WT_WIDTH} )
 }
 
 ynh_set_mailquota() {
+  # Set mail quota of Yunohost user
   mail_quota="whiptail --title 'Yunohost Management' \
     --inputbox 'Enter the mail quota for this user like :
 - 100k
@@ -344,6 +369,7 @@ not work.' \
 }
 
 ynh_choose_user() {
+  # Menu that parse yunohost user and let choose one
   local YNH_USER_ID=''
   local YNH_USER_LASTNAME=''
   local YNH_USER_FIRSTNAME=''
@@ -437,6 +463,7 @@ ynh_choose_user() {
 }
 
 ynh_add_user() {
+  # Add user go through
   local YNH_USERNAME='johndoe'
   local YNH_FIRSTNAME='John'
   local YNH_LASTNAME='Doe'
@@ -481,6 +508,7 @@ Is everything right ?" ${WT_HEIGHT} ${WT_WIDTH} )
 }
 
 ynh_update_user() {
+  # Update user menu
   local YNH_USERNAME=''
   local YNH_FIRSTNAME=''
   local YNH_LASTNAME=''
@@ -540,6 +568,7 @@ ynh_update_user() {
 }
 
 ynh_delete_user() {
+  # Choose and delete Yunohost user
   local YNH_USERNAME=''
   local YNH_FIRSTNAME=''
   local YNH_LASTNAME=''
@@ -584,6 +613,7 @@ to this user) ?" ${WT_HEIGHT} ${WT_WIDTH} )
 }
 
 ynh_user() {
+  # Menu management user
   local ynh_user_menu="whiptail --title 'Yunohost Management' \
     --menu  'Select what you want to do :' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
@@ -620,7 +650,8 @@ ynh_user() {
 }
 
 ynh_tools() {
- local ynh_tools_menu="whiptail --title 'Yunohost Management' \
+  # Yunohost tools menu
+  local ynh_tools_menu="whiptail --title 'Yunohost Management' \
     --menu  'Select what you want to do :' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
     'Post Install'    'Run Yunohost post install' \
@@ -687,6 +718,7 @@ Are you sure you want to continue ?" ${WT_HEIGHT} ${WT_WIDTH} )
 }
 
 ynh_install() {
+  # Install Yunohost
   if ( whiptail --title 'Yunohost Management' \
       --yesno "Yunohost does not seem to be install.
 
@@ -726,6 +758,8 @@ ${LINUX_LOCAL_IP}" ${WT_HEIGHT} ${WT_WIDTH} )
 }
 
 ynh_management() {
+  # Main menu that install Yunohost if not install, else propose to continue
+  # using CLI but warn user that it's better/easier to use webUI
   if ! type -t yunohost &>/dev/null
   then
     ynh_install

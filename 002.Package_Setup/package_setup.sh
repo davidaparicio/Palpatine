@@ -1,20 +1,8 @@
 #!/bin/bash
 
 ################################################################################
-do_install_pkg() {
-  local pkg=$1
-  case ${LINUX_PKG_MGR} in
-    apt* )
-      ${LINUX_PKG_MGR} install -y ${pkg}
-      RET=$? ; [[ ${RET} -eq 1 ]] && return 1 || return 0
-    ;;
-    * )
-      echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}. "
-    ;;
-  esac
-}
-
 setup_pkg_ask_finish () {
+  # Last window that show all package that will be installed
   local all_app_choosen
   local nb_app_choosen=0
   local all_routine
@@ -22,8 +10,12 @@ setup_pkg_ask_finish () {
 
   menu_ask_finish="whiptail --title 'Package Setup' \
     --menu  'This is the list of program this script will install :' \
-    ${WT_WIDE_HEIGHT} ${WT_WIDTH} ${WT_WIDE_MENU_HEIGHT} "
-  for (( idxCat=1 ; idxCat <= ${nb_cat} ; idxCat++ ))
+    ${WT_WIDE_HEIGHT} ${WT_WIDTH} ${WT_WIDE_MENU_HEIGHT} '' ''\
+    'INSTALL PACKAGES'                'Launch installation of all packages' \
+    '<-- Back'                        'Back to list of categories' \
+    '=============================='  '==================================='"
+
+ for (( idxCat = 1 ; idxCat <= ${nb_cat} ; idxCat++ ))
   do
     local cat_done=false
     local cat_name=${all_cat[idxCat]}
@@ -54,7 +46,8 @@ setup_pkg_ask_finish () {
       then
         if [[ ${cat_done} == false ]]
         then
-          menu_ask_finish="${menu_ask_finish} '' '' '=====> ${cat_name}' '${cat_desc}'"
+          menu_ask_finish="${menu_ask_finish} \
+            '' '' '=====> ${cat_name}' '${cat_desc}'"
           cat_done=true
         fi
         app_name="${app_arr_name[idx]}"
@@ -122,6 +115,7 @@ setup_pkg_ask_finish () {
 }
 
 setup_pkg_all_app () {
+  # Menu to choose category
   local name=$1
   local lower_name=`echo "${name}" | tr '[:upper:]' '[:lower:]'`
   local upper_name=`echo "${name}" | tr '[:lower:]' '[:upper:]'`
@@ -169,6 +163,7 @@ setup_pkg_all_app () {
 }
 
 setup_pkg_all_cat () {
+  # Menu to choose application by category
   local cat_name
   local cat_desc
 
@@ -210,6 +205,7 @@ setup_pkg_all_cat () {
 }
 
 setup_pkg_go_through () {
+  # Go through app category
   for (( idxCat=1 ; idxCat <= ${nb_cat} ; idxCat++ ))
   do
     setup_pkg_all_app ${all_cat[idxCat]}
@@ -218,10 +214,8 @@ setup_pkg_go_through () {
   return ${RET}
 }
 
-###############################################################################
-# SETUP INSTALL PACKAGE PART
-###############################################################################
 package_menu () {
+  # Main menu to choose installation way
   local pkg_ask_menu="whiptail --title 'Package Setup' \
     --menu 'Select how to manage package setup :' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
@@ -258,6 +252,7 @@ package_menu () {
 }
 
 package_setup () {
+  # Package parser and menu launcher
   local ALL_APP_CAT="" # NOTE : DO NOT ERASE. NEED TO REINIT CATEGORIES LIST
   local all_cat
   local nb_cat
@@ -277,8 +272,6 @@ package_setup () {
   IFS=':' read -r -a all_cat <<< "${ALL_APP_CAT}"
   nb_cat=$(( ${#all_cat[@]} - 1 ))
 
-#  setup_pkg_fullupdate
-#  setup_pkg_base
   package_menu
   RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   while true
