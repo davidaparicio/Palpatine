@@ -150,8 +150,12 @@ setup_pkg_all_app () {
   CHOICE=$( cat results_menu.txt )
   for (( idx=0 ; idx <= ${nb_app}-1 ; idx++ ))
   do
-    line=$(grep -n ${app_arr_name[idx]}_routine ${dir}/menu/*${lower_name}.sh | cut -d ":" -f1)
-    line=$(( line - 1 ))
+    line=$( grep -n "^${app_arr_name[idx]}_routine" ${dir}/menu/*${lower_name}.sh | cut -d ":" -f1 )
+    echo $line
+    echo "grep -n ${app_arr_name[idx]}_routine ${dir}/menu/*${lower_name}.sh | cut -d \":\" -f1"
+    line=$(( $line - 1 ))
+    echo $line
+    read
     if echo ${CHOICE} | grep -q "\"${app_arr_name[idx]}\""
     then
       sed -i "${line}s/\(OFF\|ON\)/ON/g" ${dir}/menu/*${lower_name}.sh

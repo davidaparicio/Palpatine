@@ -9,7 +9,7 @@ APP_WM_EX="A set of window manager"
 idx=0
 APP_WM_NAME[idx]="Awesome_3.4"
 APP_WM_DESC[idx]="A light and very customable WM v3.4"
-APP_WM_STAT[idx]="ON"
+APP_WM_STAT[idx]="OFF"
 Awesome_3.4_routine () {
   case ${LINUX_OS} in
   debian|ubuntu)
@@ -24,7 +24,7 @@ Awesome_3.4_routine () {
 
 APP_WM_NAME[idx]="Awesome_3.5"
 APP_WM_DESC[idx]="A light and very customable WM v3.5"
-APP_WM_STAT[idx]="ON"
+APP_WM_STAT[idx]="OFF"
 Awesome_3.5_routine() {
   case ${LINUX_OS} in
   ubuntu)
@@ -40,7 +40,7 @@ Awesome_3.5_routine() {
 
 APP_WM_NAME[idx]="KDE"
 APP_WM_DESC[idx]="Full desktop environnement, graphical, easy to use."
-APP_WM_STAT[idx]="ON"
+APP_WM_STAT[idx]="OFF"
 KDE_routine() {
   case ${LINUX_OS} in
   ubuntu)
@@ -56,7 +56,7 @@ KDE_routine() {
 
 APP_WM_NAME[idx]="Gnome"
 APP_WM_DESC[idx]="Full desktop environnement, graphical, easy to use."
-APP_WM_STAT[idx]="ON"
+APP_WM_STAT[idx]="OFF"
 Gnome_routine() {
   case ${LINUX_OS} in
   ubuntu)
@@ -72,7 +72,7 @@ Gnome_routine() {
 
 APP_WM_NAME[idx]="XFCE_4"
 APP_WM_DESC[idx]="Ligthweight desktop environnement, modular, portable"
-APP_WM_STAT[idx]="ON"
+APP_WM_STAT[idx]="OFF"
 XFCE_4_routine() {
   case ${LINUX_OS} in
   debian|ubuntu)

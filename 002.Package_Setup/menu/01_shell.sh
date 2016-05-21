@@ -10,7 +10,7 @@ idx=0
 
 APP_SHELL_NAME[idx]="ash"
 APP_SHELL_DESC[idx]="Written as a BSD-licensed replacement for the Bourne Shell"
-APP_SHELL_STAT[idx]="OFF"
+APP_SHELL_STAT[idx]="ON"
 ash_routine() {
   case ${LINUX_OS} in
     debian|ubuntu)
