@@ -29,6 +29,10 @@ LINUX_LOCAL_IP=$( ip a | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' \
 ################################################################################
 # List of OS on which Yunohost can be installed
 SUPPORTED_YUNOHOST=('debian')
+SUPPORTED_YUNOHOST=('debian raspbian')
+SUPPORTED_DOCKER_MAJOR_KERNEL=3
+SUPPORTED_DOCKER_MINOR_KERNEL=3
+SUPPORTED_DOCKER_OS=('debian' 'ubuntu' 'raspbian')
 
 # List of arch, OS and version supported
 SUPPORTED_ARCH[0]='x86_64'
@@ -503,6 +507,11 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
     main_menu="${main_menu} \
       'Yunohost Management' 'Basic Yunohst management (installation, user, app)'"
   fi
+  if [[ ${SUPPORTED_DOCKER_OS} =~ ${LINUX_OS} ]]
+  then
+    main_menu="${main_menu} \
+      'Docker Management' 'Basic Docker management'"
+  fi
   main_menu="${main_menu} 'FINISH'           'Exit the script'"
 
   while true
@@ -533,6 +542,10 @@ The program will exit' ${WT_HEIGHT} ${WT_WIDTH} && return 1
     'Yunohost Management')
       source 004.Yunohost_management/yunohost_management.sh
       ynh_management
+      ;;
+    'Docker Management')
+      source 005.Docker_management/docker_management.sh
+      docker_management
       ;;
     * )
       echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."

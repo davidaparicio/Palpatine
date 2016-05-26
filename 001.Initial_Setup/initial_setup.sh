@@ -144,7 +144,7 @@ setup_chg_root_pwd () {
     RET=$? ; if [[ ${RET} -eq 0 ]]
     then
       whiptail --title 'Inital Setup'\
-      ---msgbox 'Password changed successfully' ${WT_HEIGHT} ${WT_WIDTH}
+        --msgbox 'Password changed successfully' ${WT_HEIGHT} ${WT_WIDTH}
       return 0
     elif ! ( whiptail --title 'Inital Setup'\
       --yesno 'Failed to change password. Do you wan to retry ?'\
