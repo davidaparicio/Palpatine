@@ -8,7 +8,7 @@ LC_ALL=C
 ################################################################################
 # Different boolean init
 ASK_TO_REBOOT=false
-BASE_PKG_INSTALLED=true
+BASE_PKG_INSTALLED=false
 NEED_UPDATE=false
 # Preamble boolean init
 IS_SSH=false
@@ -17,7 +17,7 @@ IS_ROOT=false
 # LINUX ENVIRONNEMENT
 ################################################################################
 # Variable about LINUX OS.
-LINUX_IS_RPI=true
+LINUX_IS_RPI=false
 LINUX_OS='Unknown'
 LINUX_VER='Unknown'
 LINUX_ARCH='Unknown'
@@ -28,14 +28,10 @@ LINUX_LOCAL_IP=$( ip a | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' \
 # SUPPORTED SYSTEM
 ################################################################################
 # List of OS on which Yunohost can be installed
-SUPPORTED_YUNOHOST=('debian raspbian')
+SUPPORTED_YUNOHOST=('debian')
 
 # List of arch, OS and version supported
 SUPPORTED_ARCH[0]='x86_64'
-SUPPORTED_ARCH[1]='arm'
-
-SUPPORTED_OS[0]='ubuntu'
-SUPPORTED_UBUNTU_VER[0]='16.04'
 
 SUPPORTED_OS[1]='debian'
 SUPPORTED_DEBIAN_VER[0]='8'
