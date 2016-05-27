@@ -472,6 +472,7 @@ linux_init
 RET=$? ; [[ ${RET} -eq 1 ]] && rm -f cmd.sh results_menu.txt && exit 1
 # Source distrib preinit function and variable
 source 000.Distrib_Init/${LINUX_OS,,}.sh
+init_distrib
 # Now run the script
 main_menu
 RET=$? ; [[ ${RET} -eq 1 ]] && rm -f cmd.sh results_menu.txt && exit 1

@@ -57,6 +57,12 @@ do_setup_pkg_base () {
       python-software-properties
   fi
   BASE_PKG_INSTALLED=true
+  return 0
+}
+
+init_distrib() {
+  do_setup_pkg_base
+  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
 
   return 0
 }
