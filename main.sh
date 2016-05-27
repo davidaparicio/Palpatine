@@ -184,7 +184,6 @@ Here is the list of supported package manager :
 }
 
 choose_linux_arch() {
-  echo ${FUNCNAME} ; read
   local menu="whiptail --title 'Linux Init' \
   --menu 'You can choose to specify linux architecture that is like your.
 This will run the rest of the script assuming it is the version you will choose.
@@ -213,7 +212,6 @@ If you choose \"NONE OF THEM\", the program will exit) ? ' \
 }
 
 choose_linux_ver() {
-  echo ${FUNCNAME} ; read
   local menu="whiptail --title 'Linux Init' \
   --menu 'You can choose to specify linux version that is like your.
 This will run the rest of the script assuming it is the version you will choose.
@@ -242,7 +240,6 @@ If you choose \"NONE OF THEM\", the program will exit) ? ' \
 }
 
 choose_linux_os() {
-  echo ${FUNCNAME} ; read
   local menu="whiptail --title 'Linux Init' \
   --menu 'You can choose to specify linux OS that is like your.
 This will run the rest of the script assuming it is the version you will choose.
@@ -271,7 +268,6 @@ If you choose \"NONE OF THEM\", the program will exit) ?' \
 }
 
 validate_arch() {
-  echo ${FUNCNAME} ; read
   # Validate arch
   if ! [[ ${#tmp_arch} -eq 0 ]] && [[ ${ARCH[@]} =~ ${tmp_arch} ]]
   then
@@ -287,7 +283,6 @@ ask if you want to choose amoung supported one.'
 }
 
 validate_ver() {
-  echo ${FUNCNAME} ; read
   if ! [[ ${#tmp_ver} -eq 0 ]] && [[ ${VER[@]} =~ ${tmp_ver} ]]
   then
     LINUX_VER=${tmp_ver}
@@ -298,7 +293,6 @@ validate_ver() {
 }
 
 validate_os() {
-  echo ${FUNCNAME} ; read
   # Validate OS
   if ! [[ ${#tmp_os} -eq 0 ]] && [[ ${SUPPORTED_OS[@]} =~ ${tmp_os} ]]
   then
@@ -327,7 +321,6 @@ validate_os() {
 }
 
 linux_init_os () {
-  echo ${FUNCNAME} ; read
   # Check linux distrib to know if it's supported
   local arr_supported_ver
   local linux_user_set=false
@@ -365,7 +358,6 @@ linux_init_os () {
 }
 
 linux_init () {
-  echo ${FUNCNAME} ; read
   # Run validation of linux distrib and package manager
   whiptail \
     --title 'Linux Config' \
@@ -478,6 +470,8 @@ preamble
 # Initialisation of linux distrib
 linux_init
 RET=$? ; [[ ${RET} -eq 1 ]] && rm -f cmd.sh results_menu.txt && exit 1
+# Source distrib preinit function and variable
+source 000.Distrib_Init/${LINUX_OS,,}.sh
 # Now run the script
 main_menu
 RET=$? ; [[ ${RET} -eq 1 ]] && rm -f cmd.sh results_menu.txt && exit 1
