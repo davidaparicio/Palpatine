@@ -481,7 +481,7 @@ main_menu
 RET=$? ; [[ ${RET} -eq 1 ]] && rm -f cmd.sh results_menu.txt && exit 1
 echo ${ASK_TO_REBOOT} ; read
 # Reboot if needed
-if [[ ${ASK_TO_REBOOT} ]] \
+if [[ ${ASK_TO_REBOOT} == true  ]] \
   && ( whiptail --title 'REBOOT NEEDED' \
     --yesno 'A reboot is needed. Do you want to reboot now ? ' \
     ${WT_HEIGHT} ${WT_WIDTH} )
