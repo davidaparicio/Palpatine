@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER=('8')
+VER=('16.04')
 
 YUNOHOST=true
 DOCKER=true
