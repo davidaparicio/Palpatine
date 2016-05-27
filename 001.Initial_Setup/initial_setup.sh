@@ -95,7 +95,7 @@ ${PART_START}
 p
 w
 EOF
-  ASK_TO_REBOOT=1
+  ASK_TO_REBOOT=true
 
   # now set up an init.d script
 cat <<EOF > /etc/init.d/resize2fs_once &&
@@ -219,7 +219,7 @@ No other symbols, punctuation characters, or blank spaces are permitted." \
       then
         echo $hostname_set > /etc/hostname
         sed -i "s/127.0.1.1.*$curr_hostname/127.0.1.1\t$hostname_set/g" /etc/hosts
-        ASK_TO_REBOOT=1
+        ASK_TO_REBOOT=true
         return 0
       fi
     else

@@ -413,8 +413,7 @@ main_menu() {
     'Initial setup' )
       source 001.Initial_Setup/initial_setup.sh
       initial_setup_go_through
-      RET=$? ; [[ ${RET} -eq 0 ]] && return 0
-      initial_setup_loop
+      RET=$? ; ! [[ ${RET} -eq 0 ]] && initial_setup_loop
       ;;
     'Package setup' )
       [[ ${NEED_UPDATE} == true ]] && do_fullupdate
@@ -465,17 +464,22 @@ Please install it first."
   read
   exit 1
 fi
+echo ${ASK_TO_REBOOT} ; read
 # Warn the user
 preamble
+echo ${ASK_TO_REBOOT} ; read
 # Initialisation of linux distrib
 linux_init
 RET=$? ; [[ ${RET} -eq 1 ]] && rm -f cmd.sh results_menu.txt && exit 1
+echo ${ASK_TO_REBOOT} ; read
 # Source distrib preinit function and variable
 source 000.Distrib_Init/${LINUX_OS,,}.sh
 init_distrib
+echo ${ASK_TO_REBOOT} ; read
 # Now run the script
 main_menu
 RET=$? ; [[ ${RET} -eq 1 ]] && rm -f cmd.sh results_menu.txt && exit 1
+echo ${ASK_TO_REBOOT} ; read
 # Reboot if needed
 if [[ ${ASK_TO_REBOOT} ]] \
   && ( whiptail --title 'REBOOT NEEDED' \
