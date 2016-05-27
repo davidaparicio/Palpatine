@@ -8,8 +8,8 @@ cd ${DIR}
 # SUPPORTED SYSTEM
 ################################################################################
 # List of OS on which Yunohost can be installed
-SUPPORTED_OS[0]=('debian')
-SUPPORTED_OS[1]=('ubuntu')
+SUPPORTED_OS[0]='debian'
+SUPPORTED_OS[1]='ubuntu'
 
 # BACKUP ENV VARIABLE
 ################################################################################
