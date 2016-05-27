@@ -8,7 +8,8 @@ cd ${DIR}
 # SUPPORTED SYSTEM
 ################################################################################
 # List of OS on which Yunohost can be installed
-SUPPORTED_OS=('debian')
+SUPPORTED_OS[0]=('debian')
+SUPPORTED_OS[1]=('ubuntu')
 
 # BACKUP ENV VARIABLE
 ################################################################################
@@ -78,7 +79,7 @@ test_ssh() {
 
   if ! [[ ${ppid} -eq 1 ]]
   then
-    top_level_parent_pid ${ppid}
+    test_ssh ${ppid}
   fi
 }
 
@@ -108,7 +109,7 @@ You can either log as root or use sudo" ${WT_HEIGHT} ${WT_WIDTH}
     exit 1
   elif ${IS_ROOT} && ! ${IS_SSH}
   then
-    whiptail --title 'WARNING'
+    whiptail --title 'WARNING' \
       --msgbox "You run this script as root but not through SSH.
 Process will continue but some part might not be working.
 
