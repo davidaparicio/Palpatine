@@ -35,8 +35,8 @@ LINUX_VER='Unknown'
 LINUX_ARCH='Unknown'
 LINUX_PKG_MGR='Unknown'
 LINUX_LOCAL_IP='Unknown'
-$( ip a | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' \
-  | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' )
+#$( ip a | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' \
+#  | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' )
 
 # TOOLS
 ###############################################################################
@@ -178,42 +178,22 @@ Here is the list of supported package manager :
     ;;
   *)
     LINUX_PKG_MGR=${CHOICE}
-    return 0
     ;;
   esac
   return 0
 }
 
-choose_linux_var () {
-  # Function to choose OS/VER/ARCH
-  local linux_var=$1
-  local arr_supported_var
-  if [[ "${linux_var}" == "OS" ]]
-  then
-    # Get supported OS and validate it
-    arr_supported_var="SUPPORTED_OS[@]"
-    arr_supported_var=("${!arr_supported_var}")
-  elif [[ "${linux_var}" == "VER" ]]
-  then
-    # Get supported version for validated OS
-    arr_supported_var="SUPPORTED_${LINUX_OS^^}_VER[@]"
-    arr_supported_var=("${!arr_supported_var}")
-  elif [[ "${linux_var}" == "ARCH" ]]
-  then
-    # Get supported architecture
-    arr_supported_var="SUPPORTED_ARCH[@]"
-    arr_supported_var=("${!arr_supported_var}")
-  fi
-
+choose_linux_arch() {
   local menu="whiptail --title 'Linux Init' \
-  --menu 'You can choose to specify linux $linux_var that is like your. \n
-This will run the rest of the script assuming it is the version you will choose. \n
-(N.B.: This is to manage source, repo, etc.) \n
-If you choose \"NONE OF THEM\", the program will exit) ? ' ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
+  --menu 'You can choose to specify linux architecture that is like your.
+This will run the rest of the script assuming it is the version you will choose.
+(N.B.: This is to manage source, repo, etc.)
+If you choose \"NONE OF THEM\", the program will exit) ? ' \
+  ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
 
-  for (( idx=0 ; idx < ${#arr_supported_var[@]} ; idx++ ))
+  for (( idx=0 ; idx < ${ARCH[@]} ; idx++ ))
   do
-    menu="${menu} ${arr_supported_var[idx]} ''"
+    menu="${menu} ${ARCH[idx]} ''"
   done
   menu="${menu} 'NONE OF THEM' ''"
 
@@ -225,38 +205,119 @@ If you choose \"NONE OF THEM\", the program will exit) ? ' ${WT_HEIGHT} ${WT_WID
   then
     return 1
   else
-    if [[ "${linux_var}" == "OS" ]]
-    then
-      # Set supported OS
-      os_valid_true=true
-      LINUX_OS=${CHOICE}
-    elif [[ "${linux_var}" == "VER" ]]
-    then
-      # Set supported version
-      ver_valid=true
-      LINUX_VER=${CHOICE}
-    elif [[ "${linux_var}" == "ARCH" ]]
-    then
-      # Set supported arch
-      arch_valid=true
-      LINUX_ARCH=${CHOICE}
-    fi
-    return 0
+    # Set supported Arch
+    LINUX_ARCH=${CHOICE}
+  fi
+  return 0
+}
+
+choose_linux_ver() {
+  local menu="whiptail --title 'Linux Init' \
+  --menu 'You can choose to specify linux version that is like your.
+This will run the rest of the script assuming it is the version you will choose.
+(N.B.: This is to manage source, repo, etc.)
+If you choose \"NONE OF THEM\", the program will exit) ? ' \
+  ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
+
+  for (( idx=0 ; idx < ${VER[@]} ; idx++ ))
+  do
+    menu="${menu} ${VER[idx]} ''"
+  done
+  menu="${menu} 'NONE OF THEM' ''"
+
+  bash -c "${menu} " 2> results_menu.txt
+  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+  CHOICE=$( cat results_menu.txt )
+
+  if [[ "${CHOICE}" == "NONE OF THEM" ]]
+  then
+    return 1
+  else
+    # Set supported ver
+    LINUX_VER=${CHOICE}
+  fi
+  return 0
+}
+
+choose_linux_os() {
+  local menu="whiptail --title 'Linux Init' \
+  --menu 'You can choose to specify linux OS that is like your.
+This will run the rest of the script assuming it is the version you will choose.
+(N.B.: This is to manage source, repo, etc.)
+If you choose \"NONE OF THEM\", the program will exit) ?' \
+  ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
+
+  for (( idx=0 ; idx < ${SUPPORTED_OS[@]} ; idx++ ))
+  do
+    menu="${menu} ${SUPPORTED_OS[idx]} ''"
+  done
+  menu="${menu} 'NONE OF THEM' ''"
+
+  bash -c "${menu} " 2> results_menu.txt
+  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+  CHOICE=$( cat results_menu.txt )
+
+  if [[ "${CHOICE}" == "NONE OF THEM" ]]
+  then
+    return 1
+  else
+    # Set supported OS
+    LINUX_OS=${CHOICE}
+  fi
+  return 0
+}
+
+validate_arch() {
+  # Validate arch
+  if ! [[ ${#tmp_arch} -eq 0 ]] && [[ ${ARCH[@]} =~ ${tmp_arch} ]]
+  then
+    LINUX_ARCH=${tmp_arch}
+  else
+    whiptail --title 'Linux Init' \
+    --msgbox 'Your archictecture does not seem to be supported, you will be \
+ask if you want to choose amoung supported one.'
+    choose_linux_arch
+    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+  fi
+  return 0
+}
+
+validate_ver() {
+  if ! [[ ${#tmp_ver} -eq 0 ]] && [[ ${VER[@]} =~ ${tmp_ver} ]]
+  then
+    LINUX_VER=${tmp_ver}
+  else
+    choose_linux_ver
+    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   fi
 }
 
-ask_rpi () {
-  # Ask user if arch is arm if it's a raspberry
-  if [[ ${TMP_ARCH} =~ 'arm' ]]
+validate_os() {
+  # Validate OS
+  if ! [[ ${#tmp_os} -eq 0 ]] && [[ ${SUPPORTED_OS[@]} =~ ${tmp_os} ]]
   then
-    if ( whiptail --title 'Linux Init : Archictecture' --yesno "\
-It seems you are on an arm machine. \n \
-Is it a raspberry ? " ${WT_HEIGHT} ${WT_WIDTH} )
-    then
-      LINUX_IS_RPI=true
-    fi
+    LINUX_OS=${tmp_os}
+    source 000.Distrib_Init/${LINUX_OS,,}.sh
+    validate_ver
+    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+ else
+    choose_linux_os
+    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   fi
-  return 0
+  validate_arch
+  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+
+ if ( whiptail --title 'Linux Init' \
+    --yesno "Do you want to continue with the following option for you linux ?
+    --> ${LINUX_OS} - ${LINUX_VER} - ${LINUX_ARCH}
+
+    YES : The script will continue assuming your linux is like you set, BUT some part might not be working.
+    NO  : The script will exit." ${WT_HEIGHT} ${WT_WIDTH} )
+  then
+    return 0
+  else
+    return 1
+  fi
 }
 
 linux_init_os () {
@@ -274,84 +335,26 @@ linux_init_os () {
   local tmp_os_name
 
   tmp_arch=$( arch )
-  tmp_ver=$( cat /etc/os-release | grep ^VERSION_ID | cut -d '"' -f 2 )
-  tmp_ver_name=$( cat /etc/os-release | grep ^VERSION= | cut -d '"' -f 2 )
-  tmp_os=$( cat /etc/os-release | grep ^ID | cut -d '=' -f2 )
-  tmp_os_name=$( cat /etc/os-release | grep ^NAME | cut -d '"' -f2 )
+  tmp_ver=$( cat /etc/os-release | grep "^VERSION_ID=" | cut -d '"' -f 2 )
+  tmp_ver_name=$( cat /etc/os-release | grep "^VERSION=" | cut -d '"' -f 2 )
+  tmp_os=$( cat /etc/os-release | grep "^ID=" | cut -d '=' -f2 )
+  tmp_os_name=$( cat /etc/os-release | grep "^NAME=" | cut -d '"' -f2 )
 
   if ( whiptail \
-    --title 'Linux Init : Validation of your OS' \
+    --title 'Linux Init' \
     --yesno "You seems to be running on : \n\n ${tmp_os_name} - ${tmp_ver_name} - ${tmp_arch} \n\nIs it right ? " ${WT_HEIGHT} ${WT_WIDTH} )
   then
-    # Validate OS
-    if ! [[ ${#tmp_os} -eq 0 ]] && [[ ${SUPPORTED_OS[@]} =~ ${tmp_os} ]]
-    then
-      os_valid=true
-      LINUX_OS=${tmp_os}
-    fi
-    # Get supported version for validated OS and validate it
-    arr_supported_ver="SUPPORTED_${LINUX_OS^^}_VER"
-    arr_supported_ver=("${!arr_supported_ver}")
-    if ! [[ ${#tmp_ver} -eq 0 ]] && [[ ${arr_supported_ver[@]} =~ ${tmp_ver} ]]
-    then
-      ver_valid=true
-      LINUX_VER=${tmp_ver}
-    fi
-    # Validate arch
-    if ! [[ ${#tmp_arch} -eq 0 ]] && [[ ${SUPPORTED_ARCH[@]} =~ ${tmp_arch} ]]
-    then
-      arch_valid=true
-      LINUX_ARCH=${tmp_arch}
-    fi
-
-    # If supported linux, return, else ask if user want to set it manually
-    if ${os_valid} && ${ver_valid} && ${arch_valid}
-    then
-      return 0
-    else
-      if ! ${os_valid} || ! ${ver_valid}
-      then
-        whiptail --title 'Linux Init' \
-        --msgbox "Your OS is not supported, you will be ask if you want to \
-choose amoung supported OS and version" ${WT_HEIGHT} ${WT_WIDTH}
-        choose_linux_var 'OS'
-        RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-        choose_linux_var 'VER'
-        RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-        linux_user_set=true
-      fi
-      if ! ${arch_valid}
-      then
-        whiptail --title 'Linux Init' \
-        --msgbox 'Your archictecture does not seem to be supported, you will be \
-ask if you want to choose amoung supported one.'
-        choose_linux_var 'ARCH'
-        RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-        linux_user_set=true
-      fi
-      if ${linux_user_set} && ( whiptail --title 'Linux Init' \
-        --yesno "Do you want to continue with the followin option for you linux ?
-
-      --> ${LINUX_OS} - ${LINUX_VER} - ${LINUX_ARCH}
-
-      YES : The script will continue assuming your linux is like you set, BUT some part might not be working.
-      NO  : The script will exit." ${WT_HEIGHT} ${WT_WIDTH} )
-      then
-        return 0
-      else
-        return 1
-      fi
-    fi
-    return 0
+    validate_os
+    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    validate_arch
+    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   else
-    choose_linux_var 'OS'
+    choose_linux_os
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-    choose_linux_var 'VER'
+    choose_linux_arch
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-    choose_linux_var 'ARCH'
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-    return 0
   fi
+  return 0
 }
 
 linux_init () {
