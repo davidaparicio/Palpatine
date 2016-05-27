@@ -140,7 +140,6 @@ DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
 
 linux_init_pkg_mgr () {
   # Package manager selection
-  local nb_pkg_mgr=${#SUPPORTED_PKG_MGR[@]}
   local exist_pkg_mgr=false
   local pkg_mgr_menu="whiptail --title 'Linux Init : Package Manager' \
     --menu 'Please choose the package manager you want to use : ' \
@@ -150,14 +149,14 @@ linux_init_pkg_mgr () {
 Here is the list of supported package manager :
     "
 
-  for (( idx=0; idx < ${nb_pkg_mgr}; idx++ ))
+  for (( idx=0 ; idx < ${#PKG_MGR[@]} ; idx++ ))
   do
-    if type -t ${SUPPORTED_PKG_MGR[idx]} &>/dev/null
+    if type -t ${PKG_MGR[idx]} &>/dev/null
     then
       exist_pkg_mgr=true
     fi
-    pkg_mgr_menu="${pkg_mgr_menu} '${SUPPORTED_PKG_MGR[idx]}' ''"
-    no_pkg_mgr_menu="${no_pkg_mgr_menu}    - ${SUPPORTED_PKG_MGR[idx]} \n
+    pkg_mgr_menu="${pkg_mgr_menu} '${PKG_MGR[idx]}' ''"
+    no_pkg_mgr_menu="${no_pkg_mgr_menu}    - ${PKG_MGR[idx]} \n
     "
   done
   pkg_mgr_menu="${pkg_mgr_menu} 'NONE OF THEM' ''"
