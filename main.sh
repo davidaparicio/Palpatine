@@ -464,22 +464,17 @@ Please install it first."
   read
   exit 1
 fi
-echo ${ASK_TO_REBOOT} ; read
 # Warn the user
 preamble
-echo ${ASK_TO_REBOOT} ; read
 # Initialisation of linux distrib
 linux_init
 RET=$? ; [[ ${RET} -eq 1 ]] && rm -f cmd.sh results_menu.txt && exit 1
-echo ${ASK_TO_REBOOT} ; read
 # Source distrib preinit function and variable
 source 000.Distrib_Init/${LINUX_OS,,}.sh
 init_distrib
-echo ${ASK_TO_REBOOT} ; read
 # Now run the script
 main_menu
 RET=$? ; [[ ${RET} -eq 1 ]] && rm -f cmd.sh results_menu.txt && exit 1
-echo ${ASK_TO_REBOOT} ; read
 # Reboot if needed
 if [[ ${ASK_TO_REBOOT} == true  ]] \
   && ( whiptail --title 'REBOOT NEEDED' \
