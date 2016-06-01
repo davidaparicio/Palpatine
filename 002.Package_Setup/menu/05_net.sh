@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# BEGIN WM INFO
+# BEGIN NET INFO
 ALL_APP_CAT+=":NET"
-APP_WM_CAT="Network application"
-APP_WM_EX="A set of application related to network"
-# END WM INFO
+APP_NET_CAT="Network application"
+APP_NET_EX="A set of application related to network"
+# END NET INFO
 
 idx=0
-APP_WM_NAME[idx]="OpenVPN"
-APP_WM_DESC[idx]="A server or client VPN application"
-APP_WM_STAT[idx]="OFF"
+APP_NET_NAME[idx]="OpenVPN"
+APP_NET_DESC[idx]="A server or client VPN application"
+APP_NET_STAT[idx]="OFF"
 OpenVPN_routine () {
   case ${LINUX_OS} in
   debian|ubuntu)
