@@ -9,4 +9,4 @@ wget https://github.com/RDeville/Palpatine/archive/master.zip
 unzip master.zip
 cd Palpatine-master
 sudo ./main.sh
-rm -rf palpatine-master.zip master.zip
+rm -rf master.zip Palpatine-master
