@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# BEGIN WM INFO
+ALL_APP_CAT+=":NET"
+APP_WM_CAT="Network application"
+APP_WM_EX="A set of application related to network"
+# END WM INFO
+
+idx=0
+APP_WM_NAME[idx]="OpenVPN"
+APP_WM_DESC[idx]="A server or client VPN application"
+APP_WM_STAT[idx]="OFF"
+OpenVPN_routine () {
+  case ${LINUX_OS} in
+  debian|ubuntu)
+  ${LINUX_PKG_MGR} install -y openvpn
+    ;;
+  *)
+    return 1
+  esac
+  return 0
+}
+(( idx++ ))
+
+
