@@ -27,7 +27,7 @@ LibreOffice_routine() {
 APP_OFFICE_NAME[idx]="TexLive_Full"
 APP_OFFICE_DESC[idx]="The complete suite of LaTex"
 APP_OFFICE_STAT[idx]="OFF"
-LibreOffice_routine() {
+TexLive_Full_routine() {
   case ${LINUX_OS} in
     debian|ubuntu)
       ${LINUX_PKG_MGR} install -y texlive-full
