@@ -24,11 +24,11 @@ ALL_APP_CAT+=':VC'
 APP_VC_CAT="Version Control"
 APP_VC_EX="Version Control System (VCS)"
 # END WM INFO
-# BEGIN WM INFO
+# BEGIN NET INFO
 ALL_APP_CAT+=":NET"
-APP_WM_CAT="Network application"
-APP_WM_EX="A set of application related to network"
-# END WM INFO
+APP_NET_CAT="Network application"
+APP_NET_EX="A set of application related to network"
+# END NET INFO
 # BEGIN DEV INFO
 ALL_APP_CAT+=':DEV'
 APP_DEV_CAT="Developpement tools"

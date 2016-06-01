@@ -9,7 +9,7 @@ APP_NET_EX="A set of application related to network"
 idx=0
 APP_NET_NAME[idx]="OpenVPN"
 APP_NET_DESC[idx]="A server or client VPN application"
-APP_NET_STAT[idx]="OFF"
+APP_NET_STAT[idx]="ON"
 OpenVPN_routine () {
   case ${LINUX_OS} in
   debian|ubuntu)
