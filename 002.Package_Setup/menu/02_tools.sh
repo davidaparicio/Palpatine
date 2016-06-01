@@ -9,7 +9,7 @@ APP_TOOLS_EX="Some usefull tools, utility and accessories."
 idx=0
 APP_TOOLS_NAME[idx]="htop"
 APP_TOOLS_DESC[idx]="An interactive process viewer for Unix systems"
-APP_TOOLS_STAT[idx]="OFF"
+APP_TOOLS_STAT[idx]="ON"
 htop_routine() {
   case ${LINUX_OS} in
     debian|ubuntu)
@@ -25,7 +25,7 @@ htop_routine() {
 
 APP_TOOLS_NAME[idx]="gparted"
 APP_TOOLS_DESC[idx]="A free partition editor for graphically managing your disk partitions"
-APP_TOOLS_STAT[idx]="OFF"
+APP_TOOLS_STAT[idx]="ON"
 gparted_routine() {
   case ${LINUX_OS} in
     debian|ubuntu)
@@ -41,7 +41,7 @@ gparted_routine() {
 
 APP_TOOLS_NAME[idx]="xclip"
 APP_TOOLS_DESC[idx]="Command line clipboard"
-APP_TOOLS_STAT[idx]="OFF"
+APP_TOOLS_STAT[idx]="ON"
 xclip_routine() {
   case ${LINUX_OS} in
     debian|ubuntu)

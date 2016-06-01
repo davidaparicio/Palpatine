@@ -1,4 +1,9 @@
 #!/bin/bash
+# BEGIN DM INFO
+ALL_APP_CAT+=":DM"
+APP_DM_CAT="Desktop Manager"
+APP_DM_EX="A set of desktop manager"
+# END DM INFO
 # BEGIN WM INFO
 ALL_APP_CAT+=":WM"
 APP_WM_CAT="Window Manager"

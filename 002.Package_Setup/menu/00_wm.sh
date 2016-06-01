@@ -24,7 +24,7 @@ Awesome_3.4_routine () {
 
 APP_WM_NAME[idx]="Awesome_3.5"
 APP_WM_DESC[idx]="A light and very customable WM v3.5"
-APP_WM_STAT[idx]="OFF"
+APP_WM_STAT[idx]="ON"
 Awesome_3.5_routine() {
   case ${LINUX_OS} in
   ubuntu)
