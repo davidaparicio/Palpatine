@@ -399,10 +399,16 @@ main_menu() {
     main_menu="${main_menu} \
       'Docker Management' 'Basic Docker management'"
   fi
-  main_menu="${main_menu} 'FINISH'           'Exit the script'"
+  main_menu_bak=${main_menu}
 
   while true
   do
+    main_menu=${main_menu_bak}
+    if type -t openvpn &>/dev/null
+    then
+      main_menu="${main_menu} 'OpenVPN'           'Configure OpenVPN'"
+    fi
+    main_menu="${main_menu} 'FINISH'           'Exit the script'"
     bash -c "${main_menu}" 2> results_menu.txt
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
     CHOICE=$( cat results_menu.txt )
@@ -432,6 +438,12 @@ main_menu() {
     'Docker Management')
       source 005.Docker_management/docker_management.sh
       docker_management
+      ;;
+    'OpenVPN')
+      # TODO
+      echo TODO
+      #souce 006.OpenVPN/openvpn_config.sh
+      #openvpn_config
       ;;
     * )
       echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."

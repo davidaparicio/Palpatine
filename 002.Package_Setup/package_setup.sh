@@ -193,12 +193,6 @@ setup_pkg_all_cat () {
       '<-- Back' )
         return 1
         ;;
-      * )
-        for (( idxCat=0 ; idxCat <= ${nb_cat} ; idxCat++ ))
-        do
-          cat_name="APP_${all_cat[idxCat]}_CAT"
-          [[ ${!cat_name} == ${CHOICE} ]] && setup_pkg_all_app ${all_cat[idxCat]}
-        done
     esac
   done
   return 0
