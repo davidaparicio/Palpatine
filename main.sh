@@ -389,12 +389,12 @@ main_menu() {
   'Initial setup'    'Access to initial config such as timezone, hostname...' \
   'Package setup'    'Select package to install' \
   'User Management'  'Manage user (add, update, delete)'"
-  if [[ ${SUPPORTED_YUNOHOST} =~ ${LINUX_OS} ]]
+  if [[ ${YUNOHOST} == true ]]
   then
     main_menu="${main_menu} \
       'Yunohost Management' 'Basic Yunohst management (installation, user, app)'"
   fi
-  if [[ ${SUPPORTED_DOCKER_OS} =~ ${LINUX_OS} ]]
+  if [[ ${DOCKER} == true ]]
   then
     main_menu="${main_menu} \
       'Docker Management' 'Basic Docker management'"
