@@ -1,5 +1,13 @@
 #!/bin/bash
 
+new_config() {
+  # Get script directory, gonna need sometime to be sure to get back to the
+  # right directory
+  local dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+  local name=''
+  cd ${dir}
+  cp template.conf /etc/vpn-${name}.conf
+}
 
 openvpn_config() {
   menu="whiptail --title 'OpenVPN Configuration' \
