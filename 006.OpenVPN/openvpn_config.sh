@@ -10,15 +10,21 @@ new_config() {
 }
 
 openvpn_config() {
-  menu="whiptail --title 'OpenVPN Configuration' \
-    --menu 'What do you want to do ? $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT \
-    'New Config'    'Install a new VPN Configuration'
-    'Update Config' 'Update an existing VPN Configuration'
-    'Delete Config' 'Delete an exisiting VPN Configuration'
-    '<-- Back'      'Back to main menu'"
+  local menu=''
   while true
   do
-    bash -c "${menu}" > results_menu.txt
+    menu="whiptail --title 'OpenVPN Configuration' \
+      --menu 'What do you want to do :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT \
+      'New Config'    'Install a new VPN Configuration'"
+    if ls /etc/openvpn/*.conf 1> /dev/null 2>&1
+    then
+      menu="${menu} \
+        'Update Config' 'Update an existing VPN Configuration' \
+        'Delete Config' 'Delete an exisiting VPN Configuration'"
+    fi
+    menu="${menu} '<-- Back'      'Back to main menu'"
+
+    bash -c "${menu}" 2> results_menu.txt
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
     CHOICE=$( cat results_menu.txt )
     case ${CHOICE} in
@@ -40,5 +46,4 @@ openvpn_config() {
         ;;
     esac
   done
-
 }

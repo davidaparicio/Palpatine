@@ -219,7 +219,7 @@ This will run the rest of the script assuming it is the version you will choose.
 If you choose \"NONE OF THEM\", the program will exit) ? ' \
   ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
 
-  for (( idx=0 ; idx < ${VER[@]} ; idx++ ))
+  for (( idx=0 ; idx < ${#VER[@]} ; idx++ ))
   do
     menu="${menu} ${VER[idx]} ''"
   done
@@ -290,6 +290,7 @@ validate_ver() {
     choose_linux_ver
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   fi
+  return 0
 }
 
 validate_os() {
@@ -440,10 +441,8 @@ main_menu() {
       docker_management
       ;;
     'OpenVPN')
-      # TODO
-      echo TODO
-      #souce 006.OpenVPN/openvpn_config.sh
-      #openvpn_config
+      source 006.OpenVPN/openvpn_config.sh
+      openvpn_config
       ;;
     * )
       echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."
