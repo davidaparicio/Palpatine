@@ -55,7 +55,7 @@ set_login() {
 }
 
 set_out_method() {
-  out="whiptail --title 'OpenVPN configuration' \
+  out="whiptail --title 'OpenVPN Configuration' \
     --menu 'choose the way you want to output connexion' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
     'Default' ': If input from isp, out from isp. if input from vpn, out from vpn'\
@@ -87,22 +87,85 @@ set_out_method() {
 }
 
 set_server_cert_url() {
-  server_cert_url="whiptail --title 'OpenVPN configuration' \
-    --inputbox 'Please enter the URL to download to get server certificate' \
+  server_cert_url="whiptail --title 'OpenVPN Configuration' \
+    --inputbox 'Please enter the http URL to download server certificate or if \
+you have already copy it on the system, you can enter it's absolute path like \
+/home/user/path/to/server.crt' \
     ${WT_HEIGHT} ${WT_WIDTH}"
   bash -c "${server_cert_url}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   server_cert_url=$( cat results_menu.txt )
 }
 
+select_auth_type() {
+  menu="whiptail --title 'OpenVPN Configuration' \
+    --menu 'Select authentication method to you VPN provider' \
+    ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
+    'Login'         'Require login and password' \
+    'Certificate'   'Require user certificate and key' \
+    'Shared-Secret' 'Require shared secret key' \
+    'NONE'          'No authentication required'"
+  bash -c "${menu}" 2> results_menu.txt
+  RET=$?; [[ ${RET} -eq 1 ]] && return 1
+  CHOICE=$( cat results_menu.txt )
+  case ${CHOICE} in
+    'Login')
+      set_login
+      RET=$?; [[ ${RET} -eq 1 ]] && return 1
+      ;;
+    'Certificate')
+      set_user_cert
+      RET=$?; [[ ${RET} -eq 1 ]] && return 1
+      ;;
+    'Shared-Secret')
+      set_shared_secret
+      RET=$?; [[ ${RET} -eq 1 ]] && return 1
+      ;;
+    'NONE')
+      return 0
+      ;;
+    *)
+      echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."
+      return 1
+      ;;
+  esac
+  return 0
+}
+
 valid_config() {
-   if ( whiptail --title 'OpenVPN Configuration' \
+  local auth_type='|'
+  local login_info=''
+  if [[ ${is_login} == true ]]
+  then
+    auth_type="${auth_type} Login |"
+    login_info="${login_info}\
+    Login    : ${user_login}
+    Password : The on you set"
+  fi
+  if [[ ${is_certificate} == true ]]
+  then
+    auth_type="${auth_type} Certificate |"
+    login_info="${login_info}\
+    User Cert : ${user_cert_url}
+    User Key  : ${user_key_url}"
+  fi
+  if [[ ${is_shared_secret} == true ]]
+  then
+    auth_type="${auth_type} Shared-Secret |"
+    login_info="${login_info}\
+    Shared Key : ${user_shared_url}"
+  fi
+  [[ ${is_shared_secret} == true ]] && auth_type="${auth_type} Shared-Secret |"
+
+
+  if ( whiptail --title 'OpenVPN Configuration' \
     --yesno "Here is your VPN configuration :
     Configration Name : ${conf_name}
-    Server   : ${server_address}:${server_port}
-    Protocol : ${server_proto}
-    Login    : ${user_login}
-    Password : The one you set
+    Server    : ${server_address}:${server_port}
+    Protocol  : ${server_proto}
+    Auth Type : ${auth_type}
+    Login     : ${user_login}
+    Password  : The one you set
     Server Certificate URL : ${server_cert_url}" ${WT_HEIGHT} ${WT_WIDTH} )
   then
     apply_config
@@ -129,11 +192,27 @@ apply_config() {
     sed -i -e "s/<TPL:LOGIN_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
   fi
 
-  if [[ ${is_udp} == true ]]
+  if [[ ${is_certificate} == true ]]
   then
-    sed -i -e "s/<TPL:UDP_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:CERT_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
+    mkdir -p /etc/openvpn/keys
+    echo ${user_login} > /etc/openvpn/keys/credentials-${conf_name}
+    echo ${user_pass} >> /etc/openvpn/keys/credentials-${conf_name}
   else
-    sed -i -e "s/<TPL:UDP_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:CERT_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
+  fi
+
+  if [[ ${is_shared_secret} == true ]]
+  then
+    sed -i -e "s/<TPL:TA_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
+    parse_path ${user_shared_url}
+    RET=$?; [[ ${RET} -eq 1 ]] && return 1
+
+
+
+    tls-auth /etc/openvpn/keys/user_ta.key 1
+  else
+    sed -i -e "s/<TPL:TA_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
   fi
 }
 
@@ -174,6 +253,28 @@ new_config() {
     RET=$?; [[ ${RET} -eq 1 ]] && return 1
   else
     is_login=false
+  fi
+
+  if ( whiptail --title 'OpenVPN Configuration' \
+    --yesno 'Does your VPN require certificate to login ?'\
+    ${WT_HEIGHT} ${WT_WIDTH} )
+  then
+    is_certificate=true
+    set_user_cert
+    RET=$?; [[ ${RET} -eq 1 ]] && return 1
+  else
+    is_certificate=false
+  fi
+
+  if ( whiptail --title 'OpenVPN Configuration' \
+    --yesno 'Does your VPN require shared-secret key ?'
+    ${WT_HEIGHT} ${WT_WIDTH} )
+  then
+    is_shared_secret=true
+    set_shared_secret
+    RET=$?; [[ ${RET} -eq 1 ]] && return 1
+  else
+    is_shared_secret=false
   fi
 
   set_out_method
