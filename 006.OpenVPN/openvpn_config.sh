@@ -97,6 +97,37 @@ you have already copy it on the system, you can enter it's absolute path like \
   server_cert_url=$( cat results_menu.txt )
 }
 
+set_user_cert() {
+  user_cert_url="whiptail --title 'OpenVPN Configuration' \
+    --inputbox 'Please enter the http URL to download client certificate or if \
+you have already copy it on the system, you can enter it's absolute path like \
+/home/user/path/to/client.crt' \
+    ${WT_HEIGHT} ${WT_WIDTH}"
+  bash -c "${user_cert_url}" 2> results_menu.txt
+  RET=$?; [[ ${RET} -eq 1 ]] && return 1
+  user_cert_url=$( cat results_menu.txt )
+
+  user_key_url="whiptail --title 'OpenVPN Configuration' \
+    --inputbox 'Please enter the http URL to download client key or if \
+you have already copy it on the system, you can enter it's absolute path like \
+/home/user/path/to/client.key' \
+    ${WT_HEIGHT} ${WT_WIDTH}"
+  bash -c "${user_key_url}" 2> results_menu.txt
+  RET=$?; [[ ${RET} -eq 1 ]] && return 1
+  user_key_url=$( cat results_menu.txt )
+}
+
+set_shared_secret() {
+  user_shared_url="whiptail --title 'OpenVPN Configuration' \
+    --inputbox 'Please enter the http URL to download shared key or if \
+you have already copy it on the system, you can enter it's absolute path like \
+/home/user/path/to/shared.key' \
+    ${WT_HEIGHT} ${WT_WIDTH}"
+  bash -c "${user_shared_url}" 2> results_menu.txt
+  RET=$?; [[ ${RET} -eq 1 ]] && return 1
+  user_shared_url=$( cat results_menu.txt )
+}
+
 select_auth_type() {
   menu="whiptail --title 'OpenVPN Configuration' \
     --menu 'Select authentication method to you VPN provider' \
@@ -196,8 +227,18 @@ apply_config() {
   then
     sed -i -e "s/<TPL:CERT_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
     mkdir -p /etc/openvpn/keys
-    echo ${user_login} > /etc/openvpn/keys/credentials-${conf_name}
-    echo ${user_pass} >> /etc/openvpn/keys/credentials-${conf_name}
+    if echo ${user_cert_url} | grep -q http
+    then
+      wget ${user_cert_url} -O /etc/openvpn/keys/user.crt
+    else
+      cp ${user_cert_url} /etc/openvpn/keys/user.crt
+    fi
+    if echo ${user_key_url} | grep -q http
+    then
+      wget ${user_key_url} -O /etc/openvpn/keys/user.key
+    else
+      cp ${user_key_url} /etc/openvpn/keys/user.key
+    fi
   else
     sed -i -e "s/<TPL:CERT_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
   fi
@@ -205,14 +246,30 @@ apply_config() {
   if [[ ${is_shared_secret} == true ]]
   then
     sed -i -e "s/<TPL:TA_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
-    parse_path ${user_shared_url}
-    RET=$?; [[ ${RET} -eq 1 ]] && return 1
-
-
-
-    tls-auth /etc/openvpn/keys/user_ta.key 1
+    mkdir -p /etc/openvpn/keys
+    if echo ${user_shared_url} | grep -q http
+    then
+      wget ${user_shared_url} -O /etc/openvpn/keys/user_ta.key
+    else
+      cp ${user_shared_url} /etc/openvpn/keys/user_ta.key
+    fi
   else
     sed -i -e "s/<TPL:TA_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
+  fi
+
+  echo "TODO : Update ip to use ISP in up and down script and move script to /etc/openvpn"
+
+  if [[ ${is_out_vpn} == true ]]
+  then
+    sed -i -e "s/<TPL:OUT_VPN_COMMENT//g" /etc/openvpn/conf-${conf_name}.conf
+  else
+    sed -i -e "s/<TPL:OUT_VPN_COMMENT/#/g" /etc/openvpn/conf-${conf_name}.conf
+  fi
+  if [[ ${is_out_isp} == true ]]
+  then
+    sed -i -e "s/<TPL:OUT_ISP_COMMENT//g" /etc/openvpn/conf-${conf_name}.conf
+  else
+    sed -i -e "s/<TPL:OUT_ISP_COMMENT/#/g" /etc/openvpn/conf-${conf_name}.conf
   fi
 }
 
