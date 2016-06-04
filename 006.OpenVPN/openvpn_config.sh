@@ -409,6 +409,7 @@ new_config() {
     is_shared_secret=false
   fi
 
+  echo READY
   set_out_method
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
 
