@@ -410,8 +410,7 @@ openvpn_config() {
     menu="whiptail --title 'OpenVPN Configuration' \
       --menu 'What do you want to do :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT \
       'New Config'    'Install a new VPN Configuration'"
-
-    if ls /etc/openvpn/*.conf > /dev/null 2>&1
+    if ls /etc/openvpn/*.conf 1> /dev/null 2>&1
     then
       menu="${menu} \
         'Update Config' 'Update an existing VPN Configuration' \
