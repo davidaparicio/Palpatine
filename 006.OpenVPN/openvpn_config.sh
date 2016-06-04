@@ -289,6 +289,23 @@ apply_config() {
   fi
 }
 
+choose_config() {
+  local all_conf
+  local name
+  local menu="whiptail --title 'OpenVPN Configuration' \
+    --menu 'Choose configuration you wan to $1:' \
+    ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
+  for conf in /etc/openvpn/*.conf
+  do
+    name=${conf##*openvpn/}
+    name=${name%%.conf}
+    menu="${menu} '${name}' ''"
+  done
+  bash -c "${menu}" 2> results_menu.txt
+  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+  config_name=$( cat results_menu.txt )
+}
+
 new_config() {
   # Get script directory, gonna need sometime to be sure to get back to the
   # right directory
