@@ -99,6 +99,8 @@ set_login() {
 
   set_password
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
+  echo $user_pass
+  return 0
 }
 
 set_out_method() {
