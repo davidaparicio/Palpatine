@@ -361,7 +361,7 @@ new_config() {
   fi
 
   if ( whiptail --title 'OpenVPN Configuration' \
-    --yesno 'Does your VPN require shared-secret key ?'
+    --yesno 'Does your VPN require shared-secret key ?' \
     ${WT_HEIGHT} ${WT_WIDTH} )
   then
     is_shared_secret=true
@@ -384,7 +384,6 @@ new_config() {
 update_config() {
   local server_address=$( grep "^remote " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
   local server_port=$( grep "^port " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
-
   local server_proto
   local is_udp
   local is_out_vpn
@@ -411,7 +410,8 @@ openvpn_config() {
     menu="whiptail --title 'OpenVPN Configuration' \
       --menu 'What do you want to do :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT \
       'New Config'    'Install a new VPN Configuration'"
-    if ls /etc/openvpn/*.conf 1> /dev/null 2>&1
+
+    if ls /etc/openvpn/*.conf > /dev/null 2>&1
     then
       menu="${menu} \
         'Update Config' 'Update an existing VPN Configuration' \
