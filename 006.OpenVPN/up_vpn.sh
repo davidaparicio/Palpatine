@@ -6,9 +6,12 @@ tun_mtu="$2"
 link_mtu="$3"
 local_ip="$4"
 remote_ip="$5"
-isp_ip="WWW.XXX.YYY.ZZZ"
-isp_gateway="WWW.XXX.YYY.ZZZ"
-vpn_server="89.234.140.3"
+#isp_ip="WWW.XXX.YYY.ZZZ"
+#isp_gateway="WWW.XXX.YYY.ZZZ"
+#vpn_server="89.234.140.3"
+isp_ip="<TPL:ISP_IP>"
+isp_gateway="<TPL:ISP_GATEWAY>"
+vpn_server="<TPL:VPN_IP>"
 
 # Routing table to use
 tableVPN=4242

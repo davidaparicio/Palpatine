@@ -1,5 +1,15 @@
 #!/bin/bash
 
+get_ip() {
+  isp_ip=$( ip addr | \
+    sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' )
+  vpn_ip=$( host $server_address | \
+    grep "has address" | \
+    grep -Eo '[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+' )
+  isp_gateway=$( ip addr | \
+    sed -En 's/127.0.0.1//;s/.*brd (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' )
+}
+
 set_conf_name() {
   conf_name="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter a name for your configuration' \
@@ -61,7 +71,6 @@ set_out_method() {
     'Default' ': If input from isp, out from isp. if input from vpn, out from vpn'\
     'Out VPN' ': Whatever input is, output will be from vpn address'\
     'Out ISP' ': Whatever input is, output will be from isp address'"
-  echo ${out}
   bash -c "${out}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   CHOICE=$( cat results_menu.txt )
@@ -71,10 +80,12 @@ set_out_method() {
       is_out_isp=false
       ;;
     'Out VPN')
+      get_ip
       is_out_vpn=true
       is_out_isp=false
       ;;
     'Out ISP')
+      get_ip
       is_out_vpn=false
       is_out_isp=true
       ;;
@@ -173,6 +184,7 @@ valid_config() {
     Login    : ${user_login}
     Password : The on you set"
   fi
+
   if [[ ${is_certificate} == true ]]
   then
     auth_type="${auth_type} Certificate |"
@@ -180,14 +192,15 @@ valid_config() {
     User Cert : ${user_cert_url}
     User Key  : ${user_key_url}"
   fi
+
   if [[ ${is_shared_secret} == true ]]
   then
     auth_type="${auth_type} Shared-Secret |"
     login_info="${login_info}\
     Shared Key : ${user_shared_url}"
   fi
-  [[ ${is_shared_secret} == true ]] && auth_type="${auth_type} Shared-Secret |"
 
+  [[ ${is_shared_secret} == true ]] && auth_type="${auth_type} Shared-Secret |"
 
   if ( whiptail --title 'OpenVPN Configuration' \
     --yesno "Here is your VPN configuration :
@@ -229,15 +242,15 @@ apply_config() {
     mkdir -p /etc/openvpn/keys
     if echo ${user_cert_url} | grep -q http
     then
-      wget ${user_cert_url} -O /etc/openvpn/keys/user.crt
+      wget ${user_cert_url} -O /etc/openvpn/keys/user-${conf_name}.crt
     else
-      cp ${user_cert_url} /etc/openvpn/keys/user.crt
+      cp ${user_cert_url} /etc/openvpn/keys/user-${conf_name}.crt
     fi
     if echo ${user_key_url} | grep -q http
     then
-      wget ${user_key_url} -O /etc/openvpn/keys/user.key
+      wget ${user_key_url} -O /etc/openvpn/keys/user-${conf_name}.key
     else
-      cp ${user_key_url} /etc/openvpn/keys/user.key
+      cp ${user_key_url} /etc/openvpn/keys/user-${conf_name}.key
     fi
   else
     sed -i -e "s/<TPL:CERT_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
@@ -249,24 +262,27 @@ apply_config() {
     mkdir -p /etc/openvpn/keys
     if echo ${user_shared_url} | grep -q http
     then
-      wget ${user_shared_url} -O /etc/openvpn/keys/user_ta.key
+      wget ${user_shared_url} -O /etc/openvpn/keys/user_ta-${conf_name}.key
     else
-      cp ${user_shared_url} /etc/openvpn/keys/user_ta.key
+      cp ${user_shared_url} /etc/openvpn/keys/user_ta-${conf_name}.key
     fi
   else
     sed -i -e "s/<TPL:TA_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
   fi
 
-  echo "TODO : Update ip to use ISP in up and down script and move script to /etc/openvpn"
-
   if [[ ${is_out_vpn} == true ]]
   then
     sed -i -e "s/<TPL:OUT_VPN_COMMENT//g" /etc/openvpn/conf-${conf_name}.conf
+    cp $dir/*vpn.sh /etc/openvpn
+    sed -i -e "s/<TPL:ISP_IP>/${isp_ip}/g" /etc/openvpn/up_vpn.sh
+    sed -i -e "s/<TPL:ISP_GATEWAY>/${isp_gateway}/g" /etc/openvpn/up_vpn.sh
+    sed -i -e "s/<TPL:VPN_IP>/${vpn_ip}/g" /etc/openvpn/up_vpn.sh
   else
     sed -i -e "s/<TPL:OUT_VPN_COMMENT/#/g" /etc/openvpn/conf-${conf_name}.conf
   fi
   if [[ ${is_out_isp} == true ]]
   then
+    cp $dir/*isp.sh /etc/openvpn
     sed -i -e "s/<TPL:OUT_ISP_COMMENT//g" /etc/openvpn/conf-${conf_name}.conf
   else
     sed -i -e "s/<TPL:OUT_ISP_COMMENT/#/g" /etc/openvpn/conf-${conf_name}.conf
@@ -287,6 +303,10 @@ new_config() {
   local user_login
   local user_pass
   local server_cert_url
+  local isp_ip
+  local isp_gateway
+  local vpn_ip
+  local conf_name
 
   set_conf_name
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
@@ -343,6 +363,27 @@ new_config() {
   valid_config
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
 }
+
+update_config() {
+  local server_address
+  local server_port
+  local server_proto
+  local is_udp
+  local is_out_vpn
+  local is_out_isp
+  local is_login
+  local conf_name
+  local user_login
+  local user_pass
+  local server_cert_url
+  local isp_ip
+  local isp_gateway
+  local vpn_ip
+  local conf_name
+  choose_config
+}
+
+
 
 openvpn_config() {
   local dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
