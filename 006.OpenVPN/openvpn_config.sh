@@ -104,6 +104,7 @@ set_server_cert_url() {
 you have already copy it on the system, you can enter it's absolute path like \
 /home/user/path/to/server.crt' \
     ${WT_HEIGHT} ${WT_WIDTH}"
+  echo ${server_cert_url}
   bash -c "${server_cert_url}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   server_cert_url=$( cat results_menu.txt )
