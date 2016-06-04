@@ -98,6 +98,7 @@ set_out_method() {
 }
 
 set_server_cert_url() {
+  echo ${FUNCNAME}
   server_cert_url="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter the http URL to download server certificate or if \
 you have already copy it on the system, you can enter it's absolute path like \
