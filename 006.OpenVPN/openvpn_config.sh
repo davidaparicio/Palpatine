@@ -412,9 +412,11 @@ new_config() {
   set_out_method
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
 
+  echo READY
   set_server_cert_url
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
 
+  echo READY
   valid_config
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
 }
