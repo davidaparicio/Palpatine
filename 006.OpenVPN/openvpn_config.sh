@@ -274,6 +274,13 @@ apply_config() {
     sed -i -e "s/<TPL:UDP_COMMEN>/#/g" /etc/openvpn/conf-${conf_name}.conf
   fi
 
+  if echo ${server_cert_url} | grep -q http
+  then
+    wget ${server_cert_url} -O /etc/openvpn/keys/ca-server-${conf_name}.crt
+  else
+    cp ${server_cert_url} /etc/openvpn/keys/ca-server-${conf_name}.crt
+  fi
+
   if [[ ${is_login} == true ]]
   then
     sed -i -e "s/<TPL:LOGIN_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
@@ -290,12 +297,14 @@ apply_config() {
     mkdir -p /etc/openvpn/keys
     if echo ${user_cert_url} | grep -q http
     then
+      echo wget ${user_cert_url} -O /etc/openvpn/keys/user-${conf_name}.crt
       wget ${user_cert_url} -O /etc/openvpn/keys/user-${conf_name}.crt
     else
       cp ${user_cert_url} /etc/openvpn/keys/user-${conf_name}.crt
     fi
     if echo ${user_key_url} | grep -q http
     then
+      echo wget ${user_cert_url} -O /etc/openvpn/keys/user-${conf_name}.crt
       wget ${user_key_url} -O /etc/openvpn/keys/user-${conf_name}.key
     else
       cp ${user_key_url} /etc/openvpn/keys/user-${conf_name}.key
@@ -310,6 +319,7 @@ apply_config() {
     mkdir -p /etc/openvpn/keys
     if echo ${user_shared_url} | grep -q http
     then
+      echo wget ${user_cert_url} -O /etc/openvpn/keys/user-${conf_name}.crt
       wget ${user_shared_url} -O /etc/openvpn/keys/user_ta-${conf_name}.key
     else
       cp ${user_shared_url} /etc/openvpn/keys/user_ta-${conf_name}.key
