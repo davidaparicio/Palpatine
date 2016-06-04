@@ -382,8 +382,9 @@ new_config() {
 }
 
 update_config() {
-  local server_address
-  local server_port
+  local server_address=$( grep "^remote " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+  local server_port=$( grep "^port " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+
   local server_proto
   local is_udp
   local is_out_vpn
