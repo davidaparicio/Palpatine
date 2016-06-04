@@ -63,7 +63,7 @@ set_password() {
   while true
   do
     passwd1="whiptail --title 'OpenVPN Configuration' \
-      --passwordbox 'Please enter the password to connect to your VPN provider'
+      --passwordbox 'Please enter the password to connect to your VPN provider' \
       ${WT_HEIGHT} ${WT_WIDTH}"
     bash -c "${passwd1}" 2>results_menu.txt
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
