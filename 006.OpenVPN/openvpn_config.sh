@@ -175,6 +175,7 @@ select_auth_type() {
 }
 
 valid_config() {
+  echo ${FUNCNAME}
   local auth_type='|'
   local login_info=''
   if [[ ${is_login} == true ]]
@@ -417,7 +418,6 @@ openvpn_config() {
         'Delete Config' 'Delete an exisiting VPN Configuration'"
     fi
     menu="${menu} '<-- Back'      'Back to main menu'"
-    read
 
     bash -c "${menu}" 2> results_menu.txt
     RET=$? ; [[ ${RET} -eq 1 ]] && return 1
