@@ -266,6 +266,14 @@ apply_config() {
       -e "s/<TPL:SERVER_NAME>/${server_name}/g" \
       -e "s/<TPL:SERVER_PORT>/${server_port}/g" \
       -e "s/<TPL:SERVER_PROTO>/${server_proto}/g" /etc/openvpn/conf-${conf_name}.conf
+
+  if [[ ${is_udp} == true ]]
+  then
+    sed -i -e "s/<TPL:UDP_COMMEN>//g" /etc/openvpn/conf-${conf_name}.conf
+  else
+    sed -i -e "s/<TPL:UDP_COMMEN>/#/g" /etc/openvpn/conf-${conf_name}.conf
+  fi
+
   if [[ ${is_login} == true ]]
   then
     sed -i -e "s/<TPL:LOGIN_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
@@ -312,20 +320,20 @@ apply_config() {
 
   if [[ ${is_out_vpn} == true ]]
   then
-    sed -i -e "s/<TPL:OUT_VPN_COMMENT//g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:OUT_VPN_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
     cp $dir/*vpn.sh /etc/openvpn
     sed -i -e "s/<TPL:ISP_IP>/${isp_ip}/g" /etc/openvpn/up_vpn.sh
     sed -i -e "s/<TPL:ISP_GATEWAY>/${isp_gateway}/g" /etc/openvpn/up_vpn.sh
     sed -i -e "s/<TPL:VPN_IP>/${vpn_ip}/g" /etc/openvpn/up_vpn.sh
   else
-    sed -i -e "s/<TPL:OUT_VPN_COMMENT/#/g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:OUT_VPN_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
   fi
   if [[ ${is_out_isp} == true ]]
   then
     cp $dir/*isp.sh /etc/openvpn
-    sed -i -e "s/<TPL:OUT_ISP_COMMENT//g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:OUT_ISP_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
   else
-    sed -i -e "s/<TPL:OUT_ISP_COMMENT/#/g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:OUT_ISP_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
   fi
 }
 
