@@ -48,6 +48,47 @@ set_server_proto() {
   server_proto=$( cat results_menu.txt )
 }
 
+set_password() {
+  # Set Yunohost user password
+  local passwd_ok=false
+  # REGEX PASSWORD
+  #^([a-zA-Z0-9@*#_]{8,15})$
+  #Description
+  #Password matching expression.
+  #Match all alphanumeric character and predefined wild characters.
+  #Password must consists of at least 8 characters and not more than 15 characters.
+  local passwd1=""
+  local passwd2=""
+
+  while true
+  do
+    passwd1="whiptail --title 'OpenVPN Configuration' \
+      --passwordbox 'Please enter the password to connect to your VPN provider'
+      ${WT_HEIGHT} ${WT_WIDTH}"
+    bash -c "${passwd1}" 2>results_menu.txt
+    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    passwd1=$( cat results_menu.txt )
+    local passwd2="whiptail --title 'OpenVPN Configuration' \
+      --passwordbox 'Please enter the password again.' ${WT_HEIGHT} ${WT_WIDTH}"
+    bash -c "${passwd2}" 2> results_menu.txt
+    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    passwd2=$( cat results_menu.txt )
+    if [[ ! ${passwd1} == ${passwd2} ]]
+    then
+      if ! ( whiptail --title 'OpenVPN Configuration' \
+        --yesno "Passwords do not match.
+
+Do you want to retry ?" ${WT_HEIGHT} ${WT_WIDTH} )
+      then
+        return 1
+      fi
+    else
+      user_pass=${passwd1}
+      return 0
+    fi
+  done
+}
+
 set_login() {
   user_login="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter the username to use to connect to your VPN :' \
@@ -56,12 +97,8 @@ set_login() {
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   user_login=$( cat results_menu.txt )
 
-  user_pass="whiptail --title 'OpenVPN Configuration' \
-    --passwordbox 'Please enter the password to use to connect to your VPN :' \
-    ${WT_HEIGHT} ${WT_WIDTH}"
-  bash -c "${user_pass}" 2> results_menu.txt
+  set_password
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  user_pass=$( cat results_menu.txt )
 }
 
 set_out_method() {
@@ -101,7 +138,7 @@ set_server_cert_url() {
   echo ${FUNCNAME}
   server_cert_url="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter the http URL to download server certificate or if \
-you have already copy it on the system, you can enter it's absolute path like \
+you have already copy it on the system, you can enter its absolute path like \
 /home/user/path/to/server.crt' \
     ${WT_HEIGHT} ${WT_WIDTH}"
   echo ${server_cert_url}
@@ -113,7 +150,7 @@ you have already copy it on the system, you can enter it's absolute path like \
 set_user_cert() {
   user_cert_url="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter the http URL to download client certificate or if \
-you have already copy it on the system, you can enter it's absolute path like \
+you have already copy it on the system, you can enter its absolute path like \
 /home/user/path/to/client.crt' \
     ${WT_HEIGHT} ${WT_WIDTH}"
   bash -c "${user_cert_url}" 2> results_menu.txt
@@ -122,7 +159,7 @@ you have already copy it on the system, you can enter it's absolute path like \
 
   user_key_url="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter the http URL to download client key or if \
-you have already copy it on the system, you can enter it's absolute path like \
+you have already copy it on the system, you can enter its absolute path like \
 /home/user/path/to/client.key' \
     ${WT_HEIGHT} ${WT_WIDTH}"
   bash -c "${user_key_url}" 2> results_menu.txt
@@ -133,7 +170,7 @@ you have already copy it on the system, you can enter it's absolute path like \
 set_shared_secret() {
   user_shared_url="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter the http URL to download shared key or if \
-you have already copy it on the system, you can enter it's absolute path like \
+you have already copy it on the system, you can enter its absolute path like \
 /home/user/path/to/shared.key' \
     ${WT_HEIGHT} ${WT_WIDTH}"
   bash -c "${user_shared_url}" 2> results_menu.txt
@@ -211,8 +248,6 @@ valid_config() {
     Server    : ${server_address}:${server_port}
     Protocol  : ${server_proto}
     Auth Type : ${auth_type}
-    Login     : ${user_login}
-    Password  : The one you set
     Server Certificate URL : ${server_cert_url}" ${WT_HEIGHT} ${WT_WIDTH} )
   then
     apply_config
