@@ -327,17 +327,23 @@ apply_config() {
   if [[ ${is_out_vpn} == true ]]
   then
     sed -i -e "s/<TPL:OUT_VPN_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
-    cp $dir/*vpn.sh /etc/openvpn
-    sed -i -e "s/<TPL:ISP_IP>/${isp_ip}/g" /etc/openvpn/up_vpn.sh
-    sed -i -e "s/<TPL:ISP_GATEWAY>/${isp_gateway}/g" /etc/openvpn/up_vpn.sh
-    sed -i -e "s/<TPL:VPN_IP>/${vpn_ip}/g" /etc/openvpn/up_vpn.sh
+    cp $dir/up_vpn.sh /etc/openvpn/up_vpn-${conf_name}.sh
+    cp $dir/down_vpn.sh /etc/openvpn/down_vpn-${conf_name}.sh
+    local local_iface=$( ip address show | grep UP | cut -d: -f1 )
+    echo Local Interface : $local_iface
+    read
+    sed -i -e "s/<TPL:LOCAL_IFACE>/TODO/g" /etc/openvpn/up_vpn-${conf_name}.sh
+    sed -i -e "s/<TPL:ISP_IP>/${isp_ip}/g" /etc/openvpn/up_vpn-${conf_name}.sh
+    sed -i -e "s/<TPL:ISP_GATEWAY>/${isp_gateway}/g" /etc/openvpn/up_vpn-${conf_name}.sh
+    sed -i -e "s/<TPL:VPN_IP>/${vpn_ip}/g" /etc/openvpn/up_vpn-${conf_name}.sh
   else
     sed -i -e "s/<TPL:OUT_VPN_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
   fi
 
   if [[ ${is_out_isp} == true ]]
   then
-    cp $dir/*isp.sh /etc/openvpn
+    cp $dir/up_isp.sh /etc/openvpn/up_isp-${conf_name}.sh
+    cp $dir/down_isp.sh /etc/openvpn/down_isp-${conf_name}.sh
     sed -i -e "s/<TPL:OUT_ISP_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
   else
     sed -i -e "s/<TPL:OUT_ISP_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf

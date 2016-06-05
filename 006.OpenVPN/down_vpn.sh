@@ -1,3 +1,5 @@
+#!/bin/bash
+
 dev="$1"
 tun_mtu="$2"
 link_mtu="$3"

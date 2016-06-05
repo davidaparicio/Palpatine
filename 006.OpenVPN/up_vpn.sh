@@ -1,7 +1,7 @@
 #!/bin/bash
 
 dev="$1"
-isp_dev="eth0"
+isp_dev="<TPL:LOCAL_IFACE>"
 tun_mtu="$2"
 link_mtu="$3"
 local_ip="$4"
