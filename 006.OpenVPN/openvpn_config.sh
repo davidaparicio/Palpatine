@@ -41,12 +41,11 @@ set_server_proto() {
   server_proto="whiptail --title 'OpenVPN Configuration' \
     --menu 'Select communication protocol to use' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
-    'UDP' '' \
-    'TCP' ''"
+    'udp' '' \
+    'tcp' ''"
   bash -c "${server_proto}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   server_proto=$( cat results_menu.txt )
-  server_proto=${server_proto,,}
 }
 
 set_password() {
@@ -362,9 +361,23 @@ choose_config() {
     name=${name%%.conf}
     menu="${menu} '${name}' ''"
   done
+  echo "$menu"
+  read
   bash -c "${menu}" 2> results_menu.txt
   RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   config_name=$( cat results_menu.txt )
+}
+
+menu_config() {
+  local menu="whiptail --title 'OpenVPN Configuration' \
+    --menu 'What do you want to do :' \
+    ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
+  'Change Name' 'Change config name' \
+  'Change Server Address' 'Change VPN Server address' \
+  'Change Server Port'    'Change VPN Server port' \
+  'Change Protocol'       'Change VPN Server protocol to use' \
+  'Change Authentication Method' 'Change method to authenticate' \
+  'Change
 }
 
 new_config() {
@@ -381,6 +394,9 @@ new_config() {
   local user_login
   local user_pass
   local server_cert_url
+  local user_cert_url
+  local user_key_url
+  local user_shared_url
   local isp_ip
   local isp_gateway
   local vpn_ip
@@ -443,20 +459,22 @@ new_config() {
 }
 
 update_config() {
+  local conf_name
   local server_address=$( grep "^remote " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
   local server_port=$( grep "^port " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
-  local server_proto
+  local server_proto=$( grep "^proto " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
   local is_udp
   local is_out_vpn
   local is_out_isp
   local is_login
-  local conf_name
-  local user_login
-  local user_pass
-  local server_cert_url
   local isp_ip
   local isp_gateway
   local vpn_ip
+  local user_login
+  local user_pass
+  local server_cert_url
+  local user_cert_url
+  local user_key_url
   local conf_name
   choose_config
 }
