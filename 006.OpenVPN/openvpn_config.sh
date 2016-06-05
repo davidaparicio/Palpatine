@@ -264,6 +264,10 @@ apply_config() {
   cp $dir/template.conf /etc/openvpn/conf-${conf_name}.conf
   # Apply config
   echo Apply config
+  echo sed -i  -e 's/<TPL:CONF_NAME>/${conf_name}/g' \
+      -e 's/<TPL:SERVER_NAME>/${server_name}/g' \
+      -e 's/<TPL:SERVER_PORT>/${server_port}/g' \
+      -e 's/<TPL:SERVER_PROTO>/${server_proto}/g' /etc/openvpn/conf-${conf_name}.conf
   read
   sed -i  -e "s/<TPL:CONF_NAME>/${conf_name}/g" \
       -e "s/<TPL:SERVER_NAME>/${server_name}/g" \
