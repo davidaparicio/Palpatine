@@ -250,6 +250,7 @@ valid_config() {
     Server    : ${server_address}:${server_port}
     Protocol  : ${server_proto}
     Auth Type : ${auth_type}
+    ${login_info}
     Server Certificate URL : ${server_cert_url}" ${WT_HEIGHT} ${WT_WIDTH} )
   then
     apply_config
@@ -264,23 +265,23 @@ apply_config() {
   cp $dir/template.conf /etc/openvpn/conf-${conf_name}.conf
   # Apply config
   echo Apply config
-  echo sed -i  -e 's/<TPL:CONF_NAME>/${conf_name}/g' \
-      -e 's/<TPL:SERVER_NAME>/${server_name}/g' \
+  echo "sed -i  -e 's/<TPL:CONF_NAME>/${conf_name}/g' \
+      -e 's/<TPL:SERVER_NAME>/${server_address}/g' \
       -e 's/<TPL:SERVER_PORT>/${server_port}/g' \
-      -e 's/<TPL:SERVER_PROTO>/${server_proto}/g' /etc/openvpn/conf-${conf_name}.conf
+      -e 's/<TPL:SERVER_PROTO>/${server_proto}/g' /etc/openvpn/conf-${conf_name}.conf"
   read
   sed -i  -e "s/<TPL:CONF_NAME>/${conf_name}/g" \
-      -e "s/<TPL:SERVER_NAME>/${server_name}/g" \
+      -e "s/<TPL:SERVER_NAME>/${server_address}/g" \
       -e "s/<TPL:SERVER_PORT>/${server_port}/g" \
       -e "s/<TPL:SERVER_PROTO>/${server_proto}/g" /etc/openvpn/conf-${conf_name}.conf
 
   if [[ ${is_udp} == true ]]
   then
     echo is udp
-    sed -i -e "s/<TPL:UDP_COMMEN>//g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:UDP_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
   else
     echo is not udp
-    sed -i -e "s/<TPL:UDP_COMMEN>/#/g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:UDP_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
   fi
   read
 
