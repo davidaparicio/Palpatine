@@ -46,6 +46,7 @@ set_server_proto() {
   bash -c "${server_proto}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   server_proto=$( cat results_menu.txt )
+  server_proto=${server_proto,,}
 }
 
 set_password() {
