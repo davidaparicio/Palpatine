@@ -262,6 +262,9 @@ valid_config() {
 
 apply_config() {
   cp $dir/template.conf /etc/openvpn/conf-${conf_name}.conf
+  # Apply config
+  echo Apply config
+  read
   sed -i  -e "s/<TPL:CONF_NAME>/${conf_name}/g" \
       -e "s/<TPL:SERVER_NAME>/${server_name}/g" \
       -e "s/<TPL:SERVER_PORT>/${server_port}/g" \
@@ -269,30 +272,40 @@ apply_config() {
 
   if [[ ${is_udp} == true ]]
   then
+    echo is udp
     sed -i -e "s/<TPL:UDP_COMMEN>//g" /etc/openvpn/conf-${conf_name}.conf
   else
+    echo is not udp
     sed -i -e "s/<TPL:UDP_COMMEN>/#/g" /etc/openvpn/conf-${conf_name}.conf
   fi
+  read
 
   if echo ${server_cert_url} | grep -q http
   then
+    echo server cert wget
     wget ${server_cert_url} -O /etc/openvpn/keys/ca-server-${conf_name}.crt
   else
+    echo server cert cp
     cp ${server_cert_url} /etc/openvpn/keys/ca-server-${conf_name}.crt
   fi
+  read
 
   if [[ ${is_login} == true ]]
   then
+    echo is login
     sed -i -e "s/<TPL:LOGIN_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
     mkdir -p /etc/openvpn/keys
     echo ${user_login} > /etc/openvpn/keys/credentials-${conf_name}
     echo ${user_pass} >> /etc/openvpn/keys/credentials-${conf_name}
   else
+    echo is not login
     sed -i -e "s/<TPL:LOGIN_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
   fi
+  read
 
   if [[ ${is_certificate} == true ]]
   then
+    echo is user cert
     sed -i -e "s/<TPL:CERT_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
     mkdir -p /etc/openvpn/keys
     if echo ${user_cert_url} | grep -q http
@@ -300,6 +313,7 @@ apply_config() {
       echo wget ${user_cert_url} -O /etc/openvpn/keys/user-${conf_name}.crt
       wget ${user_cert_url} -O /etc/openvpn/keys/user-${conf_name}.crt
     else
+      echo cp usert cert
       cp ${user_cert_url} /etc/openvpn/keys/user-${conf_name}.crt
     fi
     if echo ${user_key_url} | grep -q http
@@ -307,14 +321,18 @@ apply_config() {
       echo wget ${user_cert_url} -O /etc/openvpn/keys/user-${conf_name}.crt
       wget ${user_key_url} -O /etc/openvpn/keys/user-${conf_name}.key
     else
+      echo cp ${user_key_url} /etc/openvpn/keys/user-${conf_name}.key
       cp ${user_key_url} /etc/openvpn/keys/user-${conf_name}.key
     fi
   else
+    echo no user cert
     sed -i -e "s/<TPL:CERT_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
   fi
+  read
 
   if [[ ${is_shared_secret} == true ]]
   then
+    echo is shared
     sed -i -e "s/<TPL:TA_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
     mkdir -p /etc/openvpn/keys
     if echo ${user_shared_url} | grep -q http
@@ -322,29 +340,39 @@ apply_config() {
       echo wget ${user_cert_url} -O /etc/openvpn/keys/user-${conf_name}.crt
       wget ${user_shared_url} -O /etc/openvpn/keys/user_ta-${conf_name}.key
     else
+      echo cp ${user_shared_url} /etc/openvpn/keys/user_ta-${conf_name}.key
       cp ${user_shared_url} /etc/openvpn/keys/user_ta-${conf_name}.key
     fi
   else
+    echo is not shared
     sed -i -e "s/<TPL:TA_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
   fi
+  read
 
   if [[ ${is_out_vpn} == true ]]
   then
+    echo is out vpn
     sed -i -e "s/<TPL:OUT_VPN_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
     cp $dir/*vpn.sh /etc/openvpn
     sed -i -e "s/<TPL:ISP_IP>/${isp_ip}/g" /etc/openvpn/up_vpn.sh
     sed -i -e "s/<TPL:ISP_GATEWAY>/${isp_gateway}/g" /etc/openvpn/up_vpn.sh
     sed -i -e "s/<TPL:VPN_IP>/${vpn_ip}/g" /etc/openvpn/up_vpn.sh
   else
+    echo is not out vpn
     sed -i -e "s/<TPL:OUT_VPN_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
   fi
+  read
+
   if [[ ${is_out_isp} == true ]]
   then
+    echo is out isp
     cp $dir/*isp.sh /etc/openvpn
     sed -i -e "s/<TPL:OUT_ISP_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
   else
+    echo is out isp
     sed -i -e "s/<TPL:OUT_ISP_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
   fi
+  read
 }
 
 choose_config() {
