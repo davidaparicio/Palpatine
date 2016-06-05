@@ -222,7 +222,7 @@ valid_config() {
   if [[ ${is_login} == true ]]
   then
     auth_type="${auth_type} Login |"
-    login_info="${login_info}\
+    login_info="${login_info}
     Login    : ${user_login}
     Password : The on you set"
   fi
@@ -230,7 +230,7 @@ valid_config() {
   if [[ ${is_certificate} == true ]]
   then
     auth_type="${auth_type} Certificate |"
-    login_info="${login_info}\
+    login_info="${login_info}
     User Cert : ${user_cert_url}
     User Key  : ${user_key_url}"
   fi
@@ -238,7 +238,7 @@ valid_config() {
   if [[ ${is_shared_secret} == true ]]
   then
     auth_type="${auth_type} Shared-Secret |"
-    login_info="${login_info}\
+    login_info="${login_info}
     Shared Key : ${user_shared_url}"
   fi
 
