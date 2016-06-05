@@ -545,9 +545,10 @@ openvpn_config() {
         ;;
       'New Config')
         new_config
+        RET=$? ; [[ ${RET} -eq 1 ]] && update_config
         ;;
       'Update Config')
-        echo TODO Update Config VPN
+        update_config
         ;;
       'Delete Config')
         echo TODO Delete Config VPN
