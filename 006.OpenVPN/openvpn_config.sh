@@ -357,19 +357,16 @@ choose_config() {
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   for conf in /etc/openvpn/*.conf
   do
-    name=${conf##*openvpn/}
+    name=${conf##*openvpn/conf-}
     name=${name%%.conf}
     echo $name
-    read
-    name=${conf%%*openvpn/}
-    name=${name##.conf}
     menu="${menu} '${name}' ''"
   done
-  echo "$menu"
-  read
   bash -c "${menu}" 2> results_menu.txt
   RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   config_name=$( cat results_menu.txt )
+  echo $config_name
+  read
 }
 
 set_auth_method() {
