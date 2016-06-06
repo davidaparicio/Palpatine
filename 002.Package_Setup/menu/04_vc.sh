@@ -9,7 +9,7 @@ APP_VC_EX="Version Control System (VCS)"
 idx=0
 APP_VC_NAME[idx]="git"
 APP_VC_DESC[idx]="Version Control System"
-APP_VC_STAT[idx]="ON"
+APP_VC_STAT[idx]="OFF"
 git_routine() {
   case ${LINUX_OS} in
   debian|ubuntu)
@@ -24,7 +24,7 @@ git_routine() {
 
 APP_VC_NAME[idx]="vcsh"
 APP_VC_DESC[idx]="Version Control System for \$HOME"
-APP_VC_STAT[idx]="ON"
+APP_VC_STAT[idx]="OFF"
 vcsh_routine() {
   case ${LINUX_OS} in
   debian|ubuntu)
@@ -39,7 +39,7 @@ vcsh_routine() {
 
 APP_VC_NAME[idx]="myRepo"
 APP_VC_DESC[idx]="Multiple Repository management tool"
-APP_VC_STAT[idx]="ON"
+APP_VC_STAT[idx]="OFF"
 myRepo_routine () {
   case ${LINUX_OS} in
   debian|ubuntu)
