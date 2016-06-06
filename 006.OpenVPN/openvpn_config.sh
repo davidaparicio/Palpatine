@@ -145,22 +145,24 @@ method do not select anything.' \
     'Shared-Secret' 'Require shared secret key'        'OFF'"
   bash -c "${menu}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  while read CHOICE
+  CHOICE=$( cat results_menu.txt )
+  echo $CHOICE
+  for auth in $CHOICE
   do
-    echo $CHOICE
+    echo $auth
     read
-    case ${CHOICE} in
+    case ${auth} in
       'Login')
         set_login
-        RET=$?; [[ ${RET} -eq 1 ]] && return 1
+        #RET=$?; [[ ${RET} -eq 1 ]] && return 1
         ;;
       'Certificate')
         set_user_cert
-        RET=$?; [[ ${RET} -eq 1 ]] && return 1
+        #RET=$?; [[ ${RET} -eq 1 ]] && return 1
         ;;
       'Shared-Secret')
         set_shared_secret
-        RET=$?; [[ ${RET} -eq 1 ]] && return 1
+        #RET=$?; [[ ${RET} -eq 1 ]] && return 1
         ;;
       *)
         echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."
