@@ -492,6 +492,17 @@ update_config() {
   server_cert_url=$( grep "^ca " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
   user_cert_url=$( grep "^cert " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
   user_key_url=$( grep "^key " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+  echo $credential_file
+  echo $server_address
+  echo $server_port
+  echo $server_proto
+  echo $is_udp
+  echo $is_out_isp
+  echo $is_out_vpn
+  echo $is_login
+  echo $server_cert_url
+  read
+
   menu_config
 }
 
