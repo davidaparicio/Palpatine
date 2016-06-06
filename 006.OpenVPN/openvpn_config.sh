@@ -104,7 +104,6 @@ you have already copy it on the system, you can enter its absolute path like \
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   server_cert_url=$( cat results_menu.txt )
 
-  is_certificate=true
   return 0
 }
 
@@ -127,7 +126,7 @@ you have already copy it on the system, you can enter its absolute path like \
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   user_key_url=$( cat results_menu.txt )
 
-  is_shared_secret=true
+  is_certificate=true
   return 0
 }
 
@@ -140,6 +139,9 @@ you have already copy it on the system, you can enter its absolute path like \
   bash -c "${user_shared_url}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   user_shared_url=$( cat results_menu.txt )
+
+  is_shared_secret=true
+  return 0
 }
 
 set_auth_method() {
