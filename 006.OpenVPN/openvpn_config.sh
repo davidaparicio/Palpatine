@@ -312,7 +312,6 @@ menu_config() {
   'Protocol'       'Change VPN Server protocol to use' \
   'Authentication Method' 'Change method to authenticate' \
   'Server Certificate'    'Change server certificate file' \
-  'Set Output Method'     'Change weither output data through VPN/ISP/Both' \
   'UPDATE'                'Apply update' \
   '<-- Back'              'Back to previous menu'"
   bash -c "${menu}" 2> results_menu.txt
