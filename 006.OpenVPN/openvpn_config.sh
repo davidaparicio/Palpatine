@@ -357,7 +357,7 @@ choose_config() {
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   for conf in /etc/openvpn/*.conf
   do
-    name=${conf##*openvpn/openvpn-}
+    name=${conf##*openvpn/*-}
     name=${name%%.conf}
     menu="${menu} '${name}' ''"
   done
@@ -526,7 +526,7 @@ openvpn_config() {
         ;;
       'Update Config')
         choose_config
-        update_config
+        RET=$? ; ! [[ ${RET} -eq 1 ]] && update_config
         ;;
       'Delete Config')
         echo TODO Delete Config VPN
