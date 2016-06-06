@@ -381,15 +381,24 @@ new_config() {
 
 update_config() {
   local credential_file=$( grep "^auth-user-pass " /etc/openvpn/openvpn-${conf_name} | awk '${print $2}' )
+  echo $credential_file
   server_address=$( grep "^remote " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+  echo $server_address
   server_port=$( grep "^port " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+  echo $server_port
   server_proto=$( grep "^proto " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+  echo $server_proto
   [[ ${server_proto} == 'udp' ]] && is_udp=true || is_udp=false
   grep -q "^auth-user-pass " /etc/openvpn/openvpn-${conf_name}.conf \
     && is_login=true || is_login=false
+  echo $is_udp
+  echo $is_login
   server_cert_url=$( grep "^ca " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+  echo $server_cert_url
   user_cert_url=$( grep "^cert " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+  echo $user_cert_url
   user_key_url=$( grep "^key " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+  echo $user_key_url
 
   menu_config
 }
