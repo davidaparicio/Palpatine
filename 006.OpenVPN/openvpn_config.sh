@@ -143,12 +143,12 @@ method do not select anything.' \
     'Login'         'Require login and password'       'ON' \
     'Certificate'   'Require user certificate and key' 'OFF' \
     'Shared-Secret' 'Require shared secret key'        'OFF'"
-  echo $menu
-  read
   bash -c "${menu}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   while read CHOICE
   do
+    echo $CHOICE
+    read
     case ${CHOICE} in
       'Login')
         set_login
@@ -164,7 +164,6 @@ method do not select anything.' \
         ;;
       *)
         echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."
-        return 1
         ;;
     esac
   done <<< $( cat results_menu.txt )
