@@ -134,7 +134,7 @@ you have already copy it on the system, you can enter its absolute path like \
   user_shared_url=$( cat results_menu.txt )
 }
 
-select_auth_method() {
+set_auth_method() {
   menu="whiptail --title 'OpenVPN Configuration' \
     --checkbox 'Select authentication method to you VPN provider, if no auth \
 method do not select anything.' \
@@ -328,7 +328,7 @@ menu_config() {
       set_server_proto
       ;;
     'Authentication Method')
-      select_auth_method
+      set_auth_method
       ;;
     'Server Certificate')
       set_server_cert_url
@@ -356,40 +356,10 @@ new_config() {
 
   set_server_proto
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  [[ ${server_proto} == UDP ]] && is_udp=true || is_udp=false
+  [[ ${server_proto} == udp ]] && is_udp=true || is_udp=false
 
-  if ( whiptail --title 'OpenVPN Configuration' \
-    --yesno 'Does your VPN require login information (i.e. login and password) ?'\
-    ${WT_HEIGHT} ${WT_WIDTH} )
-  then
-    is_login=true
-    set_login
-    RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  else
-    is_login=false
-  fi
-
-  if ( whiptail --title 'OpenVPN Configuration' \
-    --yesno 'Does your VPN require certificate to login ?'\
-    ${WT_HEIGHT} ${WT_WIDTH} )
-  then
-    is_certificate=true
-    set_user_cert
-    RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  else
-    is_certificate=false
-  fi
-
-  if ( whiptail --title 'OpenVPN Configuration' \
-    --yesno 'Does your VPN require shared-secret key ?' \
-    ${WT_HEIGHT} ${WT_WIDTH} )
-  then
-    is_shared_secret=true
-    set_shared_secret
-    RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  else
-    is_shared_secret=false
-  fi
+  set_auth_method
+  RET=$?; [[ ${RET} -eq 1 ]] && return 1
 
   set_server_cert_url
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
