@@ -380,8 +380,10 @@ new_config() {
 }
 
 update_config() {
-  local credential_file=$( grep "^auth-user-pass " /etc/openvpn/openvpn-${conf_name}.conf | awk '${print $2}' )
-  echo $credential_file
+  user_login=$( sed -n "1p" /etc/openvpn/keys/credentials-${conf_name} )
+  user_pass=$( sed -n "2p" /etc/openvpn/keys/credentials-${conf_name} )
+  echo $user_login
+  echo $user_pass
   server_address=$( grep "^remote " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
   echo $server_address
   server_port=$( grep "^port " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
