@@ -137,7 +137,7 @@ you have already copy it on the system, you can enter its absolute path like \
 set_auth_method() {
   echo ${FUNCNAME}
   menu="whiptail --title 'OpenVPN Configuration' \
-    --checkbox 'Select authentication method to you VPN provider, if no auth \
+    --checklist 'Select authentication method to you VPN provider, if no auth \
 method do not select anything.' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
     'Login'         'Require login and password'       'ON' \
