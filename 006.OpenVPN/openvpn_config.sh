@@ -1,15 +1,5 @@
 #!/bin/bash
 
-get_ip() {
-  isp_ip=$( ip addr | \
-    sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' )
-  vpn_ip=$( host $server_address | \
-    grep "has address" | \
-    grep -Eo '[0-9]+[.][0-9]+[.][0-9]+[.][0-9]+' )
-  isp_gateway=$( ip addr | \
-    sed -En 's/127.0.0.1//;s/.*brd (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p' )
-}
-
 set_conf_name() {
   conf_name="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter a name for your configuration' \
@@ -102,39 +92,6 @@ set_login() {
   return 0
 }
 
-set_out_method() {
-  out="whiptail --title 'OpenVPN Configuration' \
-    --menu 'choose the way you want to output connexion' \
-    ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
-    'Default' ': If input from isp, out from isp. if input from vpn, out from vpn'\
-    'Out VPN' ': Whatever input is, output will be from vpn address'\
-    'Out ISP' ': Whatever input is, output will be from isp address'"
-  bash -c "${out}" 2> results_menu.txt
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  CHOICE=$( cat results_menu.txt )
-  case ${CHOICE} in
-    'Default')
-      is_out_vpn=false
-      is_out_isp=false
-      ;;
-    'Out VPN')
-      get_ip
-      is_out_vpn=true
-      is_out_isp=false
-      ;;
-    'Out ISP')
-      get_ip
-      is_out_vpn=false
-      is_out_isp=true
-      ;;
-    * )
-      echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."
-      return 1
-      ;;
-  esac
-  return 0
-}
-
 set_server_cert_url() {
   server_cert_url="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter the http URL to download server certificate or if \
@@ -177,38 +134,37 @@ you have already copy it on the system, you can enter its absolute path like \
   user_shared_url=$( cat results_menu.txt )
 }
 
-select_auth_type() {
+select_auth_method() {
   menu="whiptail --title 'OpenVPN Configuration' \
-    --menu 'Select authentication method to you VPN provider' \
+    --checkbox 'Select authentication method to you VPN provider, if no auth \
+method do not select anything.' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
     'Login'         'Require login and password' \
     'Certificate'   'Require user certificate and key' \
-    'Shared-Secret' 'Require shared secret key' \
-    'NONE'          'No authentication required'"
+    'Shared-Secret' 'Require shared secret key'"
   bash -c "${menu}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  CHOICE=$( cat results_menu.txt )
-  case ${CHOICE} in
-    'Login')
-      set_login
-      RET=$?; [[ ${RET} -eq 1 ]] && return 1
-      ;;
-    'Certificate')
-      set_user_cert
-      RET=$?; [[ ${RET} -eq 1 ]] && return 1
-      ;;
-    'Shared-Secret')
-      set_shared_secret
-      RET=$?; [[ ${RET} -eq 1 ]] && return 1
-      ;;
-    'NONE')
-      return 0
-      ;;
-    *)
-      echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."
-      return 1
-      ;;
-  esac
+  while read CHOICE
+  do
+    case ${CHOICE} in
+      'Login')
+        set_login
+        RET=$?; [[ ${RET} -eq 1 ]] && return 1
+        ;;
+      'Certificate')
+        set_user_cert
+        RET=$?; [[ ${RET} -eq 1 ]] && return 1
+        ;;
+      'Shared-Secret')
+        set_shared_secret
+        RET=$?; [[ ${RET} -eq 1 ]] && return 1
+        ;;
+      *)
+        echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."
+        return 1
+        ;;
+    esac
+  done <<< $( cat results_menu.txt )
   return 0
 }
 
@@ -323,30 +279,6 @@ apply_config() {
     sed -i -e "s/<TPL:TA_COMMENT>/#/g" /etc/openvpn/openvpn-${conf_name}.conf
   fi
 
-  if [[ ${is_out_vpn} == true ]]
-  then
-    sed -i -e "s/<TPL:OUT_VPN_COMMENT>//g" /etc/openvpn/openvpn-${conf_name}.conf
-    cp $dir/up_vpn.sh /etc/openvpn/up_vpn-${conf_name}.sh
-    cp $dir/down_vpn.sh /etc/openvpn/down_vpn-${conf_name}.sh
-    local local_iface=$( ip address show | grep UP | cut -d: -f1 )
-    echo Local Interface : $local_iface
-    read
-    sed -i -e "s/<TPL:LOCAL_IFACE>/TODO/g" /etc/openvpn/up_vpn-${conf_name}.sh
-    sed -i -e "s/<TPL:ISP_IP>/${isp_ip}/g" /etc/openvpn/up_vpn-${conf_name}.sh
-    sed -i -e "s/<TPL:ISP_GATEWAY>/${isp_gateway}/g" /etc/openvpn/up_vpn-${conf_name}.sh
-    sed -i -e "s/<TPL:VPN_IP>/${vpn_ip}/g" /etc/openvpn/up_vpn-${conf_name}.sh
-  else
-    sed -i -e "s/<TPL:OUT_VPN_COMMENT>/#/g" /etc/openvpn/openvpn-${conf_name}.conf
-  fi
-
-  if [[ ${is_out_isp} == true ]]
-  then
-    cp $dir/up_isp.sh /etc/openvpn/up_isp-${conf_name}.sh
-    cp $dir/down_isp.sh /etc/openvpn/down_isp-${conf_name}.sh
-    sed -i -e "s/<TPL:OUT_ISP_COMMENT>//g" /etc/openvpn/openvpn-${conf_name}.conf
-  else
-    sed -i -e "s/<TPL:OUT_ISP_COMMENT>/#/g" /etc/openvpn/openvpn-${conf_name}.conf
-  fi
 }
 
 choose_config() {
@@ -364,10 +296,6 @@ choose_config() {
   bash -c "${menu}" 2> results_menu.txt
   RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   conf_name=$( cat results_menu.txt )
-}
-
-set_auth_method() {
-  echo TODO
 }
 
 menu_config() {
@@ -400,13 +328,10 @@ menu_config() {
       set_server_proto
       ;;
     'Authentication Method')
-      set_auth_method
+      select_auth_method
       ;;
     'Server Certificate')
       set_server_cert_url
-      ;;
-    'Set Output Method')
-      set_out_method
       ;;
     'UPDATE')
       valid_config
@@ -466,9 +391,6 @@ new_config() {
     is_shared_secret=false
   fi
 
-  set_out_method
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
-
   set_server_cert_url
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
 
@@ -483,30 +405,27 @@ update_config() {
   server_port=$( grep "^port " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
   server_proto=$( grep "^proto " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
   [[ ${server_proto} == 'udp' ]] && is_udp=true || is_udp=false
-  grep -q "^up up_vpn-${conf_name}.sh" /etc/openvpn/openvpn-${conf_name}.conf \
-  && is_out_vpn=true || is_out_vpn=false
-  grep -q "^up up_isp-${conf_name}.sh" /etc/openvpn/openvpn-${conf_name}.conf \
-  && is_out_isp=true || is_out_isp=false
   grep -q "^auth-user-pass " /etc/openvpn/openvpn-${conf_name}.conf \
     && is_login=true || is_login=false
   server_cert_url=$( grep "^ca " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
   user_cert_url=$( grep "^cert " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
   user_key_url=$( grep "^key " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
-  echo $credential_file
-  echo $server_address
-  echo $server_port
-  echo $server_proto
-  echo $is_udp
-  echo $is_out_isp
-  echo $is_out_vpn
-  echo $is_login
-  echo $server_cert_url
-  read
 
   menu_config
 }
 
-
+delete_config() {
+  if ( whiptail --title 'OpenVPN Configuration' \
+    --yesno "Are you sur you want to delete following configuration and its \
+associate files : ${conf_name} ?" ${WT_HEIGHT} ${WT_HEIGHT} )
+  then
+    rm /etc/openvpn/openvpn-${conf_name}.conf
+    rm /etc/openvpn/keys/credentials-${conf_name}
+    return 0
+  else
+    return 1
+  fi
+}
 
 openvpn_config() {
   local conf_name
@@ -541,7 +460,7 @@ openvpn_config() {
         RET=$? ; ! [[ ${RET} -eq 1 ]] && update_config
         ;;
       'Delete Config')
-        echo TODO Delete Config VPN
+        delete_config
         ;;
       * )
         echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."
