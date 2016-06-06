@@ -135,6 +135,7 @@ you have already copy it on the system, you can enter its absolute path like \
 }
 
 set_auth_method() {
+  echo ${FUNCNAME}
   menu="whiptail --title 'OpenVPN Configuration' \
     --checkbox 'Select authentication method to you VPN provider, if no auth \
 method do not select anything.' \
@@ -142,6 +143,8 @@ method do not select anything.' \
     'Login'         'Require login and password' \
     'Certificate'   'Require user certificate and key' \
     'Shared-Secret' 'Require shared secret key'"
+  echo $menu
+  read
   bash -c "${menu}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   while read CHOICE
