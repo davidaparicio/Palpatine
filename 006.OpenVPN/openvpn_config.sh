@@ -359,14 +359,11 @@ choose_config() {
   do
     name=${conf##*openvpn/conf-}
     name=${name%%.conf}
-    echo $name
     menu="${menu} '${name}' ''"
   done
   bash -c "${menu}" 2> results_menu.txt
   RET=$? ; [[ ${RET} -eq 1 ]] && return 1
   config_name=$( cat results_menu.txt )
-  echo $config_name
-  read
 }
 
 set_auth_method() {
@@ -500,6 +497,7 @@ update_config() {
 
 
 openvpn_config() {
+  local conf_name
   local dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
   local menu=''
   while true
