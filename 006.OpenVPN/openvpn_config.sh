@@ -152,15 +152,15 @@ method do not select anything.' \
     echo $auth
     read
     case ${auth} in
-      'Login')
+      '"Login"')
         set_login
         #RET=$?; [[ ${RET} -eq 1 ]] && return 1
         ;;
-      'Certificate')
+      '"Certificate"')
         set_user_cert
         #RET=$?; [[ ${RET} -eq 1 ]] && return 1
         ;;
-      'Shared-Secret')
+      '"Shared-Secret"')
         set_shared_secret
         #RET=$?; [[ ${RET} -eq 1 ]] && return 1
         ;;
