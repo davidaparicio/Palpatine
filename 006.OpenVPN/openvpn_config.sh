@@ -422,25 +422,6 @@ menu_config() {
 new_config() {
   # Get script directory, gonna need sometime to be sure to get back to the
   # right directory
-  local server_address
-  local server_port
-  local server_proto
-  local is_udp
-  local is_out_vpn
-  local is_out_isp
-  local is_login
-  local conf_name
-  local user_login
-  local user_pass
-  local server_cert_url
-  local user_cert_url
-  local user_key_url
-  local user_shared_url
-  local isp_ip
-  local isp_gateway
-  local vpn_ip
-  local conf_name
-
   set_conf_name
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
 
@@ -495,27 +476,24 @@ new_config() {
 
   valid_config
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
+  return 0
 }
 
 update_config() {
-  local conf_name
-  local server_address=$( grep "^remote " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
-  local server_port=$( grep "^port " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
-  local server_proto=$( grep "^proto " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
-  local is_udp
-  local is_out_vpn
-  local is_out_isp
-  local is_login
-  local isp_ip
-  local isp_gateway
-  local vpn_ip
-  local user_login
-  local user_pass
-  local server_cert_url
-  local user_cert_url
-  local user_key_url
-  local conf_name
-  choose_config
+  local credential_file=$( grep "^auth-user-pass " /etc/openvpn/openvpn-${conf_name} | awk '${print $2}' )
+  server_address=$( grep "^remote " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+  server_port=$( grep "^port " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+  server_proto=$( grep "^proto " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+  [[ ${server_proto} == 'udp' ]] && is_udp=true || is_udp=false
+  grep -q "^up up_vpn-${conf_name}.sh" /etc/openvpn/openvpn-${conf_name}.conf \
+  && is_out_vpn=true || is_out_vpn=false
+  grep -q "^up up_isp-${conf_name}.sh" /etc/openvpn/openvpn-${conf_name}.conf \
+  && is_out_isp=true || is_out_isp=false
+  grep -q "^auth-user-pass " /etc/openvpn/openvpn-${conf_name}.conf \
+    && is_login=true || is_login=false
+  server_cert_url=$( grep "^ca " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+  user_cert_url=$( grep "^cert " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+  user_key_url=$( grep "^key " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
 }
 
 
@@ -548,6 +526,7 @@ openvpn_config() {
         RET=$? ; [[ ${RET} -eq 1 ]] && update_config
         ;;
       'Update Config')
+        choose_config
         update_config
         ;;
       'Delete Config')
