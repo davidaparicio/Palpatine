@@ -357,7 +357,7 @@ choose_config() {
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   for conf in /etc/openvpn/*.conf
   do
-    name=${conf##*openvpn/*-}
+    name=${conf##*openvpn/openvpn-}
     name=${name%%.conf}
     menu="${menu} '${name}' ''"
   done
@@ -492,6 +492,7 @@ update_config() {
   server_cert_url=$( grep "^ca " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
   user_cert_url=$( grep "^cert " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
   user_key_url=$( grep "^key " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+  menu_config
 }
 
 
@@ -522,7 +523,7 @@ openvpn_config() {
         ;;
       'New Config')
         new_config
-        RET=$? ; [[ ${RET} -eq 1 ]] && update_config
+        RET=$? ; [[ ${RET} -eq 1 ]] && menu_config
         ;;
       'Update Config')
         choose_config
