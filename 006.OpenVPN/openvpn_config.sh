@@ -156,11 +156,8 @@ method do not select anything.' \
   bash -c "${menu}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   CHOICE=$( cat results_menu.txt )
-  echo $CHOICE
   for auth in $CHOICE
   do
-    echo $auth
-    read
     case ${auth} in
       '"Login"')
         set_login
@@ -404,6 +401,9 @@ associate files : ${conf_name} ?" ${WT_HEIGHT} ${WT_WIDTH} )
   then
     rm /etc/openvpn/openvpn-${conf_name}.conf
     rm /etc/openvpn/keys/credentials-${conf_name}
+    rm /etc/openvpn/keys/user-${conf_name}.crt
+    rm /etc/openvpn/keys/user-${conf_name}.key
+    rm /etc/openvpn/keys/user_ta-${conf_name}.key
     return 0
   else
     return 1
