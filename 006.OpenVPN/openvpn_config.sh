@@ -460,7 +460,8 @@ openvpn_config() {
         RET=$? ; ! [[ ${RET} -eq 1 ]] && update_config
         ;;
       'Delete Config')
-        delete_config
+        choose_config
+        RET=$? ; ! [[ ${RET} -eq 1 ]] && delete_config
         ;;
       * )
         echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."
