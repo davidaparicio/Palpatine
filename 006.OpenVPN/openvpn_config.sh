@@ -359,6 +359,10 @@ choose_config() {
   do
     name=${conf##*openvpn/}
     name=${name%%.conf}
+    echo $name
+    read
+    name=${conf%%*openvpn/}
+    name=${name##.conf}
     menu="${menu} '${name}' ''"
   done
   echo "$menu"
