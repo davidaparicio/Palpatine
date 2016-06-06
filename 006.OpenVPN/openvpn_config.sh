@@ -417,7 +417,7 @@ update_config() {
 delete_config() {
   if ( whiptail --title 'OpenVPN Configuration' \
     --yesno "Are you sur you want to delete following configuration and its \
-associate files : ${conf_name} ?" ${WT_HEIGHT} ${WT_HEIGHT} )
+associate files : ${conf_name} ?" ${WT_HEIGHT} ${WT_WIDTH} )
   then
     rm /etc/openvpn/openvpn-${conf_name}.conf
     rm /etc/openvpn/keys/credentials-${conf_name}
