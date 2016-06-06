@@ -258,18 +258,18 @@ valid_config() {
 }
 
 apply_config() {
-  cp $dir/template.conf /etc/openvpn/conf-${conf_name}.conf
+  cp $dir/template.conf /etc/openvpn/openvpn-${conf_name}.conf
   # Apply config
   sed -i  -e "s/<TPL:CONF_NAME>/${conf_name}/g" \
       -e "s/<TPL:SERVER_NAME>/${server_address}/g" \
       -e "s/<TPL:SERVER_PORT>/${server_port}/g" \
-      -e "s/<TPL:SERVER_PROTO>/${server_proto}/g" /etc/openvpn/conf-${conf_name}.conf
+      -e "s/<TPL:SERVER_PROTO>/${server_proto}/g" /etc/openvpn/openvpn-${conf_name}.conf
 
   if [[ ${is_udp} == true ]]
   then
-    sed -i -e "s/<TPL:UDP_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:UDP_COMMENT>//g" /etc/openvpn/openvpn-${conf_name}.conf
   else
-    sed -i -e "s/<TPL:UDP_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:UDP_COMMENT>/#/g" /etc/openvpn/openvpn-${conf_name}.conf
   fi
 
   if echo ${server_cert_url} | grep -q http
@@ -281,17 +281,17 @@ apply_config() {
 
   if [[ ${is_login} == true ]]
   then
-    sed -i -e "s/<TPL:LOGIN_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:LOGIN_COMMENT>//g" /etc/openvpn/openvpn-${conf_name}.conf
     mkdir -p /etc/openvpn/keys
     echo ${user_login} > /etc/openvpn/keys/credentials-${conf_name}
     echo ${user_pass} >> /etc/openvpn/keys/credentials-${conf_name}
   else
-    sed -i -e "s/<TPL:LOGIN_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:LOGIN_COMMENT>/#/g" /etc/openvpn/openvpn-${conf_name}.conf
   fi
 
   if [[ ${is_certificate} == true ]]
   then
-    sed -i -e "s/<TPL:CERT_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:CERT_COMMENT>//g" /etc/openvpn/openvpn-${conf_name}.conf
     mkdir -p /etc/openvpn/keys
     if echo ${user_cert_url} | grep -q http
     then
@@ -306,12 +306,12 @@ apply_config() {
       cp ${user_key_url} /etc/openvpn/keys/user-${conf_name}.key
     fi
   else
-    sed -i -e "s/<TPL:CERT_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:CERT_COMMENT>/#/g" /etc/openvpn/openvpn-${conf_name}.conf
   fi
 
   if [[ ${is_shared_secret} == true ]]
   then
-    sed -i -e "s/<TPL:TA_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:TA_COMMENT>//g" /etc/openvpn/openvpn-${conf_name}.conf
     mkdir -p /etc/openvpn/keys
     if echo ${user_shared_url} | grep -q http
     then
@@ -320,12 +320,12 @@ apply_config() {
       cp ${user_shared_url} /etc/openvpn/keys/user_ta-${conf_name}.key
     fi
   else
-    sed -i -e "s/<TPL:TA_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:TA_COMMENT>/#/g" /etc/openvpn/openvpn-${conf_name}.conf
   fi
 
   if [[ ${is_out_vpn} == true ]]
   then
-    sed -i -e "s/<TPL:OUT_VPN_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:OUT_VPN_COMMENT>//g" /etc/openvpn/openvpn-${conf_name}.conf
     cp $dir/up_vpn.sh /etc/openvpn/up_vpn-${conf_name}.sh
     cp $dir/down_vpn.sh /etc/openvpn/down_vpn-${conf_name}.sh
     local local_iface=$( ip address show | grep UP | cut -d: -f1 )
@@ -336,16 +336,16 @@ apply_config() {
     sed -i -e "s/<TPL:ISP_GATEWAY>/${isp_gateway}/g" /etc/openvpn/up_vpn-${conf_name}.sh
     sed -i -e "s/<TPL:VPN_IP>/${vpn_ip}/g" /etc/openvpn/up_vpn-${conf_name}.sh
   else
-    sed -i -e "s/<TPL:OUT_VPN_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:OUT_VPN_COMMENT>/#/g" /etc/openvpn/openvpn-${conf_name}.conf
   fi
 
   if [[ ${is_out_isp} == true ]]
   then
     cp $dir/up_isp.sh /etc/openvpn/up_isp-${conf_name}.sh
     cp $dir/down_isp.sh /etc/openvpn/down_isp-${conf_name}.sh
-    sed -i -e "s/<TPL:OUT_ISP_COMMENT>//g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:OUT_ISP_COMMENT>//g" /etc/openvpn/openvpn-${conf_name}.conf
   else
-    sed -i -e "s/<TPL:OUT_ISP_COMMENT>/#/g" /etc/openvpn/conf-${conf_name}.conf
+    sed -i -e "s/<TPL:OUT_ISP_COMMENT>/#/g" /etc/openvpn/openvpn-${conf_name}.conf
   fi
 }
 
@@ -357,7 +357,7 @@ choose_config() {
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   for conf in /etc/openvpn/*.conf
   do
-    name=${conf##*openvpn/conf-}
+    name=${conf##*openvpn/openvpn-}
     name=${name%%.conf}
     menu="${menu} '${name}' ''"
   done
