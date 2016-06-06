@@ -363,7 +363,7 @@ choose_config() {
   done
   bash -c "${menu}" 2> results_menu.txt
   RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-  config_name=$( cat results_menu.txt )
+  conf_name=$( cat results_menu.txt )
 }
 
 set_auth_method() {
