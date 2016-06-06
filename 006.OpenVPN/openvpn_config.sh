@@ -404,6 +404,7 @@ associate files : ${conf_name} ?" ${WT_HEIGHT} ${WT_WIDTH} )
     rm /etc/openvpn/keys/user-${conf_name}.crt
     rm /etc/openvpn/keys/user-${conf_name}.key
     rm /etc/openvpn/keys/user_ta-${conf_name}.key
+    rm /etc/openvpn/ca-server-${conf_name}.crt
     return 0
   else
     return 1
