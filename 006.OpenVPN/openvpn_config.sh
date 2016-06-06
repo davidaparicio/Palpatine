@@ -140,9 +140,9 @@ set_auth_method() {
     --checkbox 'Select authentication method to you VPN provider, if no auth \
 method do not select anything.' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
-    'Login'         'Require login and password' \
-    'Certificate'   'Require user certificate and key' \
-    'Shared-Secret' 'Require shared secret key'"
+    'Login'         'Require login and password'       'ON' \
+    'Certificate'   'Require user certificate and key' 'OFF' \
+    'Shared-Secret' 'Require shared secret key'        'OFF'"
   echo $menu
   read
   bash -c "${menu}" 2> results_menu.txt
