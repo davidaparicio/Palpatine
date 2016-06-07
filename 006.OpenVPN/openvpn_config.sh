@@ -290,6 +290,23 @@ apply_config() {
     sed -i -e "s/<TPL:TA_COMMENT>/#/g" /etc/openvpn/openvpn-${conf_name}.conf
   fi
 
+  local count
+  while [[ ${count} -lt 10 ]]
+  do
+    systemctl start openvpn
+    sleep 1
+    if ip a | grep -q "tun[0-9]*: "
+    then
+      systemctl enable openvpn
+      return 0
+    fi
+  done
+  whiptail --title 'OpenVPN Configuration' \
+    --msbox 'Unable to mount VPN tunnel, some part of the config might not be \
+working. Please check your configuration again' ${WT_HEIGHT} ${WT_WIDTH}
+  return 1
+
+
 }
 
 choose_config() {
