@@ -313,10 +313,10 @@ menu_config() {
   local menu="whiptail --title 'OpenVPN Configuration' \
     --menu 'What do you want to do change :' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
-  'Name' 'Change config name' \
-  'Server Address' 'Change VPN Server address' \
-  'Server Port'    'Change VPN Server port' \
-  'Protocol'       'Change VPN Server protocol to use' \
+  'Name'                  'Change config name' \
+  'Server Address'        'Change VPN Server address' \
+  'Server Port'           'Change VPN Server port' \
+  'Protocol'              'Change VPN Server protocol to use' \
   'Authentication Method' 'Change method to authenticate' \
   'Server Certificate'    'Change server certificate file' \
   'UPDATE'                'Apply update' \
@@ -324,6 +324,8 @@ menu_config() {
   bash -c "${menu}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   CHOICE=$( cat results_menu.txt )
+  echo $CHOICE
+  read
   case ${CHOISE} in
     'Name')
       set_conf_name
@@ -395,12 +397,24 @@ update_config() {
     && is_login=true || is_login=false
   echo $is_udp
   echo $is_login
-  server_cert_url=$( grep "^ca " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
-  echo $server_cert_url
-  user_cert_url=$( grep "^cert " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
-  echo $user_cert_url
-  user_key_url=$( grep "^key " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
-  echo $user_key_url
+  if grep -q "^ca " /etc/openvpn/openvpn-${conf_name}.conf
+  then
+    is_server_cert_url=true
+    server_cert_url=$( grep "^ca " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+  else
+    is_server_cert_url=false
+    server_cert_url=$( grep "^#ca " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+  fi
+  if grep -q "^cert " /etc/openvpn/openvpn-${conf_name}.conf
+  then
+    is_user_cert=true
+    user_cert_url=$( grep "^cert " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+    user_key_url=$( grep "^key " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+  else
+    is_user_cert=false
+    user_cert_url=$( grep "^#cert " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+    user_key_url=$( grep "^#key " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+  fi
 
   menu_config
 }
