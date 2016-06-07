@@ -310,48 +310,53 @@ choose_config() {
 }
 
 menu_config() {
-  local menu="whiptail --title 'OpenVPN Configuration' \
-    --menu 'What do you want to do change :' \
-    ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
-  'Name'                  'Change config name' \
-  'Server Address'        'Change VPN Server address' \
-  'Server Port'           'Change VPN Server port' \
-  'Protocol'              'Change VPN Server protocol to use' \
-  'Authentication Method' 'Change method to authenticate' \
-  'Server Certificate'    'Change server certificate file' \
-  'UPDATE'                'Apply update' \
-  '<-- Back'              'Back to previous menu'"
-  bash -c "${menu}" 2> results_menu.txt
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  CHOICE=$( cat results_menu.txt )
-  echo $CHOICE
-  read
-  case ${CHOISE} in
-    'Name')
-      set_conf_name
-      ;;
-    'Server Address')
-      set_server_address
-      ;;
-    'Server Port')
-      set_server_port
-      ;;
-    'Protocol')
-      set_server_proto
-      ;;
-    'Authentication Method')
-      set_auth_method
-      ;;
-    'Server Certificate')
-      set_server_cert_url
-      ;;
-    'UPDATE')
-      valid_config
-      ;;
-    '<-- Back')
-      return 0
-      ;;
-  esac
+  while true
+  do
+    local menu="whiptail --title 'OpenVPN Configuration' \
+      --menu 'What do you want to do change :' \
+      ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
+    'Name'                  'Change config name' \
+    'Server Address'        'Change VPN Server address' \
+    'Server Port'           'Change VPN Server port' \
+    'Protocol'              'Change VPN Server protocol to use' \
+    'Authentication Method' 'Change method to authenticate' \
+    'Server Certificate'    'Change server certificate file' \
+    'UPDATE'                'Apply update' \
+    '<-- Back'              'Back to previous menu'"
+    bash -c "${menu}" 2> results_menu.txt
+    RET=$?; [[ ${RET} -eq 1 ]] && return 1
+    CHOICE=$( cat results_menu.txt )
+    case ${CHOICE} in
+      'Name')
+        set_conf_name
+        ;;
+      'Server Address')
+        set_server_address
+        ;;
+      'Server Port')
+        set_server_port
+        ;;
+      'Protocol')
+        set_server_proto
+        ;;
+      'Authentication Method')
+        set_auth_method
+        ;;
+      'Server Certificate')
+        set_server_cert_url
+        ;;
+      'UPDATE')
+        valid_config
+        ;;
+      '<-- Back')
+        return 0
+        ;;
+      * )
+        echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."
+        return 1
+        ;;
+    esac
+  done
 }
 
 new_config() {
