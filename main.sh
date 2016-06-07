@@ -36,8 +36,6 @@ LINUX_VER='Unknown'
 LINUX_ARCH='Unknown'
 LINUX_PKG_MGR='Unknown'
 LINUX_LOCAL_IP='Unknown'
-#$( ip a | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' \
-#  | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1' )
 
 # TOOLS
 ###############################################################################
@@ -92,7 +90,7 @@ preamble() {
   [[ $( whoami ) == 'root' ]] && IS_ROOT=true
   test_ssh $PPID
 
-  if ! ${IS_ROOT} && ! ${IS_SSH}
+  if [[ ${IS_ROOT} == false ]] && [[ ${IS_SSH} == false ]]
   then
     whiptail --title 'ERROR' \
       --msgbox "Please run this script as root, you can either log as root or \
@@ -100,14 +98,14 @@ use sudo.
 
 N.B. : It will work better if run through ssh" ${WT_HEIGHT} ${WT_WIDTH}
     exit 1
-  elif ! ${IS_ROOT} && ${IS_SSH}
+  elif [[ ${IS_ROOT} == false ]]  && [[ ${IS_SSH} == true ]]
   then
     whiptail --title 'ERROR' \
       --msgbox "You seems to be connected by SSH, that is goot but you MUST be \
 log as root.
 You can either log as root or use sudo" ${WT_HEIGHT} ${WT_WIDTH}
     exit 1
-  elif ${IS_ROOT} && ! ${IS_SSH}
+  elif [[ ${IS_ROOT} == true ]] && [[ ${IS_SSH} == false ]]
   then
     whiptail --title 'WARNING' \
       --msgbox "You run this script as root but not through SSH.
@@ -118,6 +116,7 @@ ssh-key to your favorite version controle host. If you can open a web browser
 because you already install a window manager, everyhting should be alright." \
   ${WT_HEIGHT} ${WT_WIDTH}
   fi
+
   if ( whiptail --title 'WARNING' --yesno "
   THERE IS NO WARRANTY FOR THIS PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE \
 LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER \
