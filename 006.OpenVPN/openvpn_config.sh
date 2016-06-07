@@ -1,39 +1,39 @@
 #!/bin/bash
 
 set_conf_name() {
-  conf_name="whiptail --title 'OpenVPN Configuration' \
+  menu="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter a name for your configuration' \
-    ${WT_HEIGHT} ${WT_WIDTH} illyse"
-  bash -c "${conf_name}" 2> results_menu.txt
+    ${WT_HEIGHT} ${WT_WIDTH} '${conf_name}'"
+  bash -c "${menu}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   conf_name=$( cat results_menu.txt )
 }
 
 set_server_address(){
-  server_address="whiptail --title 'OpenVPN Configuration' \
+  menu="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter the url address of your vpn' \
-    ${WT_HEIGHT} ${WT_WIDTH} vpn.illyse.net"
-  bash -c "${server_address}" 2> results_menu.txt
+    ${WT_HEIGHT} ${WT_WIDTH} '${server_address}'"
+  bash -c "${menu}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   server_address=$( cat results_menu.txt )
 }
 
 set_server_port() {
-  server_port="whiptail --title 'OpenVPN Configuration' \
+  menu="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter the port to access to your vpn' \
-    ${WT_HEIGHT} ${WT_WIDTH} 1194"
-  bash -c "${server_port}" 2> results_menu.txt
+    ${WT_HEIGHT} ${WT_WIDTH} '${server_port}'"
+  bash -c "${menu}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   server_port=$( cat results_menu.txt )
 }
 
 set_server_proto() {
-  server_proto="whiptail --title 'OpenVPN Configuration' \
+  menu="whiptail --title 'OpenVPN Configuration' \
     --menu 'Select communication protocol to use' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
     'udp' '' \
     'tcp' ''"
-  bash -c "${server_proto}" 2> results_menu.txt
+  bash -c "${menu}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   server_proto=$( cat results_menu.txt )
 }
@@ -80,10 +80,10 @@ Do you want to retry ?" ${WT_HEIGHT} ${WT_WIDTH} )
 }
 
 set_login() {
-  user_login="whiptail --title 'OpenVPN Configuration' \
+  menu="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter the username to use to connect to your VPN :' \
     ${WT_HEIGHT} ${WT_WIDTH}"
-  bash -c "${user_login}" 2> results_menu.txt
+  bash -c "${menu}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   user_login=$( cat results_menu.txt )
 
@@ -95,12 +95,12 @@ set_login() {
 }
 
 set_server_cert_url() {
-  server_cert_url="whiptail --title 'OpenVPN Configuration' \
+  menu="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter the http URL to download server certificate or if \
 you have already copy it on the system, you can enter its absolute path like \
 /home/user/path/to/server.crt' \
     ${WT_HEIGHT} ${WT_WIDTH}"
-  bash -c "${server_cert_url}" 2> results_menu.txt
+  bash -c "${menu}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   server_cert_url=$( cat results_menu.txt )
 
@@ -108,21 +108,21 @@ you have already copy it on the system, you can enter its absolute path like \
 }
 
 set_user_cert() {
-  user_cert_url="whiptail --title 'OpenVPN Configuration' \
+  menu="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter the http URL to download client certificate or if \
 you have already copy it on the system, you can enter its absolute path like \
 /home/user/path/to/client.crt' \
     ${WT_HEIGHT} ${WT_WIDTH}"
-  bash -c "${user_cert_url}" 2> results_menu.txt
+  bash -c "${menu}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   user_cert_url=$( cat results_menu.txt )
 
-  user_key_url="whiptail --title 'OpenVPN Configuration' \
+  menu="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter the http URL to download client key or if \
 you have already copy it on the system, you can enter its absolute path like \
 /home/user/path/to/client.key' \
     ${WT_HEIGHT} ${WT_WIDTH}"
-  bash -c "${user_key_url}" 2> results_menu.txt
+  bash -c "${menu}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   user_key_url=$( cat results_menu.txt )
 
@@ -131,12 +131,12 @@ you have already copy it on the system, you can enter its absolute path like \
 }
 
 set_shared_secret() {
-  user_shared_url="whiptail --title 'OpenVPN Configuration' \
+  menu="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter the http URL to download shared key or if \
 you have already copy it on the system, you can enter its absolute path like \
 /home/user/path/to/shared.key' \
     ${WT_HEIGHT} ${WT_WIDTH}"
-  bash -c "${user_shared_url}" 2> results_menu.txt
+  bash -c "${menu}" 2> results_menu.txt
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
   user_shared_url=$( cat results_menu.txt )
 
@@ -145,7 +145,6 @@ you have already copy it on the system, you can enter its absolute path like \
 }
 
 set_auth_method() {
-  echo ${FUNCNAME}
   menu="whiptail --title 'OpenVPN Configuration' \
     --checklist 'Select authentication method to you VPN provider, if no auth \
 method do not select anything.' \
@@ -377,8 +376,12 @@ menu_config() {
 }
 
 new_config() {
-  # Get script directory, gonna need sometime to be sure to get back to the
-  # right directory
+  conf_name=illyse
+  server_address='vpn.illyse.net'
+  server_port=1194
+  server_proto=udp
+  server_cert_url='https://doc.illyse.net/attachments/download/437/vpn-illyse.crt'
+
   set_conf_name
   RET=$?; [[ ${RET} -eq 1 ]] && return 1
 
@@ -406,19 +409,12 @@ new_config() {
 update_config() {
   user_login=$( sed -n "1p" /etc/openvpn/keys/credentials-${conf_name} )
   user_pass=$( sed -n "2p" /etc/openvpn/keys/credentials-${conf_name} )
-  echo $user_login
-  echo $user_pass
   server_address=$( grep "^remote " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
-  echo $server_address
   server_port=$( grep "^port " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
-  echo $server_port
   server_proto=$( grep "^proto " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
-  echo $server_proto
   [[ ${server_proto} == 'udp' ]] && is_udp=true || is_udp=false
   grep -q "^auth-user-pass " /etc/openvpn/openvpn-${conf_name}.conf \
     && is_login=true || is_login=false
-  echo $is_udp
-  echo $is_login
   if grep -q "^ca " /etc/openvpn/openvpn-${conf_name}.conf
   then
     is_server_cert_url=true
