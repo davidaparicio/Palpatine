@@ -290,13 +290,22 @@ apply_config() {
   fi
 
   local count
+  echo "Please wait while testing to start service..."
+  echo "---------------------------------------------"
   while [[ ${count} -lt 10 ]]
   do
+    systemctl stop openvpn
     systemctl start openvpn
-    sleep 1
-    if ip a | grep -q "tun[0-9]*: "
+    sleep 5s
+    if ! systemctl status openvpn | grep active | cut -d: -f2 | grep -q inactive
     then
+      systemctl stop openvpn
       systemctl enable openvpn
+      whiptail --title 'OpenVPN Configuration' \
+        --msbox 'Config file is ready to mount VPN tunnel. Service is enable \
+and will automaticaly mount tun interface on next reboot.' \
+      ${WT_HEIGHT} ${WT_WIDTH}
+      ASK_TO_REBOOT=true
       return 0
     fi
   done
@@ -304,8 +313,6 @@ apply_config() {
     --msbox 'Unable to mount VPN tunnel, some part of the config might not be \
 working. Please check your configuration again' ${WT_HEIGHT} ${WT_WIDTH}
   return 1
-
-
 }
 
 choose_config() {
