@@ -131,17 +131,19 @@ initial_setup_loop () {
   local setup_loop="whiptail --title 'Initial Setup' \
     --menu  'Select how do you whant to manage first setup :' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
-#  if ${LINUX_IS_RPI}
-#  then
-#    setup_loop="${setup_loop} 'Expand rootfs'       'Will expand rootfs (NB: Will only work on RPi)'"
-#  fi
-  setup_loop="${setup_loop} 'Change root password' 'Change root password' \
+
+#  {LINUX_IS_RPI} && setup_loop="${setup_loop} \
+#  'Expand rootfs'       'Will expand rootfs (NB: Will only work on RPi)'"
+
+  setup_loop="${setup_loop}
+  'Change root password' 'Change root password' \
   'Change sudoer file'   'Will change sudoers file to add line Defaults rootpw' \
   'Change locale'        'Change Locale information' \
   'Change timezone'      'Change timezone' \
   'Change keyboard'      'Change keyboard layout' \
   'Change hostname'      'Change hostname' \
   '<-- Back'             'Go to main menu'"
+
   while true
   do
     bash -c "${setup_loop}" 2> results_menu.txt

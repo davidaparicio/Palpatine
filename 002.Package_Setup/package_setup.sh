@@ -89,19 +89,20 @@ setup_pkg_ask_finish () {
           pourcent=$( awk "BEGIN { print "$i"/"$nb_routine"*100 }" )
           pourcent=${pourcent%%.*}
           ${all_routine[i]}
-          RET=$?
           [[ $? -eq 1 ]] && whiptail --title 'WARNING'  \
             --msgbox "Sorry but ${all_routine[i]%%_routine} supported yet for you distrib." \
             ${WT_HEIGHT} ${WT_WIDTH}
         done
+
         echo =================================================================
         echo You can take a look at installation log above
         echo Press Enter to continue
         echo =================================================================
         read
+
         whiptail --title 'Package Setup' --yesno 'Was everything ok ?' \
           ${WT_HEIGHT} ${WT_WIDTH} && return 0 || return 1
-      ;;
+        ;;
     esac
   done
 }
@@ -147,6 +148,7 @@ setup_pkg_all_app () {
       && sed -i "${line}s/\(OFF\|ON\)/ON/g" ${dir}/menu/*${lower_name}.sh \
       || sed -i "${line}s/\(OFF\|ON\)/OFF/g" ${dir}/menu/*${lower_name}.sh
   done
+
   return 0
 }
 
@@ -207,6 +209,7 @@ package_menu () {
 
   bash -c "${pkg_ask_menu}" 2> results_menu.txt
   [[ $RET -eq 1 ]] && return 1 || CHOICE=$( cat results_menu.txt )
+
   case ${CHOICE} in
     '<-- Back' )
       return 1
@@ -254,6 +257,7 @@ package_setup () {
 
   package_menu
   [[ $? -eq 1 ]] && return 1
+
   while true
   do
     setup_pkg_ask_finish

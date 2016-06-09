@@ -46,17 +46,17 @@ calc_wt_size() {
   WT_HEIGHT=17
   WT_WIDTH=$( tput cols )
 
-  if [ -z "$WT_WIDTH" ] || [ "$WT_WIDTH" -lt 60 ]
+  if [ -z "${WT_WIDTH}" ] || [ "${WT_WIDTH}" -lt 60 ]
   then
     WT_WIDTH=80
   fi
-  if [ "$WT_WIDTH" -gt 178 ]
+  if [ "${WT_WIDTH}" -gt 178 ]
   then
     WT_WIDTH=120
   fi
-  WT_MENU_HEIGHT=$(($WT_HEIGHT-9))
+  WT_MENU_HEIGHT=$((${WT_HEIGHT}-9))
   WT_WIDE_HEIGHT=34
-  WT_WIDE_MENU_HEIGHT=$(($WT_WIDE_HEIGHT-9))
+  WT_WIDE_MENU_HEIGHT=$((${WT_WIDE_HEIGHT}-9))
 }
 
 ################################################################################
@@ -172,7 +172,7 @@ Here is the list of supported package manager :
   menu="${no_menu} 'NONE OF THEM' ''"
   no_menu="${no_menu} ' ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
 
-  [[ ${EXIST_PKG_MGR} == false ]] && bash -c "${no_menu} " && return 1
+  ! ${EXIST_PKG_MGR} && bash -c "${no_menu} " && return 1
 
   bash -c "${menu} " 2> results_menu.txt
   [[ $? -eq 1 ]] && return 1 ||  CHOICE=$( cat results_menu.txt )
@@ -252,7 +252,7 @@ validate_arch() {
   else
     whiptail --title 'Linux Init' \
     --msgbox 'Your archictecture does not seem to be supported, you will be \
-ask if you want to choose amoung supported one.'
+ask if you want to choose amoung supported one.' ${WT_HEIGHT} ${WT_WIDTH}
     choose_linux_arch
     [[ $? -eq 1 ]] && return 1
   fi
@@ -369,17 +369,11 @@ main_menu() {
   'Package setup'    'Select package to install' \
   'User Management'  'Manage user (add, update, delete)'"
 
-  if [[ ${YUNOHOST} == true ]]
-  then
-    main_menu="${main_menu} \
+  ! ${YUNOHOST} && main_menu="${main_menu} \
       'Yunohost Management' 'Basic Yunohst management (installation, user, app)'"
-  fi
 
-#  if [[ ${DOCKER} == true ]]
-#  then
-#    main_menu="${main_menu} \
+#  ! ${DOCKER} && main_menu="${main_menu} \
 #      'Docker Management' 'Basic Docker management'"
-#  fi
 
   main_menu_bak=${main_menu}
 
@@ -460,19 +454,15 @@ test_rootssh
 preamble
 # Initialisation of linux distrib
 linux_init
-[[ $? -eq 1 ]] && rm -f cmd.sh results_menu.txt && exit 1
+[[ $? -eq 1 ]] && rm -f results_menu.txt && exit 1
 # Source distrib preinit function and variable
 source 000.Distrib_Init/${LINUX_OS,,}.sh
 init_distrib
 # Now run the script
 main_menu
-[[ $? -eq 1 ]] && rm -f cmd.sh results_menu.txt && exit 1
+[[ $? -eq 1 ]] && rm -f results_menu.txt && exit 1
 # Reboot if needed
-if [[ ${ASK_TO_REBOOT} == true  ]] \
-  && ( whiptail --title 'REBOOT NEEDED' \
+${ASK_TO_REBOOT} && ( whiptail --title 'REBOOT NEEDED' \
     --yesno 'A reboot is needed. Do you want to reboot now ? ' \
-    ${WT_HEIGHT} ${WT_WIDTH} )
-then
-  reboot
-fi
+    ${WT_HEIGHT} ${WT_WIDTH} ) && reboot
 
