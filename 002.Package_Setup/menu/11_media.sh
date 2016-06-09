@@ -13,7 +13,7 @@ APP_MEDIA_DESC[idx]="Media Player"
 APP_MEDIA_STAT[idx]="ON"
 VLC_routine() {
   case ${LINUX_OS} in
-    debian|ubunt)
+    debian|ubuntu)
       ${LINUX_PKG_MGR} install -y vlc
       ;;
     *)

@@ -15,7 +15,7 @@ setup_pkg_ask_finish () {
     '<-- Back'                        'Back to list of categories' \
     '=============================='  '==================================='"
 
- for (( idxCat = 1 ; idxCat <= ${nb_cat} ; idxCat++ ))
+  for (( idxCat = 1 ; idxCat <= ${nb_cat} ; idxCat++ ))
   do
     local cat_done=false
     local cat_name=${all_cat[idxCat]}
@@ -69,7 +69,6 @@ setup_pkg_ask_finish () {
   done
 
   menu_ask_finish="${menu_ask_finish}  \
-    ''                                ''\
     '=============================='  '===================================' \
     '<-- Back'                         'Back to list of categories' \
     'INSTALL PACKAGES'                'Launch installation of all packages'"
@@ -77,8 +76,7 @@ setup_pkg_ask_finish () {
   while true
   do
     bash -c "${menu_ask_finish}" 2> results_menu.txt
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-    CHOICE=$( cat results_menu.txt )
+    [[ $? -eq 1 ]] && return 1 || CHOICE=$( cat results_menu.txt )
 
     case ${CHOICE} in
       '<-- Back' )
@@ -92,8 +90,7 @@ setup_pkg_ask_finish () {
           pourcent=${pourcent%%.*}
           ${all_routine[i]}
           RET=$?
-          [[ ${RET} -eq 1 ]] && \
-            whiptail --title 'WARNING'  \
+          [[ $? -eq 1 ]] && whiptail --title 'WARNING'  \
             --msgbox "Sorry but ${all_routine[i]%%_routine} supported yet for you distrib." \
             ${WT_HEIGHT} ${WT_WIDTH}
         done
@@ -102,13 +99,8 @@ setup_pkg_ask_finish () {
         echo Press Enter to continue
         echo =================================================================
         read
-        if ( whiptail --title 'Package Setup' --yesno 'Was everything ok ?' \
-          ${WT_HEIGHT} ${WT_WIDTH} )
-        then
-          return 0
-        else
-          return 1
-        fi
+        whiptail --title 'Package Setup' --yesno 'Was everything ok ?' \
+          ${WT_HEIGHT} ${WT_WIDTH} && return 0 || return 1
       ;;
     esac
   done
@@ -145,19 +137,15 @@ setup_pkg_all_app () {
   done
 
   bash -c "${menu_app}" 2> results_menu.txt
-  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+  [[ $? -eq 1 ]] && return 1 || CHOICE=$( cat results_menu.txt )
 
-  CHOICE=$( cat results_menu.txt )
   for (( idx=0 ; idx <= ${nb_app}-1 ; idx++ ))
   do
     line=$( grep -n "^${app_arr_name[idx]}_routine" ${dir}/menu/*${lower_name}.sh | cut -d ":" -f1 )
     line=$(( $line - 1 ))
-    if echo ${CHOICE} | grep -q "\"${app_arr_name[idx]}\""
-    then
-      sed -i "${line}s/\(OFF\|ON\)/ON/g" ${dir}/menu/*${lower_name}.sh
-    else
-      sed -i "${line}s/\(OFF\|ON\)/OFF/g" ${dir}/menu/*${lower_name}.sh
-    fi
+    echo ${CHOICE} | grep -q "\"${app_arr_name[idx]}\"" \
+      && sed -i "${line}s/\(OFF\|ON\)/ON/g" ${dir}/menu/*${lower_name}.sh \
+      || sed -i "${line}s/\(OFF\|ON\)/OFF/g" ${dir}/menu/*${lower_name}.sh
   done
   return 0
 }
@@ -183,8 +171,7 @@ setup_pkg_all_cat () {
   while true
   do
     bash -c "${menu_cat}" 2> results_menu.txt
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-    CHOICE=$( cat results_menu.txt )
+    [[ $? -eq 1 ]] && return 1 || CHOICE=$( cat results_menu.txt )
 
     case ${CHOICE} in
       'INSTALL' )
@@ -203,9 +190,9 @@ setup_pkg_go_through () {
   for (( idxCat=1 ; idxCat <= ${nb_cat} ; idxCat++ ))
   do
     setup_pkg_all_app ${all_cat[idxCat]}
-    RET=$? ; [[ ${RET} -eq 1 ]] && idxCat=$(( ${nb_cat} + 1 ))
+    [[ $? -eq 1 ]] && return 1
   done
-  return ${RET}
+  return 0
 }
 
 package_menu () {
@@ -219,21 +206,20 @@ package_menu () {
     '<-- Back'       'Return to main menu'"
 
   bash -c "${pkg_ask_menu}" 2> results_menu.txt
-  RET=$? ; [[ $RET -eq 1 ]] && return 1
-  CHOICE=$( cat results_menu.txt )
+  [[ $RET -eq 1 ]] && return 1 || CHOICE=$( cat results_menu.txt )
   case ${CHOICE} in
     '<-- Back' )
       return 1
       ;;
     'Go through' )
       setup_pkg_go_through
-      RET=$? ; [[ ${RET} -eq 0 ]] && return 0
+      [[ $? -eq 0 ]] && return 0
       setup_pkg_all_cat
-      RET=$? ; [[ ${RET} -eq 0 ]] && return 0 || return 1
+      [[ $? -eq 0 ]] && return 0 || return 1
       ;;
     'Choose package' )
       setup_pkg_all_cat
-      RET=$? ; [[ ${RET} -eq 0 ]] && return 0 || return 1
+      [[ $? -eq 0 ]] && return 0 || return 1
       ;;
     'Direct setup' )
       return 0
@@ -267,12 +253,12 @@ package_setup () {
   nb_cat=$(( ${#all_cat[@]} - 1 ))
 
   package_menu
-  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+  [[ $? -eq 1 ]] && return 1
   while true
   do
     setup_pkg_ask_finish
-    RET=$? ; [[ ${RET} -eq 0 ]] && return 0
+    [[ $? -eq 0 ]] && return 0
     setup_pkg_all_cat
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    [[ $? -eq 1 ]] && return 1
   done
 }

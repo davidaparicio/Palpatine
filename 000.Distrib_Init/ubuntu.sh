@@ -30,18 +30,10 @@ do_fullupdate () {
 do_setup_pkg_base () {
   # Install packages that will be required later if they are not installed
   local do_base_setup=false
-  if ! dpkg -s apt-transport-https | grep installed | grep -q ok
-  then
-    do_base_setup=true
-  fi
-  if ! dpkg -s software-properties-common | grep installed | grep -q ok
-  then
-    do_base_setup=true
-  fi
-  if ! dpkg -s python-software-properties | grep installed | grep -q ok
-  then
-    do_base_setup=true
-  fi
+  ! dpkg -s apt-transport-https | grep installed | grep -q ok && do_base_setup=true
+  ! dpkg -s software-properties-common | grep installed | grep -q ok && do_base_setup=true
+  ! dpkg -s python-software-properties | grep installed | grep -q ok && do_base_setup=true
+
   if [[ ${do_base_setup} == true ]]
   then
     whiptail --title 'Setup Base Package' \
@@ -61,8 +53,6 @@ do_setup_pkg_base () {
 
 init_distrib() {
   do_setup_pkg_base
-  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-
-  return 0
+  [[ $? -eq 1 ]] && return 1 || return 0
 }
 
