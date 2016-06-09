@@ -119,10 +119,10 @@ test_rootssh() {
   if ! ${IS_ROOT} && ! ${IS_SSH}
   then
     noroot_nossh
-  elif [[ ${IS_ROOT} == false ]]  && [[ ${IS_SSH} == true ]]
+  elif ! ${IS_ROOT} && ${IS_SSH}
   then
     noroot_ssh
-  elif [[ ${IS_ROOT} == true ]] && [[ ${IS_SSH} == false ]]
+  elif ${IS_ROOT} && ! ${IS_SSH}
   then
     root_nossh
   fi
