@@ -18,7 +18,7 @@ ynh_install_off_app() {
   done
 
   bash -c "${install_menu}" 2> results_menu.txt
-  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+  [[ $? -eq 1 ]] && return 1
   CHOICE=$( cat results_menu.txt )
   if ! [[ ${#CHOICE} -eq 0 ]]
   then
@@ -27,7 +27,7 @@ ynh_install_off_app() {
       if [[ ${CHOICE} =~ ${APP_NAME[idx]} ]]
       then
         yunohost app install ${APP_ID[idx]}
-        RET=$? ; [[ ${RET} -eq 1 ]] && whiptail --title 'Yunohost Management' \
+        [[ $? -eq 1 ]] && whiptail --title 'Yunohost Management' \
           --msgbox "Sorry but an error occured during installation of \
 ${APP_NAME[idx]}. Try to install it through the web interface" \
           ${WT_HEIGHT} ${WT_WIDTH} || update_app=true
@@ -49,10 +49,10 @@ ynh_install_unoff_app() {
   while true
   do
     bash -c "${unoff_app_menu}" 2> results_menu.txt
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    [[ $? -eq 1 ]] && return 1
     CHOICE=$( cat results_menu.txt )
     yunohost app install ${CHOICE}
-    RET=$? ; [[ ${RET} -eq 1 ]] && whiptail --title 'Yunohost Management' \
+    [[ $? -eq 1 ]] && whiptail --title 'Yunohost Management' \
       --msgbox "Sorry but an error occured during installation of \
 ${APP_NAME[idx]}. Try to install it through the web interface" \
       ${WT_HEIGHT} ${WT_WIDTH} || update_app=true
@@ -88,7 +88,7 @@ ynh_remove_app() {
   done
 
   bash -c "${remove_menu}" 2> results_menu.txt
-  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+  [[ $? -eq 1 ]] && return 1
   CHOICE=$( cat results_menu.txt )
   if ! [[ ${#CHOICE} -eq 0 ]]
   then
@@ -97,7 +97,7 @@ ynh_remove_app() {
       if [[ ${CHOICE} =~ ${APP_NAME[idx]} ]]
       then
         yunohost app remove ${APP_ID[idx]}
-        RET=$? ; [[ ${RET} -eq 1 ]] && whiptail --title 'Yunohost Management' \
+        [[ $? -eq 1 ]] && whiptail --title 'Yunohost Management' \
           --msgbox "Sorry but an error occured during uninstallation of \
 ${APP_NAME[idx]}. Try to install it through the web interface" \
           ${WT_HEIGHT} ${WT_WIDTH} || update_app=true
@@ -160,7 +160,7 @@ ynh_app() {
   while true
   do
     bash -c "${ynh_user_menu} " 2> results_menu.txt
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    [[ $? -eq 1 ]] && return 1
     CHOICE=$( cat results_menu.txt )
 
     case ${CHOICE} in
@@ -193,7 +193,7 @@ ynh_set_username() {
   while true
   do
     bash -c "${ynh_username}" 2>results_menu.txt
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    [[ $? -eq 1 ]] && return 1
     tmp_username=$( cat results_menu.txt )
     if [[ ${#tmp_username} == 0 ]]
     then
@@ -233,13 +233,13 @@ ynh_set_fullname() {
     --inputbox 'Firstname of the new user (you can leave it empty).' \
     ${WT_HEIGHT} ${WT_WIDTH} '${YNH_FIRSTNAME}'"
   bash -c "${name_menu}" 2>results_menu.txt
-  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+  [[ $? -eq 1 ]] && return 1
   YNH_FIRSTNAME=$( cat results_menu.txt )
   name_menu="whiptail --title 'Yunohost Management' \
     --inputbox 'Lastname of the new user (you can leave it empty).' \
     ${WT_HEIGHT} ${WT_WIDTH} '${YNH_LASTNAME}'"
   bash -c "${name_menu}" 2>results_menu.txt
-  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+  [[ $? -eq 1 ]] && return 1
   YNH_LASTNAME=$( cat results_menu.txt )
   return 0
 }
@@ -263,7 +263,7 @@ ynh_set_passwd () {
       --passwordbox 'Password for Yunohost user ${YNH_USERNAME}' \
       ${WT_HEIGHT} ${WT_WIDTH}"
     bash -c "${passwd1}" 2>results_menu.txt
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    [[ $? -eq 1 ]] && return 1
     passwd1=$( cat results_menu.txt )
     if ! [[ ${passwd1} =~ ${passwd_regex} ]]
     then
@@ -280,7 +280,7 @@ Do you want to retry ?" ${WT_HEIGHT} ${WT_WIDTH} )
       local passwd2="whiptail --title 'Yunohost Management' \
         --passwordbox 'Please enter the password again.' ${WT_HEIGHT} ${WT_WIDTH}"
       bash -c "${passwd2}" 2> results_menu.txt
-      RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+      [[ $? -eq 1 ]] && return 1
       passwd2=$( cat results_menu.txt )
       if [[ ! ${passwd1} == ${passwd2} ]]
       then
@@ -312,7 +312,7 @@ ynh_set_email() {
       ${WT_HEIGHT} ${WT_WIDTH} ${YNH_MAIL}"
 
     bash -c "$mail1" 2> results_menu.txt
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    [[ $? -eq 1 ]] && return 1
     mail1=$( cat results_menu.txt )
 
     if [[ ! ${mail1} =~ ${mail_regex} ]]
@@ -330,7 +330,7 @@ Do you want to retry ? " ${WT_HEIGHT} ${WT_WIDTH} )
       mail2="whiptail --title 'Yunohost Management' \
         --inputbox 'Please enter email adress again' ${WT_HEIGHT} ${WT_WIDTH}"
       bash -c "$mail2" 2> results_menu.txt
-      RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+      [[ $? -eq 1 ]] && return 1
       mail2=$( cat results_menu.txt )
       if [[ ! ${mail1} == ${mail2} ]] && ! ( whiptail \
         --title 'Yunohost Management' \
@@ -363,7 +363,7 @@ not work.' \
     ${WT_HEIGHT} ${WT_WIDTH} ${YNH_MAIL_QUOTA}"
 
   bash -c "$mail_quota" 2> results_menu.txt
-  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+  [[ $? -eq 1 ]] && return 1
   YNH_MAIL_QUOTA=$( cat results_menu.txt )
   return 0
 }
@@ -426,7 +426,7 @@ ynh_choose_user() {
   done
 
   bash -c "${choose_menu}" 2> results_menu.txt
-  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+  [[ $? -eq 1 ]] && return 1
   CHOICE=$( cat results_menu.txt )
 
   clear
@@ -474,15 +474,15 @@ ynh_add_user() {
   while true
   do
     ynh_set_username
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    [[ $? -eq 1 ]] && return 1
     ynh_set_fullname
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    [[ $? -eq 1 ]] && return 1
     ynh_set_email
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    [[ $? -eq 1 ]] && return 1
     ynh_set_mailquota
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    [[ $? -eq 1 ]] && return 1
     ynh_set_passwd
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    [[ $? -eq 1 ]] && return 1
 
     if ( whiptail --title 'Yunohost Management' \
       --yesno "Here are the information about the new Yunohost user :
@@ -517,7 +517,7 @@ ynh_update_user() {
   local YNH_MAIL_QUOTA=''
 
   ynh_choose_user
-  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+  [[ $? -eq 1 ]] && return 1
 
   update_menu="whiptail --title 'Yunohost Management' \
     --menu 'What do you want to update for this Yunohst user ${YNH_USERNAME} :' \
@@ -530,7 +530,7 @@ ynh_update_user() {
   while true
   do
     bash -c "${update_menu} " 2> results_menu.txt
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    [[ $? -eq 1 ]] && return 1
     CHOICE=$( cat results_menu.txt )
 
     case ${CHOICE} in
@@ -539,22 +539,22 @@ ynh_update_user() {
         ;;
       'Full name')
         ynh_set_fullname
-        RET=$? ; [[ ${RET} -eq 0 ]] && yunohost user update \
+        [[ $? -eq 0 ]] && yunohost user update \
           -f ${YNH_FIRSTNAME} -l ${YNH_LASTNAME} ${YNH_USERNAME}
         ;;
       'Mail adress')
         ynh_set_email
-        RET=$? ; [[ ${RET} -eq 0 ]] && yunohost user update \
+        [[ $? -eq 0 ]] && yunohost user update \
           -m ${YNH_MAIL} ${YNH_USERNAME}
         ;;
       'Mail quota')
         ynh_set_mailquota
-        RET=$? ; [[ ${RET} -eq 0 ]] && yunohost user update \
+        [[ $? -eq 0 ]] && yunohost user update \
           -q ${YNH_MAIL_QUOTA} ${YNH_USERNAME}
         ;;
       'Password')
         ynh_set_passwd
-        RET=$? ; [[ ${RET} -eq 0 ]] && yunohost user update \
+        [[ $? -eq 0 ]] && yunohost user update \
           -p ${YNH_PASSWD} ${YNH_USERNAME}
         YNH_PASSWD=''
         ;;
@@ -579,7 +579,7 @@ ynh_delete_user() {
   while true
   do
     ynh_choose_user
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    [[ $? -eq 1 ]] && return 1
 
     if ( whiptail --title 'Yunohost Management' \
       --yesno "Are you sure you want to delete the user with the following \
@@ -625,7 +625,7 @@ ynh_user() {
   while true
   do
     bash -c "${ynh_user_menu} " 2> results_menu.txt
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    [[ $? -eq 1 ]] && return 1
     CHOICE=$( cat results_menu.txt )
 
     case ${CHOICE} in
@@ -663,7 +663,7 @@ ynh_tools() {
   while true
   do
     bash -c "${ynh_tools_menu} " 2> results_menu.txt
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    [[ $? -eq 1 ]] && return 1
     CHOICE=$( cat results_menu.txt )
 
     case ${CHOICE} in
@@ -763,7 +763,7 @@ ynh_management() {
   if ! type -t yunohost &>/dev/null
   then
     ynh_install
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    [[ $? -eq 1 ]] && return 1
   elif ! ( whiptail --title 'Yunohost Management' \
       --yesno "Yunohost seem to be already installed on this computer.
 
@@ -789,7 +789,7 @@ Continue only if no know what you are doing." ${WT_HEIGHT} ${WT_WIDTH} )
   while true
   do
     bash -c "${ynh_menu} " 2> results_menu.txt
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
+    [[ $? -eq 1 ]] && return 1
     CHOICE=$( cat results_menu.txt )
 
     case ${CHOICE} in
