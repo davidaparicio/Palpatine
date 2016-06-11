@@ -189,7 +189,7 @@ This will run the rest of the script assuming it is the version you will choose.
 If you choose \"NONE OF THEM\", the program will exit) ? ' \
   ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
 
-  for (( idx=0 ; idx < ${ARCH[@]} ; idx++ ))
+  for (( idx=0 ; idx < ${#ARCH[@]} ; idx++ ))
   do
     menu="${menu} ${ARCH[idx]} ''"
   done
@@ -231,7 +231,7 @@ This will run the rest of the script assuming it is the version you will choose.
 If you choose \"NONE OF THEM\", the program will exit) ?' \
   ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
 
-  for (( idx=0 ; idx < ${SUPPORTED_OS[@]} ; idx++ ))
+  for (( idx=0 ; idx < ${#SUPPORTED_OS[@]} ; idx++ ))
   do
     menu="${menu} ${SUPPORTED_OS[idx]} ''"
   done
@@ -275,23 +275,49 @@ validate_os() {
   if ! [[ ${#tmp_os} -eq 0 ]] && [[ ${SUPPORTED_OS[@]} =~ ${tmp_os} ]]
   then
     LINUX_OS=${tmp_os}
-    source 000.Distrib_Init/${LINUX_OS,,}.sh
-    validate_ver
-    [[ $? -eq 1 ]] && return 1
- else
+  else
     choose_linux_os
     [[ $? -eq 1 ]] && return 1
   fi
-  validate_arch
-  [[ $? -eq 1 ]] && return 1
-
-  whiptail --title 'Linux Init' \
-    --yesno "Do you want to continue with the following option for you linux ?
-    --> ${LINUX_OS} - ${LINUX_VER} - ${LINUX_ARCH}
-
-    YES : The script will continue assuming your linux is like you set, BUT some part might not be working.
-    NO  : The script will exit." ${WT_HEIGHT} ${WT_WIDTH} && return 0 || return 1
 }
+
+validate() {
+  validate_os
+  if [[ $? -eq 1 ]]
+  then
+    choose_linux_os
+    [[ $? -eq 1 ]] && return 1
+  fi
+
+  source 000.Distrib_Init/${LINUX_OS,,}.sh
+
+  validate_ver
+  if [[ $? -eq 1 ]]
+  then
+    choose_linux_ver
+    [[ $? -eq 1 ]] && return 1
+  fi
+
+  validate_arch
+  if [[ $? -eq 1 ]]
+  then
+    choose_linux_arch
+    [[ $? -eq 1 ]] && return 1
+  fi
+  return 0
+}
+
+choose() {
+  choose_linux_os
+  [[ $? -eq 1 ]] && return 1
+  source 000.Distrib_Init/${LINUX_OS,,}.sh
+  choose_linux_ver
+  [[ $? -eq 1 ]] && return 1
+  choose_linux_arch
+  [[ $? -eq 1 ]] && return 1
+  return 0
+}
+
 
 linux_init_os () {
   # Check linux distrib to know if it's supported
@@ -321,17 +347,18 @@ linux_init_os () {
 
   Is it right ?" ${WT_HEIGHT} ${WT_WIDTH} )
   then
-    validate_os
-    [[ $? -eq 1 ]] && return 1
-    validate_arch
+    validate
     [[ $? -eq 1 ]] && return 1
   else
-    choose_linux_os
-    [[ $? -eq 1 ]] && return 1
-    choose_linux_arch
+    choose
     [[ $? -eq 1 ]] && return 1
   fi
-  return 0
+  whiptail --title 'Linux Init' \
+    --yesno "Do you want to continue with the following option for you linux ?
+    --> ${LINUX_OS} - ${LINUX_VER} - ${LINUX_ARCH}
+
+    YES : The script will continue assuming your linux is like you set, BUT some part might not be working.
+    NO  : The script will exit." ${WT_HEIGHT} ${WT_WIDTH} && return 0 || return 1
 }
 
 linux_not_supported() {
@@ -369,19 +396,19 @@ main_menu() {
   'Package setup'    'Select package to install' \
   'User Management'  'Manage user (add, update, delete)'"
 
-  ! ${YUNOHOST} && menu="${menu} \
+  ${YUNOHOST} && main_menu="${main_menu} \
       'Yunohost Management' 'Basic Yunohst management (installation, user, app)'"
 
-#  ! ${DOCKER} && menu="${menu} \
+#  ${DOCKER} && main_menu="${main_menu} \
 #      'Docker Management' 'Basic Docker management'"
 
-  menu="${menu} \
-      OpenVPN'           'Configure OpenVPN'
-     'FINISH'           'Exit the script'"
+  main_menu="${main_menu} \
+  'OpenVPN'         'Configure OpenVPN' \
+  'FINISH'          'Exit the script'"
 
   while true
   do
-    bash -c "${menu}" 2> results_menu.txt
+    bash -c "${main_menu}" 2> results_menu.txt
     [[ $? -eq 1 ]] && return 1 || CHOICE=$( cat results_menu.txt )
 
     case ${CHOICE} in
