@@ -151,7 +151,7 @@ DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
 linux_init_pkg_mgr () {
   # Package manager selection
   local exist_pkg_mgr=false
-  local menu="whiptail --title 'Linux Init : Package Manager' \
+  menu="whiptail --title 'Linux Init : Package Manager' \
     --menu 'Please choose the package manager you want to use : ' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   local no_menu="whiptail --title 'Linux Init : Package Manager' \
@@ -182,7 +182,7 @@ Here is the list of supported package manager :
 }
 
 choose_linux_arch() {
-  local menu="whiptail --title 'Linux Init' \
+  menu="whiptail --title 'Linux Init' \
   --menu 'You can choose to specify linux architecture that is like your.
 This will run the rest of the script assuming it is the version you will choose.
 (N.B.: This is to manage source, repo, etc.)
@@ -203,7 +203,7 @@ If you choose \"NONE OF THEM\", the program will exit) ? ' \
 }
 
 choose_linux_ver() {
-  local menu="whiptail --title 'Linux Init' \
+  menu="whiptail --title 'Linux Init' \
   --menu 'You can choose to specify linux version that is like your.
 This will run the rest of the script assuming it is the version you will choose.
 (N.B.: This is to manage source, repo, etc.)
@@ -224,7 +224,7 @@ If you choose \"NONE OF THEM\", the program will exit) ? ' \
 }
 
 choose_linux_os() {
-  local menu="whiptail --title 'Linux Init' \
+  menu="whiptail --title 'Linux Init' \
   --menu 'You can choose to specify linux OS that is like your.
 This will run the rest of the script assuming it is the version you will choose.
 (N.B.: This is to manage source, repo, etc.)
@@ -362,29 +362,26 @@ about your linux distribution" ${WT_HEIGHT} ${WT_WIDTH}
 # MAIN MENU
 ###############################################################################
 main_menu() {
-  local main_menu
-  main_menu="whiptail --title 'Main Menu' --menu  'Select what you want to do :' \
+  source 000.Distrib_Init/${LINUX_OS,,}.sh
+  local menu="whiptail --title 'Main Menu' --menu  'Select what you want to do :' \
   ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
   'Initial setup'    'Access to initial config such as timezone, hostname...' \
   'Package setup'    'Select package to install' \
   'User Management'  'Manage user (add, update, delete)'"
 
-  ! ${YUNOHOST} && main_menu="${main_menu} \
+  ! ${YUNOHOST} && menu="${menu} \
       'Yunohost Management' 'Basic Yunohst management (installation, user, app)'"
 
-#  ! ${DOCKER} && main_menu="${main_menu} \
+#  ! ${DOCKER} && menu="${menu} \
 #      'Docker Management' 'Basic Docker management'"
 
-  main_menu_bak=${main_menu}
+  menu="${menu} \
+      OpenVPN'           'Configure OpenVPN'
+     'FINISH'           'Exit the script'"
 
   while true
   do
-    main_menu=${main_menu_bak}
-    main_menu="${main_menu} \
-    'OpenVPN'           'Configure OpenVPN'
-    'FINISH'           'Exit the script'"
-
-    bash -c "${main_menu}" 2> results_menu.txt
+    bash -c "${menu}" 2> results_menu.txt
     [[ $? -eq 1 ]] && return 1 || CHOICE=$( cat results_menu.txt )
 
     case ${CHOICE} in
@@ -454,13 +451,13 @@ test_rootssh
 preamble
 # Initialisation of linux distrib
 linux_init
-[[ $? -eq 1 ]] && rm -f results_menu.txt && exit 1
+[[ $? -eq 1 ]] && rm -f cmd.sh results_menu.txt && exit 1
 # Source distrib preinit function and variable
 source 000.Distrib_Init/${LINUX_OS,,}.sh
 init_distrib
 # Now run the script
 main_menu
-[[ $? -eq 1 ]] && rm -f results_menu.txt && exit 1
+[[ $? -eq 1 ]] && rm -f cmd.sh results_menu.txt && exit 1
 # Reboot if needed
 ${ASK_TO_REBOOT} && ( whiptail --title 'REBOOT NEEDED' \
     --yesno 'A reboot is needed. Do you want to reboot now ? ' \
