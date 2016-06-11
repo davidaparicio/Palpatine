@@ -402,13 +402,13 @@ main_menu() {
 #  ${DOCKER} && main_menu="${main_menu} \
 #      'Docker Management' 'Basic Docker management'"
 
-  main_menu="${main_menu} \
+  menu="${menu} \
   'OpenVPN'         'Configure OpenVPN' \
   'FINISH'          'Exit the script'"
 
   while true
   do
-    bash -c "${main_menu}" 2> results_menu.txt
+    bash -c "${menu}" 2> results_menu.txt
     [[ $? -eq 1 ]] && return 1 || CHOICE=$( cat results_menu.txt )
 
     case ${CHOICE} in
