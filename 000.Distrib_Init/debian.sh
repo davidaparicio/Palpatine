@@ -30,11 +30,11 @@ do_fullupdate () {
 do_setup_pkg_base () {
   # Install packages that will be required later if they are not installed
   local do_base_setup=false
-  ! dpkg -s apt-transport-https | grep installed | grep ok && do_base_setup=true
-  ! dpkg -s software-properties-common | grep installed | grep ok && do_base_setup=true
-  ! dpkg -s python-software-properties | grep installed | grep ok && do_base_setup=true
+  ! dpkg -s apt-transport-https | grep installed | grep -q ok && do_base_setup=true
+  ! dpkg -s software-properties-common | grep installed | grep -q ok && do_base_setup=true
+  ! dpkg -s python-software-properties | grep installed | grep -q ok && do_base_setup=true
 
-  if [[ ${do_base_setup} ]]
+  if ${do_base_setup}
   then
     whiptail --title 'Setup Base Package' \
       --msgbox 'This script will now install the following packages :
