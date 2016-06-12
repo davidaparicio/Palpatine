@@ -4,27 +4,27 @@ set_conf_name() {
   menu="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter a name for your configuration' \
     ${WT_HEIGHT} ${WT_WIDTH} '${conf_name}'"
+
   bash -c "${menu}" 2> results_menu.txt
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  conf_name=$( cat results_menu.txt )
+  [[ $? -eq 1 ]] && return 1 || conf_name=$( cat results_menu.txt )
 }
 
 set_server_address(){
   menu="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter the url address of your vpn' \
     ${WT_HEIGHT} ${WT_WIDTH} '${server_address}'"
+
   bash -c "${menu}" 2> results_menu.txt
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  server_address=$( cat results_menu.txt )
+  [[ $? -eq 1 ]] && return 1 || server_address=$( cat results_menu.txt )
 }
 
 set_server_port() {
   menu="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter the port to access to your vpn' \
     ${WT_HEIGHT} ${WT_WIDTH} '${server_port}'"
+
   bash -c "${menu}" 2> results_menu.txt
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  server_port=$( cat results_menu.txt )
+  [[ $? -eq 1 ]] && return 1 || server_port=$( cat results_menu.txt )
 }
 
 set_server_proto() {
@@ -33,9 +33,9 @@ set_server_proto() {
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
     'udp' '' \
     'tcp' ''"
+
   bash -c "${menu}" 2> results_menu.txt
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  server_proto=$( cat results_menu.txt )
+  [[ $? -eq 1 ]] && return 1 || server_proto=$( cat results_menu.txt )
 }
 
 set_password() {
@@ -55,23 +55,21 @@ set_password() {
     passwd1="whiptail --title 'OpenVPN Configuration' \
       --passwordbox 'Please enter the password to connect to your VPN provider' \
       ${WT_HEIGHT} ${WT_WIDTH}"
+
     bash -c "${passwd1}" 2>results_menu.txt
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-    passwd1=$( cat results_menu.txt )
+    [[ $? -eq 1 ]] && return 1 || passwd1=$( cat results_menu.txt )
+
     local passwd2="whiptail --title 'OpenVPN Configuration' \
       --passwordbox 'Please enter the password again.' ${WT_HEIGHT} ${WT_WIDTH}"
+
     bash -c "${passwd2}" 2> results_menu.txt
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-    passwd2=$( cat results_menu.txt )
+    [[ $? -eq 1 ]] && return 1 || passwd2=$( cat results_menu.txt )
+
     if [[ ! ${passwd1} == ${passwd2} ]]
     then
-      if ! ( whiptail --title 'OpenVPN Configuration' \
+      ! ( whiptail --title 'OpenVPN Configuration' \
         --yesno "Passwords do not match.
-
-Do you want to retry ?" ${WT_HEIGHT} ${WT_WIDTH} )
-      then
-        return 1
-      fi
+Do you want to retry ?" ${WT_HEIGHT} ${WT_WIDTH} ) && return 1
     else
       user_pass=${passwd1}
       return 0
@@ -83,12 +81,12 @@ set_login() {
   menu="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter the username to use to connect to your VPN :' \
     ${WT_HEIGHT} ${WT_WIDTH}"
+
   bash -c "${menu}" 2> results_menu.txt
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  user_login=$( cat results_menu.txt )
+  [[ $? -eq 1 ]] && return 1 || user_login=$( cat results_menu.txt )
 
   set_password
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
+  [[ $? -eq 1 ]] && return 1
 
   is_login=true
   return 0
@@ -100,9 +98,9 @@ set_server_cert_url() {
 you have already copy it on the system, you can enter its absolute path like \
 /home/user/path/to/server.crt' \
     ${WT_HEIGHT} ${WT_WIDTH}"
+
   bash -c "${menu}" 2> results_menu.txt
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  server_cert_url=$( cat results_menu.txt )
+  [[ $? -eq 1 ]] && return 1 || server_cert_url=$( cat results_menu.txt )
 
   return 0
 }
@@ -113,18 +111,18 @@ set_user_cert() {
 you have already copy it on the system, you can enter its absolute path like \
 /home/user/path/to/client.crt' \
     ${WT_HEIGHT} ${WT_WIDTH}"
+
   bash -c "${menu}" 2> results_menu.txt
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  user_cert_url=$( cat results_menu.txt )
+  [[ $? -eq 1 ]] && return 1 || user_cert_url=$( cat results_menu.txt )
 
   menu="whiptail --title 'OpenVPN Configuration' \
     --inputbox 'Please enter the http URL to download client key or if \
 you have already copy it on the system, you can enter its absolute path like \
 /home/user/path/to/client.key' \
     ${WT_HEIGHT} ${WT_WIDTH}"
+
   bash -c "${menu}" 2> results_menu.txt
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  user_key_url=$( cat results_menu.txt )
+  [[ $? -eq 1 ]] && return 1 || user_key_url=$( cat results_menu.txt )
 
   is_certificate=true
   return 0
@@ -136,9 +134,9 @@ set_shared_secret() {
 you have already copy it on the system, you can enter its absolute path like \
 /home/user/path/to/shared.key' \
     ${WT_HEIGHT} ${WT_WIDTH}"
+
   bash -c "${menu}" 2> results_menu.txt
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  user_shared_url=$( cat results_menu.txt )
+  [[ $? -eq 1 ]] && return 1 || user_shared_url=$( cat results_menu.txt )
 
   is_shared_secret=true
   return 0
@@ -152,23 +150,23 @@ method do not select anything.' \
     'Login'         'Require login and password'       'ON' \
     'Certificate'   'Require user certificate and key' 'OFF' \
     'Shared-Secret' 'Require shared secret key'        'OFF'"
+
   bash -c "${menu}" 2> results_menu.txt
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
-  CHOICE=$( cat results_menu.txt )
+  [[ $? -eq 1 ]] && return 1 || CHOICE=$( cat results_menu.txt )
   for auth in $CHOICE
   do
     case ${auth} in
       '"Login"')
         set_login
-        RET=$?; [[ ${RET} -eq 1 ]] && return 1
+        [[ $? -eq 1 ]] && return 1
         ;;
       '"Certificate"')
         set_user_cert
-        RET=$?; [[ ${RET} -eq 1 ]] && return 1
+        [[ $? -eq 1 ]] && return 1
         ;;
       '"Shared-Secret"')
         set_shared_secret
-        RET=$?; [[ ${RET} -eq 1 ]] && return 1
+        [[ $? -eq 1 ]] && return 1
         ;;
       *)
         echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."
@@ -181,7 +179,7 @@ method do not select anything.' \
 valid_config() {
   local auth_type='|'
   local login_info=''
-  if [[ ${is_login} == true ]]
+  if ${is_login}
   then
     auth_type="${auth_type} Login |"
     login_info="${login_info}
@@ -189,7 +187,7 @@ valid_config() {
     Password : The on you set"
   fi
 
-  if [[ ${is_certificate} == true ]]
+  if ${is_certificate}
   then
     auth_type="${auth_type} Certificate |"
     login_info="${login_info}
@@ -197,14 +195,12 @@ valid_config() {
     User Key  : ${user_key_url}"
   fi
 
-  if [[ ${is_shared_secret} == true ]]
+  if ${is_shared_secret}
   then
     auth_type="${auth_type} Shared-Secret |"
     login_info="${login_info}
     Shared Key : ${user_shared_url}"
   fi
-
-  [[ ${is_shared_secret} == true ]] && auth_type="${auth_type} Shared-Secret |"
 
   if ( whiptail --title 'OpenVPN Configuration' \
     --yesno "Here is your VPN configuration :
@@ -216,7 +212,7 @@ valid_config() {
     Server Certificate URL : ${server_cert_url}" ${WT_HEIGHT} ${WT_WIDTH} )
   then
     apply_config
-    RET=$?; [[ ${RET} -eq 1 ]] && return 1
+    [[ $? -eq 1 ]] && return 1
     return 0
   else
     return 1
@@ -231,21 +227,15 @@ apply_config() {
       -e "s/<TPL:SERVER_PORT>/${server_port}/g" \
       -e "s/<TPL:SERVER_PROTO>/${server_proto}/g" /etc/openvpn/openvpn-${conf_name}.conf
 
-  if [[ ${is_udp} == true ]]
-  then
-    sed -i -e "s/<TPL:UDP_COMMENT>//g" /etc/openvpn/openvpn-${conf_name}.conf
-  else
-    sed -i -e "s/<TPL:UDP_COMMENT>/#/g" /etc/openvpn/openvpn-${conf_name}.conf
-  fi
+  ${is_udp} \
+    && sed -i -e "s/<TPL:UDP_COMMENT>//g" /etc/openvpn/openvpn-${conf_name}.conf \
+    || sed -i -e "s/<TPL:UDP_COMMENT>/#/g" /etc/openvpn/openvpn-${conf_name}.conf
 
-  if echo ${server_cert_url} | grep -q http
-  then
-    wget ${server_cert_url} -O /etc/openvpn/keys/ca-server-${conf_name}.crt
-  else
-    cp ${server_cert_url} /etc/openvpn/keys/ca-server-${conf_name}.crt
-  fi
+  echo ${server_cert_url} | grep -q http \
+    && wget ${server_cert_url} -O /etc/openvpn/keys/ca-server-${conf_name}.crt \
+    || cp ${server_cert_url} /etc/openvpn/keys/ca-server-${conf_name}.crt
 
-  if [[ ${is_login} == true ]]
+  if ${is_login}
   then
     sed -i -e "s/<TPL:LOGIN_COMMENT>//g" /etc/openvpn/openvpn-${conf_name}.conf
     mkdir -p /etc/openvpn/keys
@@ -259,18 +249,14 @@ apply_config() {
   then
     sed -i -e "s/<TPL:CERT_COMMENT>//g" /etc/openvpn/openvpn-${conf_name}.conf
     mkdir -p /etc/openvpn/keys
-    if echo ${user_cert_url} | grep -q http
-    then
-      wget ${user_cert_url} -O /etc/openvpn/keys/user-${conf_name}.crt
-    else
-      cp ${user_cert_url} /etc/openvpn/keys/user-${conf_name}.crt
-    fi
-    if echo ${user_key_url} | grep -q http
-    then
-      wget ${user_key_url} -O /etc/openvpn/keys/user-${conf_name}.key
-    else
-      cp ${user_key_url} /etc/openvpn/keys/user-${conf_name}.key
-    fi
+
+    echo ${user_cert_url} | grep -q http \
+      && wget ${user_cert_url} -O /etc/openvpn/keys/user-${conf_name}.crt \
+      || cp ${user_cert_url} /etc/openvpn/keys/user-${conf_name}.crt
+
+    echo ${user_key_url} | grep -q http \
+      && wget ${user_key_url} -O /etc/openvpn/keys/user-${conf_name}.key \
+      || cp ${user_key_url} /etc/openvpn/keys/user-${conf_name}.key
   else
     sed -i -e "s/<TPL:CERT_COMMENT>/#/g" /etc/openvpn/openvpn-${conf_name}.conf
   fi
@@ -279,12 +265,9 @@ apply_config() {
   then
     sed -i -e "s/<TPL:TA_COMMENT>//g" /etc/openvpn/openvpn-${conf_name}.conf
     mkdir -p /etc/openvpn/keys
-    if echo ${user_shared_url} | grep -q http
-    then
-      wget ${user_shared_url} -O /etc/openvpn/keys/user_ta-${conf_name}.key
-    else
-      cp ${user_shared_url} /etc/openvpn/keys/user_ta-${conf_name}.key
-    fi
+    echo ${user_shared_url} | grep -q http \
+      && wget ${user_shared_url} -O /etc/openvpn/keys/user_ta-${conf_name}.key \
+      || cp ${user_shared_url} /etc/openvpn/keys/user_ta-${conf_name}.key
   else
     sed -i -e "s/<TPL:TA_COMMENT>/#/g" /etc/openvpn/openvpn-${conf_name}.conf
   fi
@@ -292,6 +275,7 @@ apply_config() {
   local count
   echo "Please wait while testing to start service..."
   echo "---------------------------------------------"
+
   while [[ ${count} -lt 10 ]]
   do
     systemctl stop openvpn
@@ -308,6 +292,7 @@ and will automaticaly mount tun interface on next reboot.' \
       ASK_TO_REBOOT=true
       return 0
     fi
+    systemctl stop openvpn
   done
   whiptail --title 'OpenVPN Configuration' \
     --msbox 'Unable to mount VPN tunnel, some part of the config might not be \
@@ -318,7 +303,7 @@ working. Please check your configuration again' ${WT_HEIGHT} ${WT_WIDTH}
 choose_config() {
   local all_conf
   local name
-  local menu="whiptail --title 'OpenVPN Configuration' \
+  menu="whiptail --title 'OpenVPN Configuration' \
     --menu 'Choose configuration you wan to $1:' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   for conf in /etc/openvpn/*.conf
@@ -327,9 +312,9 @@ choose_config() {
     name=${name%%.conf}
     menu="${menu} '${name}' ''"
   done
+
   bash -c "${menu}" 2> results_menu.txt
-  RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-  conf_name=$( cat results_menu.txt )
+  [[ $? -eq 1 ]] && return 1 || conf_name=$( cat results_menu.txt )
 }
 
 menu_config() {
@@ -346,9 +331,10 @@ menu_config() {
     'Server Certificate'    'Change server certificate file' \
     'UPDATE'                'Apply update' \
     '<-- Back'              'Back to previous menu'"
+
     bash -c "${menu}" 2> results_menu.txt
-    RET=$?; [[ ${RET} -eq 1 ]] && return 1
-    CHOICE=$( cat results_menu.txt )
+    [[ $? -eq 1 ]] && return 1 ||CHOICE=$( cat results_menu.txt )
+
     case ${CHOICE} in
       'Name')
         set_conf_name
@@ -390,26 +376,26 @@ new_config() {
   server_cert_url='https://doc.illyse.net/attachments/download/437/vpn-illyse.crt'
 
   set_conf_name
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
+  [[ $? -eq 1 ]] && return 1
 
   set_server_address
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
+  [[ $? -eq 1 ]] && return 1
 
   set_server_port
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
+  [[ $? -eq 1 ]] && return 1
 
   set_server_proto
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
+  [[ $? -eq 1 ]] && return 1
   [[ ${server_proto} == udp ]] && is_udp=true || is_udp=false
 
   set_auth_method
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
+  [[ $? -eq 1 ]] && return 1
 
   set_server_cert_url
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
+  [[ $? -eq 1 ]] && return 1
 
   valid_config
-  RET=$?; [[ ${RET} -eq 1 ]] && return 1
+  [[ $? -eq 1 ]] && return 1
   return 0
 }
 
@@ -419,9 +405,11 @@ update_config() {
   server_address=$( grep "^remote " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
   server_port=$( grep "^port " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
   server_proto=$( grep "^proto " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
+
   [[ ${server_proto} == 'udp' ]] && is_udp=true || is_udp=false
   grep -q "^auth-user-pass " /etc/openvpn/openvpn-${conf_name}.conf \
     && is_login=true || is_login=false
+
   if grep -q "^ca " /etc/openvpn/openvpn-${conf_name}.conf
   then
     is_server_cert_url=true
@@ -430,6 +418,7 @@ update_config() {
     is_server_cert_url=false
     server_cert_url=$( grep "^#ca " /etc/openvpn/openvpn-${conf_name}.conf | awk '{print $2}' )
   fi
+
   if grep -q "^cert " /etc/openvpn/openvpn-${conf_name}.conf
   then
     is_user_cert=true
@@ -464,38 +453,38 @@ associate files : ${conf_name} ?" ${WT_HEIGHT} ${WT_WIDTH} )
 openvpn_config() {
   local conf_name
   local dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-  local menu=''
+
   while true
   do
     menu="whiptail --title 'OpenVPN Configuration' \
       --menu 'What do you want to do :' $WT_HEIGHT $WT_WIDTH $WT_MENU_HEIGHT \
       'New Config'    'Install a new VPN Configuration'"
-    if ls /etc/openvpn/*.conf 1> /dev/null 2>&1
-    then
-      menu="${menu} \
+
+    ls /etc/openvpn/*.conf 1> /dev/null 2>&1 \
+      && menu="${menu} \
         'Update Config' 'Update an existing VPN Configuration' \
         'Delete Config' 'Delete an exisiting VPN Configuration'"
-    fi
+
     menu="${menu} '<-- Back'      'Back to main menu'"
 
     bash -c "${menu}" 2> results_menu.txt
-    RET=$? ; [[ ${RET} -eq 1 ]] && return 1
-    CHOICE=$( cat results_menu.txt )
+    [[ $? -eq 1 ]] && return 1 || CHOICE=$( cat results_menu.txt )
+
     case ${CHOICE} in
       '<-- Back' )
         return 1
         ;;
       'New Config')
         new_config
-        RET=$? ; [[ ${RET} -eq 1 ]] && menu_config
+        [[ $? -eq 1 ]] && menu_config
         ;;
       'Update Config')
         choose_config
-        RET=$? ; ! [[ ${RET} -eq 1 ]] && update_config
+        [[ $? -ne 1 ]] && update_config
         ;;
       'Delete Config')
         choose_config
-        RET=$? ; ! [[ ${RET} -eq 1 ]] && delete_config
+        [[ $? -ne 1 ]] && delete_config
         ;;
       * )
         echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."

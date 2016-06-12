@@ -2,25 +2,22 @@
 
 ynh_install_off_app() {
   # Install official Yunohost app
+  local idx
   [[ ${update_app} == true ]] && ynh_get_apps
   update_app=false
-  local idx
-  local install_menu="whiptail --title 'Yunohost Management' \
+  menu="whiptail --title 'Yunohost Management' \
     --checklist 'Choose application you want to install' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   for (( idx = 0 ; idx < ${#APP_ID[@]} ; idx++ ))
   do
-    if [[ ${APP_INSTALL[idx]} == ' False' ]]
-    then
-      install_menu="${install_menu} \
+    [[ ${APP_INSTALL[idx]} == ' False' ]] && menu="${menu} \
         \"${APP_NAME[idx]}\" \"${APP_DESC[idx]}\" OFF"
-    fi
   done
 
-  bash -c "${install_menu}" 2> results_menu.txt
-  [[ $? -eq 1 ]] && return 1
-  CHOICE=$( cat results_menu.txt )
-  if ! [[ ${#CHOICE} -eq 0 ]]
+  bash -c "${menu}" 2> results_menu.txt
+  [[ $? -eq 1 ]] && return 1 || CHOICE=$( cat results_menu.txt )
+
+  if [[ ${#CHOICE} -ne 0 ]]
   then
     for (( idx = 0 ; idx < ${#APP_ID[@]} ; idx ++ ))
     do
@@ -34,28 +31,32 @@ ${APP_NAME[idx]}. Try to install it through the web interface" \
       fi
     done
   fi
-  echo =================================================================
-  echo You can take a look at log above
-  echo Press Enter to continue
-  echo =================================================================
+
+  echo "\
+=================================================================
+You can take a look at log above
+Press Enter to continue
+================================================================="
   read
 }
 
 ynh_install_unoff_app() {
   # Install unofficial Yunohost app from github url
-  local unoff_app_menu="whiptail --title 'Yunohost Management' \
+  menu="whiptail --title 'Yunohost Management' \
     --inputbox 'Pleaser enter the github url of the Yunohost app' \
     ${WT_HEIGHT} ${WT_WIDTH}"
   while true
   do
-    bash -c "${unoff_app_menu}" 2> results_menu.txt
-    [[ $? -eq 1 ]] && return 1
-    CHOICE=$( cat results_menu.txt )
+    bash -c "${menu}" 2> results_menu.txt
+    [[ $? -eq 1 ]] && return 1 || CHOICE=$( cat results_menu.txt )
+
     yunohost app install ${CHOICE}
+
     [[ $? -eq 1 ]] && whiptail --title 'Yunohost Management' \
       --msgbox "Sorry but an error occured during installation of \
 ${APP_NAME[idx]}. Try to install it through the web interface" \
       ${WT_HEIGHT} ${WT_WIDTH} || update_app=true
+
     if ! ( whiptail --title 'Yunohost Management' \
        --yesno 'Do you want to install another unofficial Yunohost app ?' \
       ${WT_HEIGHT} ${WT_WIDTH} )
@@ -63,34 +64,34 @@ ${APP_NAME[idx]}. Try to install it through the web interface" \
       return 0
     fi
   done
-  echo =================================================================
-  echo You can take a look at log above
-  echo Press Enter to continue
-  echo =================================================================
+
+  echo "\
+=================================================================
+You can take a look at log above
+Press Enter to continue
+================================================================="
   read
 }
 
 ynh_remove_app() {
   # Ask which Yunohost app to remove
+  local idx
   [[ ${update_app} == true ]] && ynh_get_apps
   update_app=false
-  local idx
-  local remove_menu="whiptail --title 'Yunohost Management' \
+  menu="whiptail --title 'Yunohost Management' \
     --checklist 'Choose application you want to uninstall' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
+
   for (( idx = 0 ; idx < ${#APP_ID[@]} ; idx++ ))
   do
-    if [[ ${APP_INSTALL[idx]} == ' True' ]]
-    then
-      remove_menu="${remove_menu} \
-        \"${APP_NAME[idx]}\" \"${APP_DESC[idx]}\" OFF"
-    fi
+    [[ ${APP_INSTALL[idx]} == ' True' ]] && menu="${menu} \
+        '${APP_NAME[idx]}' '${APP_DESC[idx]}' OFF"
   done
 
-  bash -c "${remove_menu}" 2> results_menu.txt
-  [[ $? -eq 1 ]] && return 1
-  CHOICE=$( cat results_menu.txt )
-  if ! [[ ${#CHOICE} -eq 0 ]]
+  bash -c "${menu}" 2> results_menu.txt
+  [[ $? -eq 1 ]] && return 1 && CHOICE=$( cat results_menu.txt )
+
+  if [[ ${#CHOICE} -ne 0 ]]
   then
     for (( idx = 0 ; idx < ${#APP_ID[@]} ; idx ++ ))
     do
@@ -104,10 +105,12 @@ ${APP_NAME[idx]}. Try to install it through the web interface" \
       fi
     done
   fi
-  echo =================================================================
-  echo You can take a look at log above
-  echo Press Enter to continue
-  echo =================================================================
+
+  echo "\
+=================================================================
+You can take a look at log above
+Press Enter to continue
+================================================================="
   read
 }
 
@@ -115,28 +118,16 @@ ynh_get_apps() {
   # Parse Yunohost official and installed app informations
   clear
   echo 'Please wait while updating apps informations'
-  idx=0
+  local idx=0
   while read line
   do
     while read app_line
     do
-      if grep -q 'description' <<< ${app_line}
-      then
-        APP_DESC[idx]=$( echo ${app_line} | cut -d: -f2 )
-      fi
-      if grep -q 'installed' <<< ${app_line}
-      then
-        APP_INSTALL[idx]=$( echo ${app_line} | cut -d: -f2 )
-      fi
-      if grep -q 'id' <<< ${app_line}
-      then
-        APP_ID[idx]=$( echo ${app_line} | cut -d: -f2 )
-      fi
-      if grep -q 'name' <<< ${app_line}
-      then
-        APP_NAME[idx]=$( echo ${app_line} | cut -d: -f2 )
-      fi
-    done <<< "$( sudo yunohost app list | grep -A 5 "^  $line" )"
+      grep -q 'description' <<< ${app_line} && APP_DESC[idx]=$( echo ${app_line} | cut -d: -f2 )
+      grep -q 'installed' <<< ${app_line} && APP_INSTALL[idx]=$( echo ${app_line} | cut -d: -f2 )
+      grep -q 'id' <<< ${app_line} && APP_ID[idx]=$( echo ${app_line} | cut -d: -f2 )
+      grep -q 'name' <<< ${app_line} && APP_NAME[idx]=$( echo ${app_line} | cut -d: -f2 )
+    done <<< "$( sudo yunohost app list | grep -A5 "^  $line" )"
     (( idx++ ))
   done <<<  "$( sudo yunohost app list | grep '^  [0-9]*: ')"
 }
@@ -187,38 +178,29 @@ ynh_app() {
 ynh_set_username() {
   # Set Yunohost username
   local tmp_username=''
-  local ynh_username="whiptail --title 'Yunohost Management' \
+  menu="whiptail --title 'Yunohost Management' \
     --inputbox 'Username for the new user (only lowerscript char)' \
     ${WT_HEIGHT} ${WT_WIDTH} ${ynh_username}"
   while true
   do
-    bash -c "${ynh_username}" 2>results_menu.txt
-    [[ $? -eq 1 ]] && return 1
-    tmp_username=$( cat results_menu.txt )
+    bash -c "${menu}" 2>results_menu.txt
+    [[ $? -eq 1 ]] && return 1 || tmp_username=$( cat results_menu.txt )
+
     if [[ ${#tmp_username} == 0 ]]
     then
-      if ! ( whiptail --title 'Yunohost Management' \
+      ! ( whiptail --title 'Yunohost Management' \
         --yesno 'Username must be at least one char long. \n\n
-Do you want to retry ? ' ${WT_HEIGHT} ${WT_WIDTH} )
-      then
-        return 1
-      fi
+Do you want to retry ? ' ${WT_HEIGHT} ${WT_WIDTH} ) && return 1
     elif ! [[ ${tmp_username} =~ ^[a-z]*$ ]]
     then
-      if ! ( whiptail --title 'Yunohost Management' \
+      ! ( whiptail --title 'Yunohost Management' \
         --yesno 'Username must contain only lowerscript char [a-z]. \n\n
-Do you want to retry ? ' ${WT_HEIGHT} ${WT_WIDTH} )
-      then
-        return 1
-      fi
+Do you want to retry ? ' ${WT_HEIGHT} ${WT_WIDTH} ) && return 1
     elif ! yunohost user info ${tmp_username} | grep -q 'Unknown user'
     then
-      if ! ( whiptail --title 'Yunohost Management' \
+      ! ( whiptail --title 'Yunohost Management' \
         --yesno 'User already exist. \n\n
-Do you want to retry ?' ${WT_HEIGHT} ${WT_WIDTH} )
-      then
-        return 1
-      fi
+Do you want to retry ?' ${WT_HEIGHT} ${WT_WIDTH} ) && return 1
     else
       ynh_username=${tmp_username}
       return 0
@@ -228,19 +210,20 @@ Do you want to retry ?' ${WT_HEIGHT} ${WT_WIDTH} )
 
 ynh_set_fullname() {
   # Set yunohost fullname
-  local name_menu
-  name_menu="whiptail --title 'Yunohost Management' \
+  menu="whiptail --title 'Yunohost Management' \
     --inputbox 'Firstname of the new user (you can leave it empty).' \
     ${WT_HEIGHT} ${WT_WIDTH} '${ynh_firstname}'"
-  bash -c "${name_menu}" 2>results_menu.txt
-  [[ $? -eq 1 ]] && return 1
-  ynh_firstname=$( cat results_menu.txt )
-  name_menu="whiptail --title 'Yunohost Management' \
+
+  bash -c "${menu}" 2>results_menu.txt
+  [[ $? -eq 1 ]] && return 1 || ynh_firstname=$( cat results_menu.txt )
+
+  menu="whiptail --title 'Yunohost Management' \
     --inputbox 'Lastname of the new user (you can leave it empty).' \
     ${WT_HEIGHT} ${WT_WIDTH} '${ynh_lastname}'"
-  bash -c "${name_menu}" 2>results_menu.txt
-  [[ $? -eq 1 ]] && return 1
-  ynh_lastname=$( cat results_menu.txt )
+
+  bash -c "${menu}" 2>results_menu.txt
+  [[ $? -eq 1 ]] && return 1 || ynh_lastname=$( cat results_menu.txt )
+
   return 0
 }
 
@@ -263,34 +246,28 @@ ynh_set_passwd () {
       --passwordbox 'Password for Yunohost user ${ynh_username}' \
       ${WT_HEIGHT} ${WT_WIDTH}"
     bash -c "${passwd1}" 2>results_menu.txt
-    [[ $? -eq 1 ]] && return 1
-    passwd1=$( cat results_menu.txt )
+    [[ $? -eq 1 ]] && return 1 || passwd1=$( cat results_menu.txt )
+
     if ! [[ ${passwd1} =~ ${passwd_regex} ]]
     then
-      if ! ( whiptail --title 'Yunohost Management' \
+      ! ( whiptail --title 'Yunohost Management' \
         --yesno "Password must be at least eight char long and contains only \
 alphanumeric char either lowercase or uppercase and the following predefined \
 characters  : @ * # - _ = ! ? % &.
 
-Do you want to retry ?" ${WT_HEIGHT} ${WT_WIDTH} )
-      then
-        return 1
-      fi
+Do you want to retry ?" ${WT_HEIGHT} ${WT_WIDTH} ) && return 1
     else
       local passwd2="whiptail --title 'Yunohost Management' \
         --passwordbox 'Please enter the password again.' ${WT_HEIGHT} ${WT_WIDTH}"
+
       bash -c "${passwd2}" 2> results_menu.txt
-      [[ $? -eq 1 ]] && return 1
-      passwd2=$( cat results_menu.txt )
+      [[ $? -eq 1 ]] && return 1 || passwd2=$( cat results_menu.txt )
+
       if [[ ! ${passwd1} == ${passwd2} ]]
       then
-        if ! ( whiptail --title 'Yunohost Management' \
-          --yesno "Passwords do not match.
-
-Do you want to retry ?" ${WT_HEIGHT} ${WT_WIDTH} )
-        then
-          return 1
-        fi
+        ! ( whiptail --title 'Yunohost Management' \
+          --yesno "Passwords do not match. Do you want to retry ?" \
+          ${WT_HEIGHT} ${WT_WIDTH} ) && return 1
       else
         ynh_passwd=${passwd1}
         return 0
@@ -312,8 +289,7 @@ ynh_set_email() {
       ${WT_HEIGHT} ${WT_WIDTH} ${ynh_mail}"
 
     bash -c "$mail1" 2> results_menu.txt
-    [[ $? -eq 1 ]] && return 1
-    mail1=$( cat results_menu.txt )
+    [[ $? -eq 1 ]] && return 1 || mail1=$( cat results_menu.txt )
 
     if [[ ! ${mail1} =~ ${mail_regex} ]]
     then
@@ -330,8 +306,8 @@ Do you want to retry ? " ${WT_HEIGHT} ${WT_WIDTH} )
       mail2="whiptail --title 'Yunohost Management' \
         --inputbox 'Please enter email adress again' ${WT_HEIGHT} ${WT_WIDTH}"
       bash -c "$mail2" 2> results_menu.txt
-      [[ $? -eq 1 ]] && return 1
-      mail2=$( cat results_menu.txt )
+      [[ $? -eq 1 ]] && return 1 ||mail2=$( cat results_menu.txt )
+
       if [[ ! ${mail1} == ${mail2} ]] && ! ( whiptail \
         --title 'Yunohost Management' \
         --yesno 'Emails do not match. Do you want to retry ?' \
