@@ -156,15 +156,11 @@ linux_init_pkg_mgr () {
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT}"
   local no_menu="whiptail --title 'Linux Init : Package Manager' \
     --msgbox 'Sorry but you do not to have one of the package manager supported installed.
-Here is the list of supported package manager :
-    "
+Here is the list of supported package manager for your linux OS :"
 
   for (( idx=0 ; idx < ${#PKG_MGR[@]} ; idx++ ))
   do
-    if type -t ${PKG_MGR[idx]} &>/dev/null
-    then
-      exist_pkg_mgr=true
-    fi
+    type -t ${PKG_MGR[idx]} &>/dev/null && exist_pkg_mgr=true
     menu="${pkg_mgr_menu} '${PKG_MGR[idx]}' ''"
     no_menu="${no_pkg_mgr_menu}    - ${PKG_MGR[idx]} \n
     "
@@ -245,40 +241,21 @@ If you choose \"NONE OF THEM\", the program will exit) ?' \
 }
 
 validate_arch() {
-  # Validate arch
-  if ! [[ ${#tmp_arch} -eq 0 ]] && [[ ${ARCH[@]} =~ ${tmp_arch} ]]
-  then
-    LINUX_ARCH=${tmp_arch}
-  else
-    whiptail --title 'Linux Init' \
-    --msgbox 'Your archictecture does not seem to be supported, you will be \
-ask if you want to choose amoung supported one.' ${WT_HEIGHT} ${WT_WIDTH}
-    choose_linux_arch
-    [[ $? -eq 1 ]] && return 1
-  fi
-  return 0
+  ! [[ ${#arch} -eq 0 ]] && [[ ${ARCH[@]} =~ ${arch} ]] \
+    && LINUX_ARCH=${arch} \
+    || return 0
 }
 
 validate_ver() {
-  if ! [[ ${#tmp_ver} -eq 0 ]] && [[ ${VER[@]} =~ ${tmp_ver} ]]
-  then
-    LINUX_VER=${tmp_ver}
-  else
-    choose_linux_ver
-    [[ $? -eq 1 ]] && return 1
-  fi
-  return 0
+  ! [[ ${#ver} -eq 0 ]] && [[ ${VER[@]} =~ ${ver} ]] \
+    && LINUX_VER=${ver} \
+    || return 1
 }
 
 validate_os() {
-  # Validate OS
-  if ! [[ ${#tmp_os} -eq 0 ]] && [[ ${SUPPORTED_OS[@]} =~ ${tmp_os} ]]
-  then
-    LINUX_OS=${tmp_os}
-  else
-    choose_linux_os
-    [[ $? -eq 1 ]] && return 1
-  fi
+  ! [[ ${#os} -eq 0 ]] && [[ ${SUPPORTED_OS[@]} =~ ${os} ]] \
+    && LINUX_OS=${os} \
+    || return 1
 }
 
 validate() {
@@ -321,29 +298,17 @@ choose() {
 
 linux_init_os () {
   # Check linux distrib to know if it's supported
-  local arr_supported_ver
-  local linux_user_set=false
-  local linux_valid=false
-  local arch_valid=false
-  local ver_valid=false
-  local os_valid=false
-  local tmp_arch
-  local tmp_ver
-  local tmp_ver_name
-  local tmp_os
-  local tmp_os_name
-
-  tmp_arch=$( arch )
-  tmp_ver=$( cat /etc/os-release | grep "^VERSION_ID=" | cut -d '"' -f 2 )
-  tmp_ver_name=$( cat /etc/os-release | grep "^VERSION=" | cut -d '"' -f 2 )
-  tmp_os=$( cat /etc/os-release | grep "^ID=" | cut -d '=' -f2 )
-  tmp_os_name=$( cat /etc/os-release | grep "^NAME=" | cut -d '"' -f2 )
+  local arch=$( arch )
+  local ver=$( cat /etc/os-release | grep "^VERSION_ID=" | cut -d '"' -f 2 )
+  local ver_name=$( cat /etc/os-release | grep "^VERSION=" | cut -d '"' -f 2 )
+  local os=$( cat /etc/os-release | grep "^ID=" | cut -d '=' -f2 )
+  local os_name=$( cat /etc/os-release | grep "^NAME=" | cut -d '"' -f2 )
 
   if ( whiptail \
     --title 'Linux Init' \
     --yesno "You seems to be running on :
 
-  ${tmp_os_name} - ${tmp_ver_name} - ${tmp_arch}
+  ${os_name} - ${ver_name} - ${arch}
 
   Is it right ?" ${WT_HEIGHT} ${WT_WIDTH} )
   then
@@ -396,7 +361,7 @@ main_menu() {
   'Package setup'    'Select package to install' \
   'User Management'  'Manage user (add, update, delete)'"
 
-  ${YUNOHOST} && main_menu="${main_menu} \
+  ${YUNOHOST} && menu="${menu} \
       'Yunohost Management' 'Basic Yunohst management (installation, user, app)'"
 
 #  ${DOCKER} && main_menu="${main_menu} \

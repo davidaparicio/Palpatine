@@ -55,3 +55,4 @@ init_distrib() {
   do_setup_pkg_base
   [[ $? -eq 1 ]] && return 1 || return 0
 }
+

@@ -4,11 +4,11 @@
 setup_pkg_ask_finish () {
   # Last window that show all package that will be installed
   local all_app_choosen
-  local nb_app_choosen=0
   local all_routine
+  local nb_app_choosen=0
   local nb_routine=0
 
-  menu_ask_finish="whiptail --title 'Package Setup' \
+  menu="whiptail --title 'Package Setup' \
     --menu  'This is the list of program this script will install :' \
     ${WT_WIDE_HEIGHT} ${WT_WIDTH} ${WT_WIDE_MENU_HEIGHT} '' ''\
     'INSTALL PACKAGES'                'Launch installation of all packages' \
@@ -46,7 +46,7 @@ setup_pkg_ask_finish () {
       then
         if [[ ${cat_done} == false ]]
         then
-          menu_ask_finish="${menu_ask_finish} \
+          menu="${menu} \
             '' '' '=====> ${cat_name}' '${cat_desc}'"
           cat_done=true
         fi
@@ -54,7 +54,7 @@ setup_pkg_ask_finish () {
         all_app_choosen[nb_app_choosen]=${app_name}
         (( nb_app_choosen++ ))
         app_desc="${app_arr_desc[idx]}"
-        menu_ask_finish="${menu_ask_finish} '${app_name}' '${app_desc}'"
+        menu="${menu} '${app_name}' '${app_desc}'"
 
         if type -t ${app_arr_name[idx]}_routine &>/dev/null
         then
@@ -68,14 +68,14 @@ setup_pkg_ask_finish () {
     cat_done=false
   done
 
-  menu_ask_finish="${menu_ask_finish}  \
+  menu="${menu}  \
     '=============================='  '===================================' \
     '<-- Back'                         'Back to list of categories' \
     'INSTALL PACKAGES'                'Launch installation of all packages'"
 
   while true
   do
-    bash -c "${menu_ask_finish}" 2> results_menu.txt
+    bash -c "${menu}" 2> results_menu.txt
     [[ $? -eq 1 ]] && return 1 || CHOICE=$( cat results_menu.txt )
 
     case ${CHOICE} in
@@ -86,8 +86,6 @@ setup_pkg_ask_finish () {
         NEED_UPDATE=true ; do_fullupdate
         for (( i=0; i < $nb_routine; i++ ))
         do
-          pourcent=$( awk "BEGIN { print "$i"/"$nb_routine"*100 }" )
-          pourcent=${pourcent%%.*}
           ${all_routine[i]}
           [[ $? -eq 1 ]] && whiptail --title 'WARNING'  \
             --msgbox "Sorry but ${all_routine[i]%%_routine} supported yet for you distrib." \

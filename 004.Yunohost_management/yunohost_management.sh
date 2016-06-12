@@ -189,7 +189,7 @@ ynh_set_username() {
   local tmp_username=''
   local ynh_username="whiptail --title 'Yunohost Management' \
     --inputbox 'Username for the new user (only lowerscript char)' \
-    ${WT_HEIGHT} ${WT_WIDTH} ${YNH_USERNAME}"
+    ${WT_HEIGHT} ${WT_WIDTH} ${ynh_username}"
   while true
   do
     bash -c "${ynh_username}" 2>results_menu.txt
@@ -220,7 +220,7 @@ Do you want to retry ?' ${WT_HEIGHT} ${WT_WIDTH} )
         return 1
       fi
     else
-      YNH_USERNAME=${tmp_username}
+      ynh_username=${tmp_username}
       return 0
     fi
   done
@@ -231,16 +231,16 @@ ynh_set_fullname() {
   local name_menu
   name_menu="whiptail --title 'Yunohost Management' \
     --inputbox 'Firstname of the new user (you can leave it empty).' \
-    ${WT_HEIGHT} ${WT_WIDTH} '${YNH_FIRSTNAME}'"
+    ${WT_HEIGHT} ${WT_WIDTH} '${ynh_firstname}'"
   bash -c "${name_menu}" 2>results_menu.txt
   [[ $? -eq 1 ]] && return 1
-  YNH_FIRSTNAME=$( cat results_menu.txt )
+  ynh_firstname=$( cat results_menu.txt )
   name_menu="whiptail --title 'Yunohost Management' \
     --inputbox 'Lastname of the new user (you can leave it empty).' \
-    ${WT_HEIGHT} ${WT_WIDTH} '${YNH_LASTNAME}'"
+    ${WT_HEIGHT} ${WT_WIDTH} '${ynh_lastname}'"
   bash -c "${name_menu}" 2>results_menu.txt
   [[ $? -eq 1 ]] && return 1
-  YNH_LASTNAME=$( cat results_menu.txt )
+  ynh_lastname=$( cat results_menu.txt )
   return 0
 }
 
@@ -260,7 +260,7 @@ ynh_set_passwd () {
   while true
   do
     passwd1="whiptail --title 'Yunohost Management' \
-      --passwordbox 'Password for Yunohost user ${YNH_USERNAME}' \
+      --passwordbox 'Password for Yunohost user ${ynh_username}' \
       ${WT_HEIGHT} ${WT_WIDTH}"
     bash -c "${passwd1}" 2>results_menu.txt
     [[ $? -eq 1 ]] && return 1
@@ -292,7 +292,7 @@ Do you want to retry ?" ${WT_HEIGHT} ${WT_WIDTH} )
           return 1
         fi
       else
-        YNH_PASSWD=${passwd1}
+        ynh_passwd=${passwd1}
         return 0
       fi
     fi
@@ -309,7 +309,7 @@ ynh_set_email() {
   do
     mail1="whiptail --title 'Yunohost Management' \
       --inputbox 'Email adress of the new user' \
-      ${WT_HEIGHT} ${WT_WIDTH} ${YNH_MAIL}"
+      ${WT_HEIGHT} ${WT_WIDTH} ${ynh_mail}"
 
     bash -c "$mail1" 2> results_menu.txt
     [[ $? -eq 1 ]] && return 1
@@ -341,7 +341,7 @@ Do you want to retry ? " ${WT_HEIGHT} ${WT_WIDTH} )
      fi
      if [[ ${mail1} == ${mail2} ]]
      then
-       YNH_MAIL=${mail1}
+       ynh_mail=${mail1}
        return 0
      fi
     fi
@@ -360,21 +360,24 @@ Mailbox quota must be a size with b/k/M/G/T suffix or 0 to disable the quota.
 
 WARNING : No verification will be done on your input, thus following step might \
 not work.' \
-    ${WT_HEIGHT} ${WT_WIDTH} ${YNH_MAIL_QUOTA}"
+    ${WT_HEIGHT} ${WT_WIDTH} ${ynh_mail_quota}"
 
   bash -c "$mail_quota" 2> results_menu.txt
   [[ $? -eq 1 ]] && return 1
-  YNH_MAIL_QUOTA=$( cat results_menu.txt )
+  ynh_mail_quota=$( cat results_menu.txt )
   return 0
 }
 
 ynh_choose_user() {
   # Menu that parse yunohost user and let choose one
+  local ynh_username=''
+  local ynh_firstname=''
+  local ynh_lastname=''
+  local ynh_mail=''
+  local ynh_passwd=''
+  local ynh_mail_quota=''
+
   local YNH_USER_ID=''
-  local YNH_USER_LASTNAME=''
-  local YNH_USER_FIRSTNAME=''
-  local YNH_USER_MAIL_QUOTA=''
-  local YNH_USER_MAIL=''
 
   local idx=0
   local choose_menu=''
@@ -393,23 +396,23 @@ ynh_choose_user() {
       fi
       if echo $line | grep -q firstname
       then
-        YNH_USER_FIRSTNAME[idx]=$( echo $line | grep firstname | cut -d: -f2 )
+        ynh_firstname[idx]=$( echo $line | grep firstname | cut -d: -f2 )
       fi
       if echo $line | grep -q lastname
       then
-        YNH_USER_LASTNAME[idx]=$( echo $line | grep lastname | cut -d: -f2 )
+        ynh_lastname[idx]=$( echo $line | grep lastname | cut -d: -f2 )
       fi
       if echo $line | grep -q 'No quota'
       then
-        YNH_USER_MAIL_QUOTA[idx]=0
+        ynh_mail_quota[idx]=0
       fi
       if echo $line | grep -q limit
       then
-        YNH_USER_MAIL_QUOTA[idx]=$( echo $line | grep limit | cut -d: -f2 )
+        ynh_mail_quota[idx]=$( echo $line | grep limit | cut -d: -f2 )
       fi
       if echo $line | grep -q mail
       then
-        YNH_USER_MAIL[idx]=$( echo $line | grep mail | cut -d: -f2 )
+        ynh_mail[idx]=$( echo $line | grep mail | cut -d: -f2 )
       fi
     done <<< "$( yunohost user info $i )"
     (( idx++ ))
@@ -422,7 +425,7 @@ ynh_choose_user() {
   do
     choose_menu="${choose_menu} \
       '${YNH_USER_ID[idx]}' \
-      '${YNH_USER_FIRSTNAME[idx]} ${YNH_USER_LASTNAME[idx]} <${YNH_USER_MAIL[idx]}>'"
+      '${ynh_firstname[idx]} ${ynh_lastname[idx]} <${ynh_mail[idx]}>'"
   done
 
   bash -c "${choose_menu}" 2> results_menu.txt
@@ -434,42 +437,30 @@ ynh_choose_user() {
 
   while read line
   do
-    if echo $line | grep -q username
-    then
-      YNH_USERNAME=$( echo $line | grep username | cut -d: -f2 )
-    fi
-    if echo $line | grep -q firstname
-    then
-      YNH_FIRSTNAME=$( echo $line | grep firstname | cut -d: -f2 )
-    fi
-    if echo $line | grep -q lastname
-    then
-      YNH_LASTNAME=$( echo $line | grep lastname | cut -d: -f2 )
-    fi
-    if echo $line | grep -q 'No quota'
-    then
-      YNH_MAIL_QUOTA=0
-    fi
-    if echo $line | grep -q limit
-    then
-      YNH_MAIL_QUOTA=$( echo $line | grep limit | cut -d: -f2 )
-    fi
-    if echo $line | grep -q mail
-    then
-      YNH_MAIL=$( echo $line | grep mail | cut -d: -f2 )
-    fi
+    echo $line | grep -q username \
+       && ynh_username=$( echo $line | grep username | cut -d: -f2 )
+    echo $line | grep -q firstname \
+      && ynh_firstname=$( echo $line | grep firstname | cut -d: -f2 )
+    echo $line | grep -q lastname \
+      && ynh_lastname=$( echo $line | grep lastname | cut -d: -f2 )
+    echo $line | grep -q 'No quota' \
+      && ynh_mail_quota=0
+    echo $line | grep -q limit \
+      && ynh_mail_quota=$( echo $line | grep limit | cut -d: -f2 )
+    echo $line | grep -q mail \
+      && ynh_mail=$( echo $line | grep mail | cut -d: -f2 )
   done <<< "$( yunohost user info ${CHOICE} )"
   return 0
 }
 
 ynh_add_user() {
   # Add user go through
-  local YNH_USERNAME='johndoe'
-  local YNH_FIRSTNAME='John'
-  local YNH_LASTNAME='Doe'
-  local YNH_MAIL='john.doe@localhost'
-  local YNH_PASSWD=''
-  local YNH_MAIL_QUOTA='500M'
+  ynh_username='johndoe'
+  ynh_firstname='John'
+  ynh_lastname='Doe'
+  ynh_mail='john.doe@localhost'
+  ynh_passwd=''
+  ynh_mail_quota='500M'
 
   while true
   do
@@ -486,18 +477,19 @@ ynh_add_user() {
 
     if ( whiptail --title 'Yunohost Management' \
       --yesno "Here are the information about the new Yunohost user :
-- Username    : ${YNH_USERNAME}
-- First name  : ${YNH_FIRSTNAME}
-- Last name   : ${YNH_LASTNAME}
+- Username    : ${ynh_username}
+- First name  : ${ynh_firstname}
+- Last name   : ${ynh_lastname}
 - Password    : The one you set
-- Email       : ${YNH_MAIL}
-- Email quota : ${YNH_MAIL_QUOTA}
-- Fullname    : ${YNH_FIRSTNAME} ${YNH_LASTNAME}
+- Email       : ${ynh_mail}
+- Email quota : ${ynh_mail_quota}
+- Fullname    : ${ynh_firstname} ${ynh_lastname}
 
 Is everything right ?" ${WT_HEIGHT} ${WT_WIDTH} )
     then
-      yunohost user create -f ${YNH_FIRSTNAME} -m ${YNH_MAIL} \
-        -l ${YNH_LASTNAME} -q ${YNH_MAIL_QUOTA} -p ${YNH_PASSWD} ${YNH_USERNAME}
+      yunohost user create -f ${ynh_firstname} -m ${ynh_mail} \
+        -l ${ynh_lastname} -q ${ynh_mail_quota} -p ${ynh_passwd} ${ynh_username}
+      [[ $? -eq 1 ]] && return 1
     fi
     if ! ( whiptail --title 'Yunohost Management' \
       --yesno 'Do you want to add another Yunohost user ?' ${WT_HEIGHT} ${WT_WIDTH} )
@@ -509,18 +501,8 @@ Is everything right ?" ${WT_HEIGHT} ${WT_WIDTH} )
 
 ynh_update_user() {
   # Update user menu
-  local YNH_USERNAME=''
-  local YNH_FIRSTNAME=''
-  local YNH_LASTNAME=''
-  local YNH_MAIL=''
-  local YNH_PASSWD=''
-  local YNH_MAIL_QUOTA=''
-
-  ynh_choose_user
-  [[ $? -eq 1 ]] && return 1
-
-  update_menu="whiptail --title 'Yunohost Management' \
-    --menu 'What do you want to update for this Yunohst user ${YNH_USERNAME} :' \
+  menu="whiptail --title 'Yunohost Management' \
+    --menu 'What do you want to update for this Yunohst user ${ynh_username} :' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
     'Full name'   'Change full name' \
     'Mail adress' 'Update mail adress' \
@@ -529,7 +511,7 @@ ynh_update_user() {
     '<-- Back'    'Back to Yunohost user management menu'"
   while true
   do
-    bash -c "${update_menu} " 2> results_menu.txt
+    bash -c "${menu} " 2> results_menu.txt
     [[ $? -eq 1 ]] && return 1
     CHOICE=$( cat results_menu.txt )
 
@@ -540,23 +522,23 @@ ynh_update_user() {
       'Full name')
         ynh_set_fullname
         [[ $? -eq 0 ]] && yunohost user update \
-          -f ${YNH_FIRSTNAME} -l ${YNH_LASTNAME} ${YNH_USERNAME}
+          -f ${ynh_firstname} -l ${ynh_lastname} ${ynh_username}
         ;;
       'Mail adress')
         ynh_set_email
         [[ $? -eq 0 ]] && yunohost user update \
-          -m ${YNH_MAIL} ${YNH_USERNAME}
+          -m ${ynh_mail} ${ynh_username}
         ;;
       'Mail quota')
         ynh_set_mailquota
         [[ $? -eq 0 ]] && yunohost user update \
-          -q ${YNH_MAIL_QUOTA} ${YNH_USERNAME}
+          -q ${ynh_mail_quota} ${ynh_username}
         ;;
       'Password')
         ynh_set_passwd
         [[ $? -eq 0 ]] && yunohost user update \
-          -p ${YNH_PASSWD} ${YNH_USERNAME}
-        YNH_PASSWD=''
+          -p ${ynh_passwd} ${ynh_username}
+        ynh_passwd=''
         ;;
       * )
         echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."
@@ -569,36 +551,27 @@ ynh_update_user() {
 
 ynh_delete_user() {
   # Choose and delete Yunohost user
-  local YNH_USERNAME=''
-  local YNH_FIRSTNAME=''
-  local YNH_LASTNAME=''
-  local YNH_MAIL=''
-  local YNH_PASSWD=''
-  local YNH_MAIL_QUOTA=''
 
   while true
   do
-    ynh_choose_user
-    [[ $? -eq 1 ]] && return 1
-
     if ( whiptail --title 'Yunohost Management' \
       --yesno "Are you sure you want to delete the user with the following \
 informations :
- - Username    : ${YNH_USERNAME}
- - First name  : ${YNH_FIRSTNAME}
- - Last name   : ${YNH_LASTNAME}
+ - Username    : ${ynh_username}
+ - First name  : ${ynh_firstname}
+ - Last name   : ${ynh_lastname}
  - Password    : The one you set
- - Email       : ${YNH_MAIL}
- - Email quota : ${YNH_MAIL_QUOTA}
- - Fullname    : ${YNH_FIRSTNAME} ${YNH_LASTNAME}" ${WT_HEIGHT} ${WT_WIDTH} )
+ - Email       : ${ynh_mail}
+ - Email quota : ${ynh_mail_quota}
+ - Fullname    : ${ynh_firstname} ${ynh_lastname}" ${WT_HEIGHT} ${WT_WIDTH} )
    then
      if ( whiptail --title 'Yunohost Management' \
        --yesno "Do you also want to purge it (i.e. delete all data that belong \
 to this user) ?" ${WT_HEIGHT} ${WT_WIDTH} )
      then
-       yunohost user delete --purge ${YNH_USERNAME}
+       yunohost user delete --purge ${ynh_username}
      else
-       yunohost user delete ${YNH_USERNAME}
+       yunohost user delete ${ynh_username}
      fi
    fi
 
@@ -614,7 +587,14 @@ to this user) ?" ${WT_HEIGHT} ${WT_WIDTH} )
 
 ynh_user() {
   # Menu management user
-  local ynh_user_menu="whiptail --title 'Yunohost Management' \
+  local ynh_username=''
+  local ynh_firstname=''
+  local ynh_lastname=''
+  local ynh_mail=''
+  local ynh_passwd=''
+  local ynh_mail_quota=''
+
+  menu="whiptail --title 'Yunohost Management' \
     --menu  'Select what you want to do :' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
     'Add User'     'Add a Yunohost user' \
@@ -624,7 +604,7 @@ ynh_user() {
 
   while true
   do
-    bash -c "${ynh_user_menu} " 2> results_menu.txt
+    bash -c "${menu} " 2> results_menu.txt
     [[ $? -eq 1 ]] && return 1
     CHOICE=$( cat results_menu.txt )
 
@@ -636,10 +616,12 @@ ynh_user() {
         ynh_add_user
         ;;
       'Update User')
-        ynh_update_user
+        ynh_choose_user
+        [[ $? -eq 0 ]] && ynh_update_user
         ;;
       'Delete User')
-        ynh_delete_user
+        ynh_choose_user
+        [[ $? -eq 0 ]] && ynh_delete_user
         ;;
       * )
         echo "Programmer error : Option ${CHOICE} uknown in ${FUNCNAME}."
@@ -651,7 +633,7 @@ ynh_user() {
 
 ynh_tools() {
   # Yunohost tools menu
-  local ynh_tools_menu="whiptail --title 'Yunohost Management' \
+  menu="whiptail --title 'Yunohost Management' \
     --menu  'Select what you want to do :' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
     'Post Install'    'Run Yunohost post install' \
@@ -662,7 +644,7 @@ ynh_tools() {
 
   while true
   do
-    bash -c "${ynh_tools_menu} " 2> results_menu.txt
+    bash -c "${menu} " 2> results_menu.txt
     [[ $? -eq 1 ]] && return 1
     CHOICE=$( cat results_menu.txt )
 
@@ -693,7 +675,7 @@ Are you sure you want to continue ?" ${WT_HEIGHT} ${WT_WIDTH} )
       'Upgrade Apps')
         if ( whiptail --title 'Yunohost Management' \
           --yesno "This will try to upgrade your system and apps already \
-installed. Some of them mainly your custom app, might not be upgrade.
+installed. Some of them, mainly your custom app, might not be upgrade.
 
 Are you sure you want to continue ?" ${WT_HEIGHT} ${WT_WIDTH} )
         then
@@ -728,14 +710,17 @@ Do you want to install yunohost ?
 mainly your postfix, devcot, nginx, mysql and metronome config." \
   ${WT_HEIGHT} ${WT_WIDTH} )
   then
-    ${LINUX_PKG_MGR} install git
+    ! type -t git > /dev/null && ${LINUX_PKG_MGR} install git
     git clone https://github.com/YunoHost/install_script /tmp/install_script
 
     if ! ( whiptail --title 'Yunohost Management' \
       --yesno "Yunohost require you to set/change root password.
 
 Have you already done it during installation of your debian or with this script \
-via 'Initial Setup' option in main menu ?" ${WT_HEIGHT} ${WT_WIDTH} )
+via 'Initial Setup' option in main menu ?
+
+WARNING : If you did not set a root password, following process might no work \
+and might have error !" ${WT_HEIGHT} ${WT_WIDTH} )
     then
       passwd
     fi
@@ -766,12 +751,12 @@ ynh_management() {
     [[ $? -eq 1 ]] && return 1
   elif ! ( whiptail --title 'Yunohost Management' \
       --yesno "Yunohost seem to be already installed on this computer.
-
 At this step you should be able to connect yoursel to the web interface, just \
 open your favorite web browser and connect to one of the following IP :
 ${LINUX_LOCAL_IP}
 
 Do you want to continue to the yunohost management menu ?
+
 WARNING : It's better/easier to use the web interface than the command line \
 interface provided by yunohost and on which this script is based on.
 Continue only if no know what you are doing." ${WT_HEIGHT} ${WT_WIDTH} )
@@ -779,16 +764,17 @@ Continue only if no know what you are doing." ${WT_HEIGHT} ${WT_WIDTH} )
     return 1
   fi
 
-  local ynh_menu="whiptail --title 'Yunohost Management' \
+  menu="whiptail --title 'Yunohost Management' \
     --menu  'Select what you want to do :' \
     ${WT_HEIGHT} ${WT_WIDTH} ${WT_MENU_HEIGHT} \
-    'Use some tools' 'Acces to yunohost tools (postinstall, adminpw,...)' \
+    'Yunohost tools' 'Acces to yunohost tools (postinstall, adminpw,...)' \
     'Manage User'    'Manage user (add, update, delete,...)' \
     'Manage App'     'Manage apps in Yunohost (install, remove)' \
     '<-- Back'       'Back to main menu'"
+
   while true
   do
-    bash -c "${ynh_menu} " 2> results_menu.txt
+    bash -c "${menu} " 2> results_menu.txt
     [[ $? -eq 1 ]] && return 1
     CHOICE=$( cat results_menu.txt )
 
@@ -796,7 +782,7 @@ Continue only if no know what you are doing." ${WT_HEIGHT} ${WT_WIDTH} )
       '<-- Back')
         return 0
         ;;
-      'Use some tools')
+      'Yunohost tools')
         ynh_tools
         ;;
       'Manage User')
